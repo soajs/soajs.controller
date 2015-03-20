@@ -1,15 +1,19 @@
 {
-    "name": "soajs.controller",
-    "description": "soajs services controller",
-    "version": "0.0.1",
-    "author": {
-        "name": "soajs team",
-        "email": "team@soajs.org"
-    },
-    "engines": {
-        "node": "*"
-    },
-    "dependencies": {
-        "soajs": "0.0.*"
-    }
+  "name": "soajs.controller",
+  "description": "soajs services controller",
+  "version": "0.0.1",
+  "author": {
+    "name": "soajs team",
+    "email": "team@soajs.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:soajs/soajs.controller.git"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+    "soajs": "0.0.*"
+  }
 }
