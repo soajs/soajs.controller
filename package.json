@@ -1,11 +1,12 @@
 {
   "name": "soajs.controller",
   "description": "soajs services controller",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
   },
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git@github.com:soajs/soajs.controller.git"
