@@ -14,7 +14,7 @@
   "engines": {
     "node": "*"
   },
-  "dependencies": {
+  "peerDependencies": {
     "soajs": "0.1.*"
   }
 }
