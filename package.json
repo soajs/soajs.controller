@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs services controller",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -15,6 +15,8 @@
     "node": "*"
   },
   "dependencies": {
-    "soajs": "0.1.*"
+  },
+  "peerDependencies": {
+    "soajs": "0.2.*"
   }
 }
