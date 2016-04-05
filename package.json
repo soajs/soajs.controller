@@ -15,6 +15,9 @@
     "node": "*"
   },
   "dependencies": {
-    "soajs": "https://github.com/soajs/soajs.git#develop"
+
+  },
+  "peerDependencies": {
+    "soajs": "0.2.*"
   }
 }
