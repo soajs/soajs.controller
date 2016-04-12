@@ -15,6 +15,6 @@
     "node": "*"
   },
   "dependencies": {
-    "soajs": "git+https://github.com/soajs/soajs.git#develop"
+    "soajs": "0.3.*"
   }
 }
