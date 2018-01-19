@@ -15,6 +15,6 @@
     "node": "*"
   },
   "dependencies": {
-    "soajs": "2.0.2"
+    "soajs": "2.0.3"
   }
 }
