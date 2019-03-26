@@ -8,6 +8,7 @@ describe("Starting Gateway Unit test", function () {
     after(function (done) {
         require("./lib/param.js");
         require("./lib/ip.js");
+        require("./lib/http.js");
         done();
     });
 });
