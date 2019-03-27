@@ -11,9 +11,11 @@ describe("Starting Gateway Unit test", function () {
         require("./lib/http.js");
         require("./lib/apiPathParam2apiRegExp.js");
 
-        require("./mw/enhancer/index.js");
         require("./mw/cors/index.js");
+        require("./mw/enhancer/index.js");
         require("./mw/favicon/index.js");
+        require("./mw/response/index.js");
+        require("./mw/soajs/index.js");
 
         require("./server/controller.js");
         require("./server/maintenance.js");
