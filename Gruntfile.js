@@ -47,7 +47,7 @@ let lib = {
 module.exports = function (grunt) {
 	//Loading the needed plugins to run the grunt tasks
     let pluginsRootPath = lib.findRoot();
-	lib.loadTasks(grunt, pluginsRootPath, ['grunt-contrib-jshint', 'grunt-jsdoc', 'grunt-contrib-clean', 'grunt-mocha-test', 'grunt-env'
+	lib.loadTasks(grunt, pluginsRootPath, ['grunt-contrib-jshint', 'grunt-jsdoc', 'grunt-contrib-clean', 'grunt-contrib-copy', 'grunt-mocha-test', 'grunt-env'
 		, 'grunt-istanbul', 'grunt-coveralls']);
 	grunt.initConfig({
 		//Defining jshint tasks
@@ -117,6 +117,14 @@ module.exports = function (grunt) {
 			}
 		},
 
+        copy: {
+            main: {
+                files: [
+                    {expand: true, src: ['package.json'], dest: 'test/coverage/instrument/', filter: 'isFile'},
+                ]
+            }
+        },
+
 		instrument: {
             files: ['lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js', 'index.js'],
 			//files: ['**/*.js'],
@@ -177,10 +185,10 @@ module.exports = function (grunt) {
 
     process.env.SHOW_LOGS = grunt.option('showLogs');
     grunt.registerTask("default", ['jshint']);
-    grunt.registerTask("integration", ['clean', 'env:coverage', 'instrument', 'mochaTest:integration']);
-    grunt.registerTask("unit", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit']);
-    grunt.registerTask("test", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration']);
-    grunt.registerTask("coverage", ['clean', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport', 'coveralls']);
+    grunt.registerTask("integration", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:integration']);
+    grunt.registerTask("unit", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit']);
+    grunt.registerTask("test", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration']);
+    grunt.registerTask("coverage", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport', 'coveralls']);
 
 };
 
