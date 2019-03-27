@@ -27,7 +27,6 @@ let reloadRegistry = (parsedUrl, core, log, param, serviceIp, cb) => {
         "apiList": null,
         "serviceIp": serviceIp
     }, function (err, reg) {
-        console.log("after reload")
         let response = maintenanceResponse(parsedUrl, param);
         if (err) {
             log.warn("Failed to load registry. reusing from previous load. Reason: " + err.message);
@@ -60,7 +59,6 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
         let parsedUrl = url.parse(req.url, true);
 
         if (parsedUrl.pathname === '/reloadRegistry') {
-            console.log('reloadRegistry')
             reloadRegistry(parsedUrl, core, log, param, serviceIp, (response) => {
                 res.writeHead(200, {'Content-Type': 'application/json'});
                 return res.end(JSON.stringify(response));

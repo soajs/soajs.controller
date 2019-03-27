@@ -22,8 +22,7 @@ module.exports = (configuration) => {
             switch (lc) {
                 case 'referer':
                 case 'referrer':
-                    return req.headers.referrer
-                        || req.headers.referer;
+                    return req.headers.referrer || req.headers.referer;
                 default:
                     return req.headers[lc];
             }

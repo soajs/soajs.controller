@@ -1,6 +1,8 @@
 'use strict';
 
 const lib = require("./../../lib");
+const coreLibs = require("soajs.core.libs");
+
 /**
  *
  * @param configuration

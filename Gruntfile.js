@@ -53,6 +53,7 @@ module.exports = function (grunt) {
 		//Defining jshint tasks
 		jshint: {
 			options: {
+				"esversion": 6,
 				"bitwise": true,
 				"eqeqeq": true,
 				"forin": true,

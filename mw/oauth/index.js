@@ -32,7 +32,7 @@ module.exports = (configuration) => {
                 oauthType = tenantOauth.type;
             }
             else if (Object.hasOwnProperty.call(req.soajs.registry.serviceConfig.oauth, 'type')) {
-                oauthType = req.soajs.registry.serviceConfig.oauth.type
+                oauthType = req.soajs.registry.serviceConfig.oauth.type;
             }
 
             //0=oauth0, 2=oauth2

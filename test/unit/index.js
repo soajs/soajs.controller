@@ -10,6 +10,8 @@ describe("Starting Gateway Unit test", function () {
         require("./lib/ip.js");
         require("./lib/http.js");
         require("./lib/apiPathParam2apiRegExp.js");
+
+        require("./mw/enhancer/index.js");
         done();
     });
 });

@@ -1,6 +1,6 @@
 'use strict';
 
-const soajsRes = require("./response.js");
+const SoajsRes = require("./response.js");
 
 /**
  *
@@ -15,7 +15,7 @@ module.exports = (configuration) => {
         req.soajs.buildResponse = function (error, data) {
             let response = null;
             if (error) {
-                response = new soajsRes(false);
+                response = new SoajsRes(false);
                 if (Array.isArray(error)) {
                     let len = error.length;
                     for (let i = 0; i < len; i++) {
@@ -27,7 +27,7 @@ module.exports = (configuration) => {
                 }
             }
             else {
-                response = new soajsRes(true, data);
+                response = new SoajsRes(true, data);
             }
 
             return response;

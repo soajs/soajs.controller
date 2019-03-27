@@ -1,5 +1,6 @@
 'use strict';
 
+const request = require('request');
 
 /**
  *
@@ -7,7 +8,7 @@
  * @param res
  * @param cb
  */
-module.exports = (req, res, cb) => {
+module.exports = (req, res, core, cb) => {
     let restServiceParams = req.soajs.controller.serviceParams;
 
     let config = req.soajs.registry.services.controller;
@@ -81,7 +82,7 @@ module.exports = (req, res, cb) => {
         if (restServiceParams.version && restServiceParams.registry.src.urls) {
             for (let i = 0; i < restServiceParams.registry.src.urls.length; i++) {
                 if (restServiceParams.registry.src.urls[i].version === restServiceParams.version)
-                    host = restServiceParams.registry.src.urls[i].url
+                    host = restServiceParams.registry.src.urls[i].url;
             }
         }
         if (restServiceParams.keyObj && restServiceParams.keyObj.config) {
@@ -90,7 +91,7 @@ module.exports = (req, res, cb) => {
             if (restServiceParams.version && restServiceParams.keyObj.config[restServiceParams.name].urls) {
                 for (let i = 0; i < restServiceParams.keyObj.config[restServiceParams.name].urls.length; i++) {
                     if (restServiceParams.keyObj.config[restServiceParams.name].urls[i].version === restServiceParams.version)
-                        host = restServiceParams.keyObj.config[restServiceParams.name].urls[i].url
+                        host = restServiceParams.keyObj.config[restServiceParams.name].urls[i].url;
                 }
             }
         }

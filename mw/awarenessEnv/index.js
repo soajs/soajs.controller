@@ -16,13 +16,13 @@ module.exports = {
 				driver.init(param);
 			}
 		}
-		return function (req, res, next) {
+		return (req, res, next) => {
 			if (param.awarenessEnv) {
 				req.soajs.awarenessEnv = {
 					"getHost": driver.getControllerEnvHost
 				};
 			}
 			next();
-		}
+		};
 	}
 };

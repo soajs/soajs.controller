@@ -32,9 +32,9 @@ let fetchControllerHosts = function (core, log, next) {
 let awareness_healthCheck = function (core, log) {
     registry = core.registry.get();
 
-    var resume = function () {
+    let resume = () => {
         if (controllerHosts && Array.isArray(controllerHosts) && controllerHosts.length > 0) {
-            var controllerPort = registry.services.controller.port;
+            let controllerPort = registry.services.controller.port;
             async.each(controllerHosts,
                 function (sObj, callback) {
                     if (!serviceAwarenessObj[sObj.env])
@@ -57,7 +57,7 @@ let awareness_healthCheck = function (core, log) {
                         else {
                             if (serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].indexOf(sObj.ip) !== -1) {
                                 //TODO: if we guarantee uniqueness we will not need the for loop
-                                for (var ii = 0; ii < serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].length; ii++) {
+                                for (let ii = 0; ii < serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].length; ii++) {
                                     if (serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version][ii] === sObj.ip)
                                         serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].splice(ii, 1);
                                 }
@@ -85,7 +85,7 @@ let awareness_healthCheck = function (core, log) {
 
 
 function roundRobin() {
-    var s, v, env, cb;
+    let s, v, env, cb;
     cb = arguments[arguments.length - 1];
     switch (arguments.length) {
         //dash, cb
@@ -114,7 +114,7 @@ function roundRobin() {
                 serviceAwarenessObj[env][s].indexes = {};
             if (!serviceAwarenessObj[env][s].indexes[v] || serviceAwarenessObj[env][s].indexes[v] >= serviceAwarenessObj[env][s].healthy[v].length)
                 serviceAwarenessObj[env][s].indexes[v] = 0;
-            var host = serviceAwarenessObj[env][s].healthy[v][serviceAwarenessObj[env][s].indexes[v]];
+            let host = serviceAwarenessObj[env][s].healthy[v][serviceAwarenessObj[env][s].indexes[v]];
             serviceAwarenessObj[env][s].indexes[v] += 1;
             return cb(host);
         }
@@ -125,7 +125,7 @@ function roundRobin() {
     else {
         return cb(null);
     }
-};
+}
 
 function init(param) {
     registry = param.core.registry.get();

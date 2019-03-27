@@ -6,7 +6,7 @@
  * @param requestOptions
  * @returns {boolean}
  */
-module.exports = (req, requestOptions) => {
+module.exports = (req, core, requestOptions) => {
     requestOptions.headers.cookie = requestOptions.headers.cookie || '';
     let cookies = requestOptions.headers.cookie.split(';');
     cookies.some(function (cookie, idx, arr) {

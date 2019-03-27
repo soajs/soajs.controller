@@ -45,7 +45,7 @@ module.exports = (configuration) => {
                 };
             }
 
-            extractBuildParameters(req, service_n, service_nv, service_v, proxyInfo, parsedUrl.path, function (error, parameters) {
+            extractBuildParameters(req, service_n, service_nv, service_v, proxyInfo, parsedUrl.path, core, function (error, parameters) {
                 if (error) {
                     req.soajs.log.fatal(error);
                     return req.soajs.controllerResponse(core.error.getError(130));
@@ -82,7 +82,6 @@ module.exports = (configuration) => {
                         passportLogin = true;
                 }
 
-                console.log(serviceInfo, passportLogin)
                 if ((serviceInfo[2] !== "swagger" || (serviceInfo[2] === "swagger" && serviceInfo[serviceInfo.length - 1] === 2)) && parameters.extKeyRequired) {
                     let key = req.headers.key || parsedUrl.query.key;
                     if (!key) {
@@ -101,7 +100,6 @@ module.exports = (configuration) => {
                         } else {
                             req.soajs.controller.gotoservice = redirectToService;
                         }
-console.log(req.soajs.controller.gotoservice)
                         return next();
                     });
                 }

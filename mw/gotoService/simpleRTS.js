@@ -5,6 +5,7 @@ let http = require('http');
 
 module.exports = (configuration) => {
 
+    let core = configuration.core;
     let isRequestAuthorized = require("./lib/isRequestAuthorized.js");
     let preRedirect = require("./lib/preRedirect.js");
 
@@ -15,7 +16,7 @@ module.exports = (configuration) => {
      * @returns {*}
      */
     return (req, res) => {
-        preRedirect(req, res, function (obj) {
+        preRedirect(req, res, core, function (obj) {
             req.pause();
 
             let requestOptions = url.parse(obj.uri);
@@ -25,7 +26,7 @@ module.exports = (configuration) => {
             requestOptions.headers['host'] = requestOptions.host;
 
             if (obj.config.authorization)
-                isRequestAuthorized(req, requestOptions);
+                isRequestAuthorized(req, core, requestOptions);
 
             let connector = http.request(requestOptions, function (serverResponse) {
                 serverResponse.pause();

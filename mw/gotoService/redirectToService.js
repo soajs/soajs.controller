@@ -4,6 +4,7 @@ const request = require('request');
 
 module.exports = (configuration) => {
 
+    let core = configuration.core;
     let isRequestAuthorized = require("./lib/isRequestAuthorized.js");
     let preRedirect = require("./lib/preRedirect.js");
 
@@ -14,7 +15,7 @@ module.exports = (configuration) => {
      * @returns {*}
      */
     return (req, res) => {
-        preRedirect(req, res, function (obj) {
+        preRedirect(req, res, core, function (obj) {
             let requestOptions = {
                 'method': req.method,
                 'uri': obj.uri,
@@ -23,7 +24,7 @@ module.exports = (configuration) => {
                 'jar': false
             };
             if (obj.config.authorization)
-                isRequestAuthorized(req, requestOptions);
+                isRequestAuthorized(req, core, requestOptions);
 
             req.soajs.controller.redirectedRequest = request(requestOptions);
             req.soajs.controller.redirectedRequest.on('error', function (err) {

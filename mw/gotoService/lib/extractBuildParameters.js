@@ -1,8 +1,9 @@
 'use strict';
 
 const coreLibs = require("soajs.core.libs");
+const drivers = require('soajs.core.drivers');
 
-module.exports = (req, service, service_nv, version, proxyInfo, url, callback) => {
+module.exports = (req, service, service_nv, version, proxyInfo, url, core, callback) => {
 
     if (proxyInfo) {
         let requestedRoute;
