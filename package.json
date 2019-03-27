@@ -35,7 +35,7 @@
     "soajs.urac.driver": "1.4.3",
 
     "useragent": "2.2.1",
-    "validator": "9.4.1",
+    "validator": "9.4.1"
 
   },
   "devDependencies": {
@@ -48,7 +48,7 @@
     "grunt-env": "^0.4.4",
     "grunt-istanbul": "^0.7.2",
     "grunt-jsdoc": "^2.1.0",
-    "grunt-mocha-test": "^0.13.2",
+    "grunt-mocha-test": "^0.13.2"
 
   }
 }

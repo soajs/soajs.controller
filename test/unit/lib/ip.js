@@ -14,7 +14,6 @@ describe("Unit test for: lib - ip", function () {
     });
     it("Vanilla test - autoRegHost=true", function (done) {
         libIp(true, (service) => {
-            console.log(service)
             assert.ok(service.ip);
             done();
         })

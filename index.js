@@ -140,19 +140,19 @@ Controller.prototype.init = function (callback) {
 
                     app.use(traffic_mw({}));
 
-                    app.use(function (req, res, next) {
-                        setImmediate(function () {
+                    app.use((req, res, next) => {
+                        setImmediate(() => {
                             req.soajs.controller.gotoservice(req, res, null);
                         });
 
-                        req.on("error", function (error) {
+                        req.on("error", (error) => {
                             req.soajs.log.error("Error @ controller:", error);
                             if (req.soajs.controller.redirectedRequest) {
                                 req.soajs.controller.redirectedRequest.abort();
                             }
                         });
 
-                        req.on("close", function () {
+                        req.on("close", () => {
                             if (req.soajs.controller.redirectedRequest) {
                                 req.soajs.log.info("Request aborted:", req.url);
                                 req.soajs.controller.redirectedRequest.abort();
@@ -179,7 +179,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
     let _self = this;
     let maintenancePort = registry.services.controller.port + registry.serviceConfig.ports.maintenanceInc;
     if (server) {
-        server.on('error', function (err) {
+        server.on('error', (err) => {
             if (err.code === 'EADDRINUSE') {
                 log.error('Address [port: ' + registry.services.controller.port + '] in use by another service, exiting');
             }
@@ -224,7 +224,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
             }
         };
 
-        server.listen(registry.services.controller.port, function (err) {
+        server.listen(registry.services.controller.port, (err) => {
             if (err) {
                 log.error(err);
             }
@@ -233,11 +233,11 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
                 if (!process.env.SOAJS_DEPLOY_HA) {
                     core.registry.registerHost({
                         "serviceName": _self.soajs.param.init.serviceName,
-                        "serviceVersion":_self.soajs.param.init.serviceVersion,
+                        "serviceVersion": _self.soajs.param.init.serviceVersion,
                         "servicePort": registry.services.controller.port,
                         "serviceIp": service.ip,
                         "serviceHATask": service.HATask
-                    }, registry, function (registered) {
+                    }, registry, (registered) => {
                         if (registered) {
                             log.info("Host IP [" + service.ip + "] for service [" + _self.soajs.param.init.serviceName + "@" + _self.soajs.param.init.serviceVersion + "] successfully registered.");
 
@@ -252,7 +252,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 
                             //update the database with the awareness Response generated.
                             //controller has been terminated.
-                            process.on('SIGINT', function () {
+                            process.on('SIGINT', () => {
                                 getAwarenessInfo(true, (error) => {
                                     if (error) {
                                         log.error(error);
@@ -271,7 +271,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
                 callback(err);
             }
         });
-        serverMaintenance.on('error', function (err) {
+        serverMaintenance.on('error', (err) => {
             if (err.code === 'EADDRINUSE') {
                 log.error('Address [port: ' + (maintenancePort) + '] in use by another service, exiting');
             }
@@ -279,7 +279,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
                 log.error(err);
             }
         });
-        serverMaintenance.listen(maintenancePort, function (err) {
+        serverMaintenance.listen(maintenancePort, (err) => {
             if (err) {
                 log.error(err);
             }
@@ -293,8 +293,8 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 
 Controller.prototype.stop = function (registry, log, service, server, serverMaintenance, callback) {
     log.info('stopping controllerServer on port:', registry.services.controller.port);
-    server.close(function (err) {
-        serverMaintenance.close(function (err) {
+    server.close((err) => {
+        serverMaintenance.close((err) => {
             if (callback) {
                 callback(err);
             }

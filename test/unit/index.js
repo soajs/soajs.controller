@@ -9,6 +9,7 @@ describe("Starting Gateway Unit test", function () {
         require("./lib/param.js");
         require("./lib/ip.js");
         require("./lib/http.js");
+        require("./lib/apiPathParam2apiRegExp.js");
         done();
     });
 });

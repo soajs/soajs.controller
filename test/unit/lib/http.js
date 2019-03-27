@@ -9,7 +9,6 @@ const enhancer_mw = helper.requireModule('./mw/enhancer/index');
 const assert = require('assert');
 
 describe("Unit test for: lib - http", function () {
-    let what2expect = {ip: '127.0.0.1', HATask: null, fetched: null};
     let server = null;
     let port = 6000;
     it("Create http server", function (done) {
@@ -30,11 +29,13 @@ describe("Unit test for: lib - http", function () {
     it("Vanilla test", function (done) {
         let requestOptions = {
             'method': "get",
-            'uri': "http://127.0.0.1:6000",
+            'uri': "http://127.0.0.1:" + port,
             'timeout': 1000 * 3600,
             'jar': false
         };
         request(requestOptions, (error, response) => {
+            server.close((err) => {
+            });
             done();
         });
     });

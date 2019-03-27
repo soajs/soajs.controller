@@ -6,12 +6,15 @@ const url = require('url');
 const soajsLib = require("soajs.core.libs");
 const soajsUtils = soajsLib.utils;
 
+const packageInfo = require ("../package.json");
+
 let maintenanceResponse = (parsedUrl, param, route) => {
     return {
         'result': false,
         'ts': Date.now(),
         'service': {
-            'service': param.serviceName.toUpperCase(),
+            'service': packageInfo.name, //param.serviceName.toUpperCase(),
+            'version': packageInfo.version,
             'type': 'rest',
             'route': route || parsedUrl.pathname
         }
