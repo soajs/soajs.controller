@@ -13,8 +13,8 @@ describe("Starting Gateway Unit test", function () {
 
         require("./mw/enhancer/index.js");
 
-
         require("./server/controller.js");
+        require("./server/maintenance.js");
         done();
     });
 });

@@ -291,7 +291,10 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 };
 
 Controller.prototype.stop = function (registry, log, service, server, serverMaintenance, callback) {
-    log.info('stopping controllerServer on port:', registry.services.controller.port);
+    let maintenancePort = registry.services.controller.port + registry.serviceConfig.ports.maintenanceInc;
+    log.info('stopping Server on port:', registry.services.controller.port);
+    log.info('stopping MaintenanceServer on port:', maintenancePort);
+
     server.close((err) => {
         serverMaintenance.close((err) => {
             if (callback) {
