@@ -27,7 +27,6 @@ describe("Unit test for: mw - cors", function () {
         },
         "header": {},
         "end": () => {
-
         }
     };
 
