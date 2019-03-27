@@ -12,7 +12,7 @@ describe("Unit test for: mw - enhancer", function () {
     };
     let res = {};
 
-    it("INstall & Use the MW", function (done) {
+    it("Install & Use the MW", function (done) {
         let mw_use = mw({});
         mw_use(req, res, () => {
             assert.ok(true);
