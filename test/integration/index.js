@@ -18,7 +18,9 @@ describe("starting integration tests", () => {
     });
 
     it("loading tests", (done) => {
-        
+
+        require("./usecase1/index.js");
+
         done();
     });
 });
