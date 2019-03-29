@@ -26,11 +26,6 @@ module.exports = (configuration) => {
                             return next(144);
                         }
                     }
-                    // req.soajs.tenant = keyObj.tenant;
-                    // req.soajs.tenant.key = {
-                    //     "iKey": keyObj.key,
-                    //     "eKey": keyObj.extKey
-                    // };
                     configuration.provision.getPackageData(keyObj.application.package, function (err, packObj) {
                         if (err)
                             return next();

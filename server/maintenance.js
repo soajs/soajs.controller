@@ -74,6 +74,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
             }
 
             if (process.env.SOAJS_DEPLOY_HA) {
+                //TODO: check if this is needed
                 awareness_mw.getMw({
                     "awareness": param.awareness,
                     "serviceName": param.serviceName,
