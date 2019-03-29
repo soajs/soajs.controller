@@ -18,6 +18,7 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/key/index.js");
         require("./mw/response/index.js");
         require("./mw/soajs/index.js");
+        require("./mw/traffic/index.js");
 
         require("./server/controller.js");
         require("./server/maintenance.js");

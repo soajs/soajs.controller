@@ -62,6 +62,21 @@ describe("Integration for Usecase 1", function () {
         });
     });
 
+    it("Urac", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/urac/',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            assert.ok(body);
+            assert.strictEqual(body.result, false);
+            done();
+        });
+    });
+
     after((done) => {
         c.stop(registry, log, service, server, serverMaintenance, () => {
             done();

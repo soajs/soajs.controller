@@ -19,7 +19,10 @@ describe("starting integration tests", () => {
 
     it("loading tests", (done) => {
 
+        // to cover specific routes key/permission/get & proxy/redirect
         require("./usecase1/index.js");
+
+
 
         done();
     });
