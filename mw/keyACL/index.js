@@ -84,6 +84,7 @@ module.exports = (configuration) => {
                 finalAcl = lib.apiPathParam2apiRegExp(aclObj);
             }
         }
+
         return cb(null, finalAcl);
     };
 
