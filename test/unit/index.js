@@ -6,6 +6,7 @@ describe("Starting Gateway Unit test", () => {
     });
 
     after((done) => {
+
         require("./lib/apiPathParam2apiRegExp.js");
         require("./lib/http.js");
         require("./lib/ip.js");
@@ -19,6 +20,9 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/favicon/index.js");
         require("./mw/key/index.js");
         require("./mw/mt/index.js");
+
+        require("./mw/mt/urac.js");
+
         require("./mw/oauth/index.js");
         require("./mw/response/index.js");
         require("./mw/soajs/index.js");
@@ -28,6 +32,7 @@ describe("Starting Gateway Unit test", () => {
         require("./server/maintenance.js");
 
         require("./utilities/utils.js");
+
         done();
     });
 });

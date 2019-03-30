@@ -7,8 +7,6 @@ function Urac(param) {
     _self.soajs = param.soajs;
     _self.userRecord = null;
     _self.id = null;
-
-
     if (param.oauth && 0 === param.oauth.type)
         _self.userRecord = param.oauth.bearerToken;
     else {

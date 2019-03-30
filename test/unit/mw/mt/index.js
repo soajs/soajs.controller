@@ -26,10 +26,26 @@ describe("Unit test for: mw - mt", () => {
         "provision": {
             "getTenantOauth": (id, cb) => {
                 return cb(null)
+            },
+            "getTenantData": (coed, cb)=>{
+                return cb(null, {});
             }
         }
     };
     let req = {
+        oauth: {
+            bearerToken: {
+                clientId: 222,
+                env: "dev"
+            }
+        },
+        headers : {},
+        getClientUserAgent: () =>{
+          return "mozilla";
+        },
+        getClientIP: () => {
+            return "127.0.0.1";
+        },
         soajs: {
             controllerResponse: () => {
 
@@ -38,15 +54,22 @@ describe("Unit test for: mw - mt", () => {
                 error: (code, stack) => {
                     console.log(code);
                     console.log(stack);
+                },
+                debug: (code, stack) => {
+                    console.log(code);
+                    console.log(stack);
                 }
             },
             controller: {
                 serviceParams: {
-                    version: "2",
+                    finalAcl: {
+                        "access": false
+                    },
+                    version: "1",
                     serviceInfo: ['', 'urac', 'swagger'],
                     registry: {
                         versions: {
-                            "1": {
+                            "2": {
                                 oauth: {},
                                 dev: {
                                     extKeyRequired: false,
@@ -81,7 +104,7 @@ describe("Unit test for: mw - mt", () => {
         });
     });
     it("test swagger route", (done) => {
-        req.soajs.controller.serviceParams.version = "1";
+        req.soajs.controller.serviceParams.version = "2";
         let functionMw = mw(configuration);
         functionMw(req, res, () => {
             done();
@@ -110,7 +133,7 @@ describe("Unit test for: mw - mt", () => {
     });
     it("test route with oauth and no extKey", (done) => {
         req.soajs.controller.serviceParams.serviceInfo = ['', 'urac', 'getUser'];
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.oauth = true;
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.oauth = true;
         let functionMw = mw(configuration);
         functionMw(req, res, () => {
             done();
@@ -120,7 +143,7 @@ describe("Unit test for: mw - mt", () => {
         req.soajs.controller.serviceParams.serviceInfo = ['', 'urac', 'getUser'];
         req.soajs.controller.serviceParams.path = "/authorization";
         req.soajs.controller.serviceParams.name = "oauth";
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.oauth = true;
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.oauth = true;
         let functionMw = mw(configuration);
         functionMw(req, res, () => {
             done();
@@ -128,8 +151,8 @@ describe("Unit test for: mw - mt", () => {
     });
     it("test route with oauth and extKey but keyObj empty", (done) => {
         req.soajs.controller.serviceParams.serviceInfo = ['', 'urac', 'getUser'];
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.oauth = true;
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.extKeyRequired = true;
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.oauth = true;
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.extKeyRequired = true;
         req.soajs.controller.serviceParams.keyObj = {};
         let functionMw = mw(configuration);
         functionMw(req, res, (error) => {
@@ -139,8 +162,8 @@ describe("Unit test for: mw - mt", () => {
     });
     it("test route with oauth and extKey but packObj empty", (done) => {
         req.soajs.controller.serviceParams.serviceInfo = ['', 'urac', 'getUser'];
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.oauth = true;
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.extKeyRequired = true;
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.oauth = true;
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.extKeyRequired = true;
         req.soajs.controller.serviceParams.keyObj = {tenant: {}, application: {package: {}}};
         let functionMw = mw(configuration);
         functionMw(req, res, (error) => {
@@ -151,13 +174,12 @@ describe("Unit test for: mw - mt", () => {
 
     it("test route with oauth and extKey where keyObj and packObj are ok", (done) => {
         req.soajs.controller.serviceParams.serviceInfo = ['', 'urac', 'getUser'];
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.oauth = true;
-        req.soajs.controller.serviceParams.registry.versions["1"].dev.extKeyRequired = true;
-        req.soajs.controller.serviceParams.keyObj = {};
-        req.soajs.controller.serviceParams.packObj = {};
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.oauth = true;
+        req.soajs.controller.serviceParams.registry.versions["2"].dev.extKeyRequired = true;
+        req.soajs.controller.serviceParams.keyObj = require('../../../data/sample/keyObj.json');
+        req.soajs.controller.serviceParams.packObj = require('../../../data/sample/packObj.json');
         let functionMw = mw(configuration);
         functionMw(req, res, (error) => {
-            assert.deepStrictEqual(error, 152);
             done();
         });
     });

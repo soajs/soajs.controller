@@ -63,7 +63,6 @@ module.exports = (configuration) => {
                 req.soajs.controller.serviceParams.isAPIPublic = false;
                 try {
                     let keyObj = req.soajs.controller.serviceParams.keyObj;
-
                     if (keyObj && keyObj.application && keyObj.application.package) {
                         req.soajs.tenant = keyObj.tenant;
                         req.soajs.tenant.key = {
