@@ -5,8 +5,6 @@ const mw = helper.requireModule('./mw/mt/index');
 const assert = require('assert');
 const coreModules = require("soajs.core.modules");
 
-const sinon = require('sinon');
-
 
 describe("Unit test for: mw - mt", () => {
     let configuration = {
@@ -179,7 +177,7 @@ describe("Unit test for: mw - mt", () => {
         req.soajs.controller.serviceParams.keyObj = require('../../../data/sample/keyObj.json');
         req.soajs.controller.serviceParams.packObj = require('../../../data/sample/packObj.json');
         let functionMw = mw(configuration);
-        functionMw(req, res, (error) => {
+        functionMw(req, res, () => {
             done();
         });
     });
