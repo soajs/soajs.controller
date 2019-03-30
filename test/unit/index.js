@@ -12,10 +12,14 @@ describe("Starting Gateway Unit test", () => {
         require("./lib/param.js");
         require("./lib/parseURL.js");
 
+        require("./mw/awarenessEnv/custom.js");
+        require("./mw/awarenessEnv/ha.js");
         require("./mw/cors/index.js");
         require("./mw/enhancer/index.js");
         require("./mw/favicon/index.js");
         require("./mw/key/index.js");
+        require("./mw/mt/index.js");
+        require("./mw/oauth/index.js");
         require("./mw/response/index.js");
         require("./mw/soajs/index.js");
         require("./mw/traffic/index.js");

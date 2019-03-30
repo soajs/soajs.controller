@@ -8,7 +8,7 @@ const utils = require("./utils");
  * @param configuration
  * @returns {Function}
  */
-module.exports = function (configuration) {
+module.exports = (configuration) => {
     let soajs = configuration.soajs;
     let app = configuration.app;
     let regEnvironment = configuration.regEnvironment;
@@ -58,7 +58,7 @@ module.exports = function (configuration) {
         if (proxyInfo[2] === "swagger" && proxyInfo[proxyInfo.length - 1] === proxyInfo[2])
             return next();
 
-        req.soajs.awareness.getHost('controller', function (controllerHostInThisEnvironment) {
+        req.soajs.awareness.getHost('controller', (controllerHostInThisEnvironment) => {
             if (serviceParam.extKeyRequired) {
                 req.soajs.controller.serviceParams.isAPIPublic = false;
                 try {
@@ -90,7 +90,7 @@ module.exports = function (configuration) {
                                     return next();
                                 }
 
-                                let serviceCheckArray = [function (cb) {
+                                let serviceCheckArray = [(cb) => {
                                     cb(null, {
                                         "regEnvironment": regEnvironment,
                                         "core": core,
@@ -119,7 +119,7 @@ module.exports = function (configuration) {
                                 serviceCheckArray.push(utils.serviceCheck);
                                 serviceCheckArray.push(utils.apiCheck);
 
-                                async.waterfall(serviceCheckArray, function (err, data) {
+                                async.waterfall(serviceCheckArray, (err, data) => {
 
                                     //if this is controller route: /key/permission/get, ignore async waterfall response
                                     if (keyPermissionGet) {
@@ -256,7 +256,7 @@ module.exports = function (configuration) {
                 req.soajs.controller.serviceParams.isAPIPublic = true;
 
                 if (serviceParam.oauth) {
-                    let oauthExec = function () {
+                    let oauthExec = () => {
                         soajs.oauth(req, res, next);
                     };
                     if (soajs.oauthService && req.soajs.controller.serviceParams.name === soajs.oauthService.name && (req.soajs.controller.serviceParams.path === soajs.oauthService.tokenApi || req.soajs.controller.serviceParams.path === soajs.oauthService.authorizationApi))
