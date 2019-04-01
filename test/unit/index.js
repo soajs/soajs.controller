@@ -18,10 +18,14 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/cors/index.js");
         require("./mw/enhancer/index.js");
         require("./mw/favicon/index.js");
+
+        require("./mw/gotoService/lib/isRequestAuthorized.js");
+        require("./mw/gotoService/lib/extractBuildParameters.js");
+
         require("./mw/key/index.js");
         require("./mw/keyACL/index.js");
-        require("./mw/mt/index.js");
 
+        require("./mw/mt/index.js");
         require("./mw/mt/urac.js");
 
         require("./mw/oauth/index.js");
