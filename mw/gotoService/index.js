@@ -17,7 +17,7 @@ module.exports = (configuration) => {
     let extractBuildParameters = require ("./lib/extractBuildParameters.js");
 
     let simpleRTS = require ("./simpleRTS.js")(configuration);
-    let redirectToService = require ("./simpleRTS.js")(configuration);
+    let redirectToService = require ("./redirectToService.js")(configuration);
     let proxyRequest = require ("./proxyRequest.js")(configuration);
 
 

@@ -19,7 +19,7 @@ module.exports = (configuration) => {
             let requestOptions = {
                 'method': req.method,
                 'uri': obj.uri,
-                'timeout': 1000 * 3600,
+                'timeout': obj.requestTO * 1000,
                 'headers': req.headers,
                 'jar': false
             };

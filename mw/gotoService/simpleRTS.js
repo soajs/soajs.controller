@@ -28,7 +28,7 @@ module.exports = (configuration) => {
             if (obj.config.authorization)
                 isRequestAuthorized(req, core, requestOptions);
 
-            let connector = http.request(requestOptions, function (serverResponse) {
+            req.soajs.controller.redirectedRequest = http.request(requestOptions, function (serverResponse) {
                 serverResponse.pause();
                 serverResponse.headers['access-control-allow-origin'] = '*';
 
@@ -36,7 +36,7 @@ module.exports = (configuration) => {
                 serverResponse.pipe(res, {end: true});
                 serverResponse.resume();
             });
-            connector.on('aborted', function (err) {
+            req.soajs.controller.redirectedRequest.on('error', function (err) {
                 req.soajs.log.error(err);
                 try {
                     return req.soajs.controllerResponse(core.error.getError(135));
@@ -44,7 +44,7 @@ module.exports = (configuration) => {
                     req.soajs.log.error(e);
                 }
             });
-            req.pipe(connector, {end: true});
+            req.pipe(req.soajs.controller.redirectedRequest, {end: true});
             req.resume();
         });
     };

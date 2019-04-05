@@ -26,12 +26,15 @@ module.exports = (req, res, core, cb) => {
 
         let requestTOR = restServiceParams.registry.requestTimeoutRenewal || config.requestTimeoutRenewal;
         let requestTO = restServiceParams.registry.requestTimeout || config.requestTimeout;
-
+        let timeToRenew = requestTO * 100;
         req.soajs.controller.renewalCount = 0;
-        res.setTimeout(requestTO * 1000, function () {
+        req.soajs.controller.monitorEndingReq = false;
+
+        let renewReqMonitor = function () {
             req.soajs.log.warn('Request is taking too much time ...');
             req.soajs.controller.renewalCount++;
-            if (req.soajs.controller.renewalCount <= requestTOR) {
+
+            if (req.soajs.controller.renewalCount < requestTOR) {
                 req.soajs.log.info('Trying to keep request alive by checking the service heartbeat ...');
 
                 let uri = 'http://' + host + ':' + (restServiceParams.registry.port + req.soajs.registry.serviceConfig.ports.maintenanceInc) + '/heartbeat';
@@ -57,22 +60,31 @@ module.exports = (req, res, core, cb) => {
                     'headers': req.headers
                 }, function (error, response) {
                     if (!error && response.statusCode === 200) {
-                        req.soajs.log.info('... able to renew request for ', requestTO, 'seconds');
-                        res.setTimeout(requestTO * 1000);
+                        req.soajs.log.info('... able to renew request for ', requestTO * 10, 'seconds');
+                        res.setTimeout(timeToRenew, renewReqMonitor);
                     } else {
                         req.soajs.log.error('Service heartbeat is not responding');
                         return req.soajs.controllerResponse(core.error.getError(133));
                     }
                 });
             } else {
-                req.soajs.log.error('Request time exceeded the requestTimeoutRenewal:', requestTO + requestTO * requestTOR);
-                return req.soajs.controllerResponse(core.error.getError(134));
+                if (!req.soajs.controller.monitorEndingReq) {
+                    req.soajs.controller.monitorEndingReq = true;
+                    req.soajs.log.error('Request time exceeded the requestTimeoutRenewal:', requestTO + requestTO * requestTOR);
+                    if (req.soajs.controller.redirectedRequest) {
+                        req.soajs.log.info("Request aborted:", req.url);
+                        req.soajs.controller.redirectedRequest.abort();
+                    }
+                    return req.soajs.controllerResponse(core.error.getError(134));
+                }
             }
-        });
+        };
+        res.setTimeout(timeToRenew, renewReqMonitor);
 
         return cb({
             'host': host,
             'config': config,
+            'requestTO': requestTO,
             'uri': (fullURI ? host + restServiceParams.url : 'http://' + host + ':' + port + restServiceParams.url)
         });
     };
@@ -106,4 +118,5 @@ module.exports = (req, res, core, cb) => {
             return nextStep(host, restServiceParams.registry.port);
         });
     }
-};
+}
+;

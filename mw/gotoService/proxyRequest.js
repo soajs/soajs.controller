@@ -22,13 +22,18 @@ module.exports = (configuration) => {
                 return req.soajs.controllerResponse(core.error.getError(207));
             }
             else {
+                let config = reg.services.controller;
+                if (!config)
+                    return req.soajs.controllerResponse(core.error.getError(131));
+                let requestTO = config.requestTimeout;
+
                 //formulate request and pipe
                 let myUri = reg.protocol + '://' + reg.apiPrefix + "." + reg.domain + ':' + reg.port + requestedRoute;
 
                 let requestConfig = {
                     'uri': myUri,
                     'method': req.method,
-                    'timeout': 1000 * 3600,
+                    'timeout': requestTO * 1000,
                     'jar': false,
                     'headers': req.headers
                 };
@@ -53,8 +58,9 @@ module.exports = (configuration) => {
                 req.soajs.log.debug(requestConfig);
 
                 //proxy request
-                let proxy = request(requestConfig);
-                proxy.on('error', function (error) {
+                //let proxy = request(requestConfig);
+                req.soajs.controller.redirectedRequest = request(requestConfig);
+                req.soajs.controller.redirectedRequest.on('error', function (error) {
                     req.soajs.log.error(error);
                     try {
                         return req.soajs.controllerResponse(core.error.getError(135));
@@ -64,10 +70,10 @@ module.exports = (configuration) => {
                 });
 
                 if (req.method === 'POST' || req.method === 'PUT') {
-                    req.pipe(proxy).pipe(res);
+                    req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
                 }
                 else {
-                    proxy.pipe(res);
+                    req.soajs.controller.redirectedRequest.pipe(res);
                 }
             }
         });
