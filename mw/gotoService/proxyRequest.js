@@ -22,7 +22,7 @@ module.exports = (configuration) => {
                 return req.soajs.controllerResponse(core.error.getError(207));
             }
             else {
-                let config = reg.services.controller;
+                let config = req.soajs.registry.services.controller;
                 if (!config)
                     return req.soajs.controllerResponse(core.error.getError(131));
                 let requestTO = config.requestTimeout;
