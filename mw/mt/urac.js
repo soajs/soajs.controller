@@ -7,16 +7,27 @@ function Urac(param) {
     _self.soajs = param.soajs;
     _self.userRecord = null;
     _self.id = null;
+
     if (param.oauth && 0 === param.oauth.type)
         _self.userRecord = param.oauth.bearerToken;
     else {
+        // if type === 2
         if (param.oauth && param.oauth.bearerToken && param.oauth.bearerToken.user) {
+
             _self.id = param.oauth.bearerToken.user.id;
-            if (param.oauth.bearerToken.user.loginMode === "oauth")
+            if (param.oauth.bearerToken.user.username)
+                _self.username = param.oauth.bearerToken.user.username;
+
+            if (param.oauth.bearerToken.user.loginMode === "oauth") {
                 _self.userRecord = param.oauth.bearerToken.user;
+            }
+            else if (_self.soajs.registry.serviceConfig.oauth.getUserFromToken) {
+                _self.userRecord = param.oauth.bearerToken.user;
+            }
         }
         else if (param._id) {
             _self.id = param._id;
+            _self.username = param.username;
         }
     }
 }
@@ -31,7 +42,7 @@ Urac.prototype.init = function (cb) {
         return cb(null, _self.userRecord);
 
     if (_self.id) {
-        uracDriver.getRecord(_self.soajs, {id: _self.id.toString()}, function (err, record) {
+        uracDriver.getRecord(_self.soajs, {id: _self.id.toString(), username: _self.username}, function (err, record) {
             if (record) {
                 _self.userRecord = record;
             }
