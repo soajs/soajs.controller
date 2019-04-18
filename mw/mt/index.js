@@ -229,7 +229,7 @@ module.exports = (configuration) => {
                                                     if (serviceParam.urac_Config) {
                                                         injectObj.urac.config = uracObj.config;
                                                     }
-                                                    if (serviceName.urac_GroupConfig) {
+                                                    if (serviceParam.urac_GroupConfig) {
                                                         injectObj.urac.groupsConfig = uracObj.groupsConfig;
                                                     }
                                                 }
