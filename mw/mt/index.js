@@ -43,6 +43,8 @@ module.exports = (configuration) => {
             "urac": serviceInfo.urac || false,
             "urac_Profile": serviceInfo.urac_Profile || false,
             "urac_ACL": serviceInfo.urac_ACL || false,
+            "urac_Config": serviceInfo.urac_Config || false,
+            "urac_GroupConfig": serviceInfo.urac_GroupConfig || false,
             "provision_ACL": serviceInfo.provision_ACL || false,
             "extKeyRequired": serviceInfo.extKeyRequired || false,
             "oauth": oauth
