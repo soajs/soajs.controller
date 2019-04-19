@@ -26,8 +26,11 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
             "name": serviceName,
             "url": requestedRoute,
             "version": req.soajs.registry.services[serviceName].version || 1,
-            "extKeyRequired": true
+            "extKeyRequired": false
         };
+        if(req.headers.key)
+            proxyInfo.extKeyRequired = true;
+
         return callback(null, proxyInfo);
     } else {
         if (service &&

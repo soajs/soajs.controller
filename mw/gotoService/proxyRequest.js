@@ -28,7 +28,7 @@ module.exports = (configuration) => {
                 let requestTO = config.requestTimeout;
 
                 //formulate request and pipe
-                let myUri = reg.protocol + '://' + reg.apiPrefix + "." + reg.domain + ':' + reg.port + requestedRoute;
+                let myUri = reg.protocol + '://' + (reg.apiPrefix ? reg.apiPrefix + "." : "") + reg.domain + ':' + reg.port + requestedRoute;
 
                 let requestConfig = {
                     'uri': myUri,
@@ -96,7 +96,7 @@ module.exports = (configuration) => {
                 oneKey.extKeys.forEach(function (oneExtKey) {
                     //get the ext key for the request environment who also has dashboardAccess true
                     //note: only one extkey per env has dashboardAccess true, simply find it and break
-                    if (oneExtKey.env && oneExtKey.env === env && oneExtKey.dashboardAccess) {
+                    if (oneExtKey.env && oneExtKey.env === env) {
                         key = oneExtKey.extKey; // key or ext key/.???? no key
                     }
                 });
@@ -121,8 +121,11 @@ module.exports = (configuration) => {
         let tenant = req.soajs.tenant;
         let parsedUrl = req.soajs.controller.serviceParams.parsedUrl;
 
-        let remoteENV = (parsedUrl.query) ? parsedUrl.query.__env : req.headers.__env;
-        remoteENV = remoteENV.toUpperCase();
+        let remoteENV = req.headers.__env;
+        if (parsedUrl.query && parsedUrl.query.__env)
+            remoteENV = parsedUrl.query.__env;
+        if (remoteENV)
+            remoteENV = remoteENV.toUpperCase();
 
         let requestedRoute;
         //check if requested route is provided as query param
