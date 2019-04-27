@@ -105,8 +105,9 @@ let utils = {
                         else if (obj.finalAcl.hasOwnProperty('apisPermission'))
                             newAclObj.apisPermission = obj.finalAcl.apisPermission;
 
-                        obj.finalAcl = lib.apiPathParam2apiRegExp(newAclObj);
+                        obj.finalAcl = newAclObj;
                     }
+                    obj.finalAcl = lib.apiPathParam2apiRegExp(obj.finalAcl);
                 }
             }
             return cb(null, obj);
