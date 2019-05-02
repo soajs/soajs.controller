@@ -82,18 +82,25 @@ describe("Unit test for: mw - mt URAC", () => {
         it("test getProfile - full user", (done) => {
             let p = uracDriver.getProfile(true);
             assert.deepStrictEqual(p, {
-                _id: '5c8d0c505653de3985aa0ffd',
-                username: 'owner',
-                firstName: 'owner',
-                lastName: 'owner',
-                email: 'me@localhost.com',
-                groups: ['owner'],
-                profile: {},
+                "_id": '5c8d0c505653de3985aa0ffd',
+                "username": 'owner',
+                "firstName": 'owner',
+                "lastName": 'owner',
+                "email": 'me@localhost.com',
+                "groups": ['owner'],
+                "groupsConfig": {
+                    "allowedPackages": {
+                        "DSBRD": [
+                            "DSBRD_OWNER"
+                        ]
+                    }
+                },
+                "profile": {},
                 "config": {
                     "packages": {},
                     "keys": {}
                 },
-                tenant: {id: '5c0e74ba9acc3c5a84a51259', code: 'DBTN'}
+                "tenant": {"id": '5c0e74ba9acc3c5a84a51259', "code": 'DBTN'}
             });
             done();
         });

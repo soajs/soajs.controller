@@ -19,6 +19,9 @@ describe("starting integration tests", () => {
 
     it("loading tests", (done) => {
 
+        require("./server/controller.js");
+        require("./server/maintenance.js");
+
         // to cover specific routes key/permission/get & proxy/redirect
         require("./usecase1/index.js");
 

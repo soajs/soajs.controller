@@ -25,7 +25,6 @@ describe("Unit test for: lib - param", function () {
             "awareness": true,
             "serviceName": "controller",
             "serviceVersion": "1",
-            "serviceIp": null,
             "serviceHATask": null
         }
     };
