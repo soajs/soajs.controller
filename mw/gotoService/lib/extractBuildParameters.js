@@ -15,19 +15,20 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
         if (!requestedRoute && proxyInfo.pathname.replace(/^\/proxy/, '') !== '') {
             requestedRoute = proxyInfo.pathname.replace(/^\/proxy/, '');
         }
-
-        let serviceName = requestedRoute.split("/")[1];
-        if (!req.soajs.registry.services[serviceName]) {
-            return callback(core.error.getError(130));
-        }
-
         proxyInfo = {
-            "registry": req.soajs.registry.services[serviceName],
-            "name": serviceName,
             "url": requestedRoute,
-            "version": req.soajs.registry.services[serviceName].version || 1,
             "extKeyRequired": false
         };
+        let serviceName = requestedRoute.split("/")[1];
+        if (req.soajs.registry.services[serviceName]) {
+            proxyInfo = {
+                "registry": req.soajs.registry.services[serviceName],
+                "name": serviceName,
+                "url": requestedRoute,
+                "version": req.soajs.registry.services[serviceName].version || 1,
+                "extKeyRequired": false
+            };
+        }
         if(req.headers.key)
             proxyInfo.extKeyRequired = true;
 

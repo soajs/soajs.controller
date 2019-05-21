@@ -15,68 +15,74 @@ module.exports = (configuration) => {
      * @param {String} requestedRoute
      */
     let proxyRequestToRemoteEnv = (req, res, remoteENV, remoteExtKey, requestedRoute) => {
-        //get remote env registry
-        core.registry.loadByEnv({"envCode": remoteENV}, function (err, reg) {
-            if (err) {
-                req.soajs.log.error(err);
-                return req.soajs.controllerResponse(core.error.getError(207));
+        let triggerProxy = (myUri, requestTO) => {
+            let requestConfig = {
+                'uri': myUri,
+                'method': req.method,
+                'timeout': requestTO * 1000,
+                'jar': false,
+                'headers': req.headers
+            };
+            if (remoteExtKey) {
+                //add remote ext key in headers
+                requestConfig.headers.key = remoteExtKey;
             }
             else {
-                let config = req.soajs.registry.services.controller;
-                if (!config)
-                    return req.soajs.controllerResponse(core.error.getError(131));
-                let requestTO = config.requestTimeout;
-
-                //formulate request and pipe
-                let myUri = reg.protocol + '://' + (reg.apiPrefix ? reg.apiPrefix + "." : "") + reg.domain + ':' + reg.port + requestedRoute;
-
-                let requestConfig = {
-                    'uri': myUri,
-                    'method': req.method,
-                    'timeout': requestTO * 1000,
-                    'jar': false,
-                    'headers': req.headers
-                };
-
-                if (remoteExtKey) {
-                    //add remote ext key in headers
-                    requestConfig.headers.key = remoteExtKey;
-                }
-                else {
-                    delete requestConfig.headers.key;
-                }
-
-                //add remaining query params
-                if (req.query && Object.keys(req.query).length > 0) {
-                    requestConfig.qs = req.query;
-                    delete requestConfig.qs.proxyRoute;
-                    delete requestConfig.qs.__env;
-                }
-
-                delete requestConfig.headers.host;
-
-                req.soajs.log.debug(requestConfig);
-
-                //proxy request
-                //let proxy = request(requestConfig);
-                req.soajs.controller.redirectedRequest = request(requestConfig);
-                req.soajs.controller.redirectedRequest.on('error', function (error) {
-                    req.soajs.log.error(error);
-                    try {
-                        return req.soajs.controllerResponse(core.error.getError(135));
-                    } catch (e) {
-                        req.soajs.log.error(e);
-                    }
-                });
-
-                if (req.method === 'POST' || req.method === 'PUT') {
-                    req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
-                }
-                else {
-                    req.soajs.controller.redirectedRequest.pipe(res);
-                }
+                delete requestConfig.headers.key;
             }
-        });
+
+            //add remaining query params
+            if (req.query && Object.keys(req.query).length > 0) {
+                requestConfig.qs = req.query;
+                delete requestConfig.qs.proxyRoute;
+                delete requestConfig.qs.__env;
+            }
+
+            delete requestConfig.headers.host;
+
+            req.soajs.log.debug(requestConfig);
+
+            //proxy request
+            req.soajs.controller.redirectedRequest = request(requestConfig);
+            req.soajs.controller.redirectedRequest.on('error', function (error) {
+                req.soajs.log.error(error);
+                try {
+                    return req.soajs.controllerResponse(core.error.getError(135));
+                } catch (e) {
+                    req.soajs.log.error(e);
+                }
+            });
+
+            if (req.method === 'POST' || req.method === 'PUT') {
+                req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
+            }
+            else {
+                req.soajs.controller.redirectedRequest.pipe(res);
+            }
+        };
+        if (!remoteENV) {
+            triggerProxy(requestedRoute, 30);
+        }
+        else {
+            //get remote env registry
+            core.registry.loadByEnv({"envCode": remoteENV}, function (err, reg) {
+                if (err) {
+                    req.soajs.log.error(err);
+                    return req.soajs.controllerResponse(core.error.getError(207));
+                }
+                else {
+                    let config = req.soajs.registry.services.controller;
+                    if (!config)
+                        return req.soajs.controllerResponse(core.error.getError(131));
+                    let requestTO = config.requestTimeout;
+
+                    //formulate request and pipe
+                    let myUri = reg.protocol + '://' + (reg.apiPrefix ? reg.apiPrefix + "." : "") + reg.domain + ':' + reg.port + requestedRoute;
+
+                    triggerProxy(myUri, requestTO);
+                }
+            });
+        }
     };
 
     /**
@@ -142,7 +148,10 @@ module.exports = (configuration) => {
             return req.soajs.controllerResponse(core.error.getError(139));
         }
 
-        req.soajs.log.debug("attempting to redirect to: " + requestedRoute + " in " + remoteENV + " Environment.");
+        if (remoteENV)
+            req.soajs.log.debug("attempting to redirect to: " + requestedRoute + " in " + remoteENV + " Environment.");
+        else
+            req.soajs.log.debug("attempting to redirect to: " + requestedRoute);
 
         let tCode = null;
         let tExtKey = null;
