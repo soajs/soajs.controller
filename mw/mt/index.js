@@ -49,12 +49,24 @@ module.exports = (configuration) => {
         }
         else {
             serviceParam = {
-                "extKeyRequired": req.soajs.controller.serviceParams.extKeyRequired || false
+                "extKeyRequired": req.soajs.controller.serviceParams.extKeyRequired || false,
+                "oauth": true
             };
         }
 
         if (proxyInfo[2] === "swagger" && proxyInfo[proxyInfo.length - 1] === proxyInfo[2])
             return next();
+
+        let oauthExec = () => {
+            if (serviceParam.oauth) {
+                if (soajs.oauthService && req.soajs.controller.serviceParams.name === soajs.oauthService.name && (req.soajs.controller.serviceParams.path === soajs.oauthService.tokenApi || req.soajs.controller.serviceParams.path === soajs.oauthService.authorizationApi))
+                    return next();
+                else
+                    soajs.oauth(req, res, next);
+            }
+            else
+                return next();
+        };
 
         req.soajs.awareness.getHost('controller', (controllerHostInThisEnvironment) => {
             if (serviceParam.extKeyRequired) {
@@ -84,7 +96,7 @@ module.exports = (configuration) => {
 
                                 if (proxy) {
                                     req.soajs.log.debug("Detected proxy request, bypassing MT ACL checks...");
-                                    return next();
+                                    return oauthExec();
                                 }
 
                                 let serviceCheckArray = [(cb) => {
@@ -157,7 +169,8 @@ module.exports = (configuration) => {
                                                 "id": keyObj.tenant.id,
                                                 "code": keyObj.tenant.code,
                                                 "locked": keyObj.tenant.locked,
-                                                "roaming": data.req.soajs.tenant.roaming
+                                                "roaming": data.req.soajs.tenant.roaming,
+                                                "type": keyObj.tenant.type
                                             },
                                             "key": {
                                                 /*
@@ -186,6 +199,9 @@ module.exports = (configuration) => {
                                             "device": data.device,
                                             "geo": data.geo
                                         };
+
+                                        if (keyObj.tenant.main)
+                                            injectObj.tenant.main = keyObj.tenant.main;
 
                                         if (controllerHostInThisEnvironment) {
                                             injectObj.awareness = {
@@ -258,18 +274,7 @@ module.exports = (configuration) => {
             }
             else {
                 req.soajs.controller.serviceParams.isAPIPublic = true;
-
-                if (serviceParam.oauth) {
-                    let oauthExec = () => {
-                        soajs.oauth(req, res, next);
-                    };
-                    if (soajs.oauthService && req.soajs.controller.serviceParams.name === soajs.oauthService.name && (req.soajs.controller.serviceParams.path === soajs.oauthService.tokenApi || req.soajs.controller.serviceParams.path === soajs.oauthService.authorizationApi))
-                        return next();
-                    else
-                        return oauthExec();
-                }
-                else
-                    return next();
+                return oauthExec();
             }
         });
     };

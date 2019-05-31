@@ -169,7 +169,7 @@ module.exports = (configuration) => {
             //proceed with proxying the request
             proxyRequestToRemoteEnv(req, res, remoteENV, tExtKey, requestedRoute);
         }
-        else if (tCode) {
+        else if (tCode && remoteENV) {
             getOriginalTenantRecord(tCode, function (error, originalTenant) {
                 if (error) {
                     return req.soajs.controllerResponse(core.error.getError(139)); //todo: make sure we have set the correct error code number
