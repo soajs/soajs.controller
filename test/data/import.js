@@ -5,6 +5,34 @@ let Mongo = require("soajs.core.modules").mongo;
 
 
 let lib = {
+    basic : (config, dataPath, mongoConnection, cb) => {
+        let colName = config.colName;
+        let condAnchor = config.condAnchor;
+        let objId = config.objId;
+        let records = [];
+        fs.readdirSync(dataPath).forEach(function (file) {
+            let rec = require(dataPath + file);
+            //TODO: validate env
+            records.push(rec);
+        });
+        if (records && Array.isArray(records) && records.length > 0) {
+            async.each(
+                records,
+                (e, cb) => {
+                    let condition = {[condAnchor]: e[condAnchor]};
+                    e[objId] = mongoConnection.ObjectId(e[objId]);
+                    mongoConnection.update(colName, condition, e, {'upsert': true}, () => {
+                        return cb();
+                    });
+                },
+                () => {
+                    return cb();
+                });
+        }
+        else
+            return cb();
+    },
+    /*
     environment: (dataPath, mongoConnection, cb) => {
         let records = [];
         fs.readdirSync(dataPath).forEach(function (file) {
@@ -149,6 +177,7 @@ let lib = {
         else
             return cb();
     },
+    */
     oauth: (dataPath, mongoConnection, cb) => {
         let records = [];
         fs.readdirSync(dataPath).forEach(function (file) {
@@ -247,7 +276,13 @@ module.exports = (profilePath, dataPath, callback) => {
                 function (cb) {
                     //check for environment data
                     if (fs.existsSync(dataPath + "environment/")) {
-                        return lib.environment(dataPath + "environment/", mongoConnection, cb);
+                        let config = {
+                            "colName":"environment",
+                            "condAnchor":"code",
+                            "objId":"_id"
+                        };
+                        return lib.basic(config, dataPath + "environment/", mongoConnection, cb);
+                        //return lib.environment(dataPath + "environment/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -255,7 +290,13 @@ module.exports = (profilePath, dataPath, callback) => {
                 function (cb) {
                     //check for environment data
                     if (fs.existsSync(dataPath + "hosts/")) {
-                        return lib.hosts(dataPath + "hosts/", mongoConnection, cb);
+                        let config = {
+                            "colName":"hosts",
+                            "condAnchor":"code",
+                            "objId":"_id"
+                        };
+                        return lib.basic(config, dataPath + "hosts/", mongoConnection, cb);
+                        //return lib.hosts(dataPath + "hosts/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -263,7 +304,13 @@ module.exports = (profilePath, dataPath, callback) => {
                 function (cb) {
                     //check for products data
                     if (fs.existsSync(dataPath + "products/")) {
-                        return lib.product(dataPath + "products/", mongoConnection, cb);
+                        let config = {
+                            "colName":"products",
+                            "condAnchor":"code",
+                            "objId":"_id"
+                        };
+                        return lib.basic(config, dataPath + "products/", mongoConnection, cb);
+                        //return lib.product(dataPath + "products/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -271,7 +318,13 @@ module.exports = (profilePath, dataPath, callback) => {
                 function (cb) {
                     //check for products data
                     if (fs.existsSync(dataPath + "resources/")) {
-                        return lib.resources(dataPath + "resources/", mongoConnection, cb);
+                        let config = {
+                            "colName":"resources",
+                            "condAnchor":"code",
+                            "objId":"_id"
+                        };
+                        return lib.basic(config, dataPath + "resources/", mongoConnection, cb);
+                        //return lib.resources(dataPath + "resources/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -279,7 +332,13 @@ module.exports = (profilePath, dataPath, callback) => {
                 function (cb) {
                     //check for products data
                     if (fs.existsSync(dataPath + "services/")) {
-                        return lib.services(dataPath + "services/", mongoConnection, cb);
+                        let config = {
+                            "colName":"services",
+                            "condAnchor":"code",
+                            "objId":"_id"
+                        };
+                        return lib.basic(config, dataPath + "services/", mongoConnection, cb);
+                        //return lib.services(dataPath + "services/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -287,7 +346,13 @@ module.exports = (profilePath, dataPath, callback) => {
                 function (cb) {
                     //check for products data
                     if (fs.existsSync(dataPath + "products/")) {
-                        return lib.product(dataPath + "products/", mongoConnection, cb);
+                        let config = {
+                            "colName":"products",
+                            "condAnchor":"code",
+                            "objId":"_id"
+                        };
+                        return lib.basic(config, dataPath + "products/", mongoConnection, cb);
+                        //return lib.product(dataPath + "products/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -295,7 +360,13 @@ module.exports = (profilePath, dataPath, callback) => {
                 function (cb) {
                     //check for tenants data
                     if (fs.existsSync(dataPath + "tenants/")) {
-                        return lib.tenant(dataPath + "tenants/", mongoConnection, cb);
+                        let config = {
+                            "colName":"tenants",
+                            "condAnchor":"code",
+                            "objId":"_id"
+                        };
+                        return lib.basic(config, dataPath + "tenants/", mongoConnection, cb);
+                        //return lib.tenant(dataPath + "tenants/", mongoConnection, cb);
                     }
                     else
                         return cb(null);

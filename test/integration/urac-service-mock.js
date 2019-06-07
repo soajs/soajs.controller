@@ -20,7 +20,20 @@ function startServer(serverConfig, callback) {
             'lastname': "hage"
         }
     };
+    let pReply = {
+        'result': true,
+        'data': {
+            'firstname': "antoine",
+            'lastname': "hage"
+        }
+    };
 
+    sApp.get('/private', (req, res) => res.json(sReply));
+    sApp.get('/muser/:id', (req, res) => {
+        pReply.data.id = req.url;
+        res.json(pReply);
+    });
+    sApp.get('/passport/login', (req, res) => res.json(sReply));
     sApp.get('/user', (req, res) => res.json(sReply));
     sApp.get('/luser', (req, res) => {
         setTimeout(() => {

@@ -123,7 +123,56 @@ describe("Integration for Usecase 1", function () {
             done();
         });
     });
-
+    it("Urac - passport", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/urac/passport/login',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            },
+            "qs": {
+                access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            assert.deepStrictEqual(body, {
+                result: true,
+                data: {firstname: 'antoine', lastname: 'hage'}
+            });
+            done();
+        });
+    });
+    it("Urac - muser without access_token", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/urac/muser:12',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            assert.ok(body);
+            assert.strictEqual(body.result, false);
+            assert.deepStrictEqual(body.errors.codes, [400]);
+            done();
+        });
+    });
+    it("Urac - muser with access_token", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/urac/muser/:12',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            },
+            "qs": {
+                access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            assert.equal(body.data.id, '/muser/:12?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
+            done();
+        });
+    });
     it("Urac - luser", function (done) {
         let options = {
             uri: 'http://127.0.0.1:4000/urac/luser',
@@ -137,6 +186,24 @@ describe("Integration for Usecase 1", function () {
                 result: true,
                 data: {firstname: 'antoine', lastname: 'hage'}
             });
+            done();
+        });
+    });
+    it("Urac - private", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/urac/private',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            },
+            "qs": {
+                access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            assert.ok(body);
+            assert.strictEqual(body.result, false);
+            assert.deepStrictEqual(body.errors.codes, [159]);
             done();
         });
     });
