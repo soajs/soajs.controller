@@ -17,28 +17,14 @@ function startServer(serverConfig, callback) {
         'result': true,
         'data': {
             'firstname': "antoine",
-            'lastname': "hage"
-        }
-    };
-    let pReply = {
-        'result': true,
-        'data': {
-            'firstname': "antoine",
-            'lastname': "hage"
+            'lastname': "hage",
+            'type': "endpoint"
         }
     };
 
-    sApp.get('/private', (req, res) => res.json(sReply));
-    sApp.get('/muser/:id', (req, res) => {
-        pReply.data.id = req.url;
-        res.json(pReply);
-    });
-    sApp.get('/passport/login', (req, res) => res.json(sReply));
-    sApp.get('/user', (req, res) => res.json(sReply));
-    sApp.get('/luser', (req, res) => {
-        setTimeout(() => {
-            res.json(sReply);
-        }, 5000);
+    sApp.get('/CheckPhoneNumber', (req, res) => {
+        sReply.data.url = req.url;
+        res.json(sReply);
     });
     mApp.get('/heartbeat', (req, res) => res.json(mReply));
 
