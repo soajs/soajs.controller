@@ -1,6 +1,6 @@
 'use strict';
 
-let dsbrdProduct = {
+let prod = {
     "_id" : "5512867be603d7e01ab1688d",
     "locked" : true,
     "code" : "DSBRD",
@@ -735,3 +735,5 @@ let dsbrdProduct = {
         }
     ]
 };
+
+module.exports = prod;

@@ -1,14 +1,14 @@
 'use strict';
-let dev = {
+
+let env = {
     "_id": '55128442e603d7e01ab1688c',
     "code": "DEV",
-    "domain": "soajs.org",
-    "sitePrefix": "dashboard",
-    "apiPrefix": "dashboard-api",
+    "domain": "localhost",
+    "sitePrefix": null,
+    "apiPrefix": null,
     "locked": true,
-    "port": 80,
+    "port": 4500,
 	"protocol": "http",
-    "profile": "/soajs/FILES/profiles/profile.js",
     "deployer": {
 	    "type": "manual",
 	    "selected": "manual",
@@ -140,3 +140,5 @@ let dev = {
         }
     }
 };
+
+module.exports = env;

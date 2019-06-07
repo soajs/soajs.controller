@@ -47,8 +47,7 @@ let lib = {
 module.exports = function (grunt) {
 	//Loading the needed plugins to run the grunt tasks
     let pluginsRootPath = lib.findRoot();
-	lib.loadTasks(grunt, pluginsRootPath, ['grunt-contrib-jshint', 'grunt-jsdoc', 'grunt-contrib-clean', 'grunt-contrib-copy', 'grunt-mocha-test', 'grunt-env'
-		, 'grunt-istanbul', 'grunt-coveralls']);
+	lib.loadTasks(grunt, pluginsRootPath, ['grunt-contrib-jshint', 'grunt-jsdoc', 'grunt-contrib-clean', 'grunt-mocha-test', 'grunt-env', 'grunt-istanbul', 'grunt-coveralls', 'grunt-contrib-copy']);
 	grunt.initConfig({
 		//Defining jshint tasks
 		jshint: {
@@ -81,21 +80,12 @@ module.exports = function (grunt) {
 				ignores: ['test/coverage/**/*.js']
 			},
 			files: {
-				src: ['lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js', 'index.js']
+				src: ['index.js', 'config.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js']
 			},
 			gruntfile: {
 				src: 'Gruntfile.js'
 			}
 		},
-		// jsdoc: {
-		//   doc : {
-		//     src: ['soajs/**/*.js'],
-		//     jsdoc: pluginsRootPath+'/node_modules/grunt-jsdoc/node_modules/jsdoc/jsdoc',
-		//     options: {
-		//       dest: 'doc',
-		//     }
-		//   }
-		// },
 
 		env: {
 			mochaTest: {
@@ -126,8 +116,7 @@ module.exports = function (grunt) {
         },
 
 		instrument: {
-            files: ['lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js', 'index.js'],
-			//files: ['**/*.js'],
+            files: ['index.js', 'config.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
 			options: {
 				lazy: false,
 				basePath: 'test/coverage/instrument/'

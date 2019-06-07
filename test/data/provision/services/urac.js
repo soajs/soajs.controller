@@ -1,5 +1,5 @@
 'use strict';
-let urac = {
+let service = {
     _id: "5c8d276f95590ea347ceb7ab",
     name: "urac",
     group: "SOAJS Core Services",
@@ -214,3 +214,4 @@ let urac = {
         }
     }
 };
+module.exports = service;

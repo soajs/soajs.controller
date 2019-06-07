@@ -1,4 +1,6 @@
-let urac = {
+'use strict';
+
+let host = {
     _id: "5c8d276f95590ea347ceb7c5",
     env: "dev",
     hostname: "ah-rbook.local",
@@ -7,3 +9,5 @@ let urac = {
     version: "2",
     port: 4001
 };
+
+module.exports = host;
