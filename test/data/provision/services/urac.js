@@ -1,6 +1,6 @@
 'use strict';
 let service = {
-    _id: "5c8d276f95590ea347ceb7ab",
+    _id: "5cfb05932ac09278709d013f",
     name: "urac",
     group: "SOAJS Core Services",
     maintenance: {

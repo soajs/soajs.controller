@@ -34,6 +34,14 @@ let tenant = {
                     ],
                     "config": {
                         "dev": {
+                            "pt2": {
+                                "urls": [
+                                    {
+                                        version: "1",
+                                        url: "http://localhost:4003"
+                                    }
+                                ]
+                            },
                             "oauth": {
                                 "loginMode": "urac"
                             },

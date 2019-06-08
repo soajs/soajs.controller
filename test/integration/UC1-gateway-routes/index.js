@@ -6,6 +6,7 @@ let Controller = helper.requireModule('./server/controller');
 
 let uracServers = null;
 let ptServers = null;
+let pt2Servers = null;
 let uracserver = require('../urac-service-mock.js');
 let ptserver = require('../passthrough-service-mock.js');
 
@@ -31,6 +32,9 @@ describe("Integration for Usecase 1", function () {
                 });
                 ptserver.startServer({s: {port: 4002}, m: {port: 5002}, name: "PT"}, function (servers) {
                     ptServers = servers;
+                });
+                ptserver.startServer({s: {port: 4003}, m: {port: 5003}, name: "PT2"}, function (servers) {
+                    pt2Servers = servers;
                     done();
                 });
             });
@@ -213,7 +217,7 @@ describe("Integration for Usecase 1", function () {
         });
     });
 
-    it("PT", function (done) {
+    it("PT - registry url", function (done) {
         let options = {
             uri: 'http://127.0.0.1:4000/pt/CheckPhoneNumber',
             headers: {
@@ -225,7 +229,24 @@ describe("Integration for Usecase 1", function () {
             }
         };
         helper.requester('get', options, (error, body) => {
-            console.log(JSON.stringify(body))
+            assert.ok(body);
+            assert.equal(body.data.type, "endpoint");
+            done();
+        });
+    });
+
+    it("PT - provision url", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/pt2/CheckPhoneNumber',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            },
+            "qs": {
+                access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+            }
+        };
+        helper.requester('get', options, (error, body) => {
             assert.ok(body);
             assert.equal(body.data.type, "endpoint");
             done();
@@ -236,6 +257,7 @@ describe("Integration for Usecase 1", function () {
         c.stop(registry, log, service, server, serverMaintenance, () => {
             uracserver.killServer(uracServers);
             ptserver.killServer(ptServers);
+            ptserver.killServer(pt2Servers);
             done();
         });
     });

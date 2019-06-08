@@ -1,5 +1,6 @@
 'use strict';
 let resource = {
+    _id: "5cf98f13d1975b4988a84945",
     name: "dash_cluster",
     type: "cluster",
     category: "mongo",
