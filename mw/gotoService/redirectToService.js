@@ -26,20 +26,22 @@ module.exports = (configuration) => {
             if (obj.config.authorization)
                 isRequestAuthorized(req, core, requestOptions);
 
-            req.soajs.controller.redirectedRequest = request(requestOptions);
-            req.soajs.controller.redirectedRequest.on('error', function (err) {
-                req.soajs.log.error(err);
-                try {
+            try {
+                req.soajs.controller.redirectedRequest = request(requestOptions);
+                req.soajs.controller.redirectedRequest.on('error', function (err) {
+                    req.soajs.log.error(err);
                     return req.soajs.controllerResponse(core.error.getError(135));
-                } catch (e) {
-                    req.soajs.log.error(e);
-                }
-            });
 
-            if (req.method === 'POST' || req.method === 'PUT') {
-                req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
-            } else {
-                req.soajs.controller.redirectedRequest.pipe(res);
+                });
+
+                if (req.method === 'POST' || req.method === 'PUT') {
+                    req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
+                } else {
+                    req.soajs.controller.redirectedRequest.pipe(res);
+                }
+            } catch (e) {
+                req.soajs.log.error(e);
+                return req.soajs.controllerResponse(core.error.getError(135));
             }
         });
     };

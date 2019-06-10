@@ -28,24 +28,25 @@ module.exports = (configuration) => {
             if (obj.config.authorization)
                 isRequestAuthorized(req, core, requestOptions);
 
-            req.soajs.controller.redirectedRequest = http.request(requestOptions, function (serverResponse) {
-                serverResponse.pause();
-                serverResponse.headers['access-control-allow-origin'] = '*';
+            try {
+                req.soajs.controller.redirectedRequest = http.request(requestOptions, function (serverResponse) {
+                    serverResponse.pause();
+                    serverResponse.headers['access-control-allow-origin'] = '*';
 
-                res.writeHeader(serverResponse.statusCode, serverResponse.headers);
-                serverResponse.pipe(res, {end: true});
-                serverResponse.resume();
-            });
-            req.soajs.controller.redirectedRequest.on('error', function (err) {
-                req.soajs.log.error(err);
-                try {
+                    res.writeHeader(serverResponse.statusCode, serverResponse.headers);
+                    serverResponse.pipe(res, {end: true});
+                    serverResponse.resume();
+                });
+                req.soajs.controller.redirectedRequest.on('error', function (err) {
+                    req.soajs.log.error(err);
                     return req.soajs.controllerResponse(core.error.getError(135));
-                } catch (e) {
-                    req.soajs.log.error(e);
-                }
-            });
-            req.pipe(req.soajs.controller.redirectedRequest, {end: true});
-            req.resume();
+                });
+                req.pipe(req.soajs.controller.redirectedRequest, {end: true});
+                req.resume();
+            } catch (e) {
+                req.soajs.log.error(e);
+                return req.soajs.controllerResponse(core.error.getError(135));
+            }
         });
     };
 };

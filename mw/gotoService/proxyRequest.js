@@ -42,22 +42,24 @@ module.exports = (configuration) => {
 
             req.soajs.log.debug(requestConfig);
 
-            //proxy request
-            req.soajs.controller.redirectedRequest = request(requestConfig);
-            req.soajs.controller.redirectedRequest.on('error', function (error) {
-                req.soajs.log.error(error);
-                try {
+            try {
+                //proxy request
+                req.soajs.controller.redirectedRequest = request(requestConfig);
+                req.soajs.controller.redirectedRequest.on('error', function (error) {
+                    req.soajs.log.error(error);
                     return req.soajs.controllerResponse(core.error.getError(135));
-                } catch (e) {
-                    req.soajs.log.error(e);
-                }
-            });
+                });
 
-            if (req.method === 'POST' || req.method === 'PUT') {
-                req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
-            }
-            else {
-                req.soajs.controller.redirectedRequest.pipe(res);
+                if (req.method === 'POST' || req.method === 'PUT') {
+                    req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
+                }
+                else {
+                    req.soajs.controller.redirectedRequest.pipe(res);
+                }
+
+            } catch (e) {
+                req.soajs.log.error(e);
+                return req.soajs.controllerResponse(core.error.getError(135));
             }
         };
         if (!remoteENV) {
@@ -75,7 +77,8 @@ module.exports = (configuration) => {
                     if (!config)
                         return req.soajs.controllerResponse(core.error.getError(131));
                     let requestTO = config.requestTimeout;
-
+                    if (!reg.protocol || !reg.domain)
+                        return req.soajs.controllerResponse(core.error.getError(208));
                     //formulate request and pipe
                     let myUri = reg.protocol + '://' + (reg.apiPrefix ? reg.apiPrefix + "." : "") + reg.domain + ':' + reg.port + requestedRoute;
 
@@ -139,9 +142,9 @@ module.exports = (configuration) => {
             requestedRoute = decodeURIComponent(parsedUrl.query.proxyRoute);
         }
         //possible requested route is provided as path param
-        if (!requestedRoute && parsedUrl.pathname.replace(/^\/proxy/, '') !== '') {
-            requestedRoute = parsedUrl.pathname.replace(/^\/proxy/, '');
-        }
+        //if (!requestedRoute && parsedUrl.pathname.replace(/^\/proxy/, '') !== '') {
+        //    requestedRoute = parsedUrl.pathname.replace(/^\/proxy/, '');
+        //}
 
         //stop if no requested path was found
         if (!requestedRoute) {
