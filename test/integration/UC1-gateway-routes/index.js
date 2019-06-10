@@ -94,6 +94,27 @@ describe("Integration for Usecase 1", function () {
             done();
         });
     });
+    it("fail - invalid URI", function (done) {
+        let options = {
+            uri: 'null://api.:null/proxy/redirect',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            },
+            "qs": {
+                "proxyRoute": encodeURIComponent("/urac/getUser"),
+                "__env": "invalid",
+                access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            assert.ifError(error);
+            assert.ok(body);
+            assert.strictEqual(body.result, false);
+            assert.ok(body.errors);
+            done();
+        });
+    });
 
     it("fail - Access Forbidden to requested environment (invalid), error 137", function (done) {
         let options = {
