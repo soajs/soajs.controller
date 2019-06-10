@@ -94,24 +94,23 @@ describe("Integration for Usecase 1", function () {
             done();
         });
     });
-    it("fail - invalid URI", function (done) {
+    it("fail - missing registry configuration, error 208 ", function (done) {
         let options = {
-            uri: 'null://api.:null/proxy/redirect',
+            uri: 'http://127.0.0.1:4000/proxy/redirect',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
             },
             "qs": {
                 "proxyRoute": encodeURIComponent("/urac/getUser"),
-                "__env": "invalid",
+                "__env": "stg",
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
         helper.requester('get', options, (error, body) => {
-            assert.ifError(error);
             assert.ok(body);
             assert.strictEqual(body.result, false);
-            assert.ok(body.errors);
+            assert.deepStrictEqual(body.errors.codes, [208]);
             done();
         });
     });
@@ -130,6 +129,44 @@ describe("Integration for Usecase 1", function () {
             }
         };
         helper.requester('get', options, (error, body) => {
+            assert.ok(body);
+            assert.strictEqual(body.result, false);
+            assert.deepStrictEqual(body.errors.codes, [135]);
+            done();
+        });
+    });
+    it("Proxy - valid full URI", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/proxy/redirect',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            },
+            "qs": {
+                "proxyRoute": encodeURIComponent("http://127.0.0.1:4002/CheckPhoneNumber"),
+                access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            assert.ok(body);
+            assert.equal(body.data.type, "endpoint");
+            done();
+        });
+    });
+    it("Proxy - invalid URI", function (done) {
+        let options = {
+            uri: 'http://127.0.0.1:4000/proxy/redirect',
+            headers: {
+                'Content-Type': 'application/json',
+                key: extKey
+            },
+            "qs": {
+                "proxyRoute": encodeURIComponent("null://api.:null/CheckPhoneNumber"),
+                access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+            }
+        };
+        helper.requester('get', options, (error, body) => {
+            console.log(JSON.stringify(body))
             assert.ok(body);
             assert.strictEqual(body.result, false);
             assert.deepStrictEqual(body.errors.codes, [135]);
