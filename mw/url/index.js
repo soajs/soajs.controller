@@ -28,7 +28,7 @@ module.exports = (configuration) => {
         if (!req.query) {
             req.query = {};
         }
-        req.soajs.controller.serviceParams = libParseURL (req.url, parsedUrl);
+        req.soajs.controller.serviceParams = libParseURL(req.url, parsedUrl);
         /*
         let serviceInfo = parsedUrl.pathname.split('/');
         let service_nv = serviceInfo[1];
@@ -70,6 +70,9 @@ module.exports = (configuration) => {
         let key = req.headers.key || parsedUrl.query.key;
         if (!req.headers.key) {
             req.headers.key = key;
+        }
+        if (!req.query.access_token && req.headers.access_token) {
+            req.query.access_token = req.headers.access_token;
         }
         return next();
     };
