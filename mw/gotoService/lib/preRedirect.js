@@ -21,6 +21,7 @@ module.exports = (req, res, core, cb) => {
             "host": host,
             "version": restServiceParams.version,
             "url": restServiceParams.url,
+            "port": restServiceParams.registry.port,
             "header": req.headers
         });
 
@@ -54,7 +55,7 @@ module.exports = (req, res, core, cb) => {
                     }
                     uri = 'http://' + host + ':' + maintenancePort + path;
                 }
-
+                req.soajs.log.info("heartead @: " + uri);
                 request({
                     'uri': uri,
                     'headers': req.headers
