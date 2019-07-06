@@ -6,7 +6,7 @@ const url = require('url');
 const soajsLib = require("soajs.core.libs");
 const soajsUtils = soajsLib.utils;
 
-const packageInfo = require ("../package.json");
+const packageInfo = require("../package.json");
 
 let maintenanceResponse = (parsedUrl, param, route) => {
     return {
@@ -52,6 +52,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
     });
 
     return http.createServer(function (req, res) {
+        req.soajs = {};
         if (req.url === '/favicon.ico') {
             res.writeHead(200, {'Content-Type': 'image/x-icon'});
             return res.end();
@@ -250,8 +251,23 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
                         }
                     }
                 }
-                res.writeHead(200, {'Content-Type': 'application/json'});
-                return res.end(JSON.stringify(response));
+                awareness_mw.getMw({
+                    "awareness": param.awareness,
+                    "serviceName": param.serviceName,
+                    "log": log,
+                    "serviceIp": serviceIp
+                })(req, res, () => {
+                    req.soajs.awareness.getHost('controller', function (controllerHostInThisEnvironment) {
+                        if (reg.serviceConfig && reg.serviceConfig.ports && reg.serviceConfig.ports.controller) {
+                            response['data'].awareness = {
+                                "host": controllerHostInThisEnvironment,
+                                "port": reg.serviceConfig.ports.controller
+                            };
+                        }
+                        res.writeHead(200, {'Content-Type': 'application/json'});
+                        return res.end(JSON.stringify(response));
+                    });
+                });
             });
         }
         else {
