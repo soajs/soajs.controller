@@ -35,152 +35,6 @@ let lib = {
         else
             return cb();
     },
-    /*
-    environment: (dataPath, mongoConnection, cb) => {
-        let records = [];
-        fs.readdirSync(dataPath).forEach(function (file) {
-            let rec = require(dataPath + file);
-            //TODO: validate env
-            records.push(rec);
-        });
-        if (records && Array.isArray(records) && records.length > 0) {
-            async.each(
-                records,
-                (e, cb) => {
-                    let condition = {code: e.code};
-                    e._id = mongoConnection.ObjectId(e._id);
-                    mongoConnection.update("environment", condition, e, {'upsert': true}, () => {
-                        return cb();
-                    });
-                },
-                () => {
-                    return cb();
-                });
-        }
-        else
-            return cb();
-    },
-    hosts: (dataPath, mongoConnection, cb) => {
-        let records = [];
-        fs.readdirSync(dataPath).forEach(function (file) {
-            let rec = require(dataPath + file);
-            //TODO: validate host
-            records.push(rec);
-        });
-        if (records && Array.isArray(records) && records.length > 0) {
-            async.each(
-                records,
-                (e, cb) => {
-                    let condition = {code: e.code};
-                    e._id = mongoConnection.ObjectId(e._id);
-                    mongoConnection.update("hosts", condition, e, {'upsert': true}, () => {
-                        return cb();
-                    });
-                },
-                () => {
-                    return cb();
-                });
-        }
-        else
-            return cb();
-    },
-    resources: (dataPath, mongoConnection, cb) => {
-        let records = [];
-        fs.readdirSync(dataPath).forEach(function (file) {
-            let rec = require(dataPath + file);
-            //TODO: validate resource
-            records.push(rec);
-        });
-        if (records && Array.isArray(records) && records.length > 0) {
-            async.each(
-                records,
-                (e, cb) => {
-                    let condition = {code: e.code};
-                    e._id = mongoConnection.ObjectId(e._id);
-                    mongoConnection.update("resources", condition, e, {'upsert': true}, () => {
-                        return cb();
-                    });
-                },
-                () => {
-                    return cb();
-                });
-        }
-        else
-            return cb();
-    },
-    services: (dataPath, mongoConnection, cb) => {
-        let records = [];
-        fs.readdirSync(dataPath).forEach(function (file) {
-            let rec = require(dataPath + file);
-            //TODO: validate service
-            records.push(rec);
-        });
-        if (records && Array.isArray(records) && records.length > 0) {
-            async.each(
-                records,
-                (e, cb) => {
-                    let condition = {code: e.code};
-                    e._id = mongoConnection.ObjectId(e._id);
-                    mongoConnection.update("services", condition, e, {'upsert': true}, () => {
-                        return cb();
-                    });
-                },
-                () => {
-                    return cb();
-                });
-        }
-        else
-            return cb();
-    },
-    product: (dataPath, mongoConnection, cb) => {
-        let records = [];
-        fs.readdirSync(dataPath).forEach(function (file) {
-            let rec = require(dataPath + file);
-            //TODO: validate product
-            records.push(rec);
-        });
-        if (records && Array.isArray(records) && records.length > 0) {
-            async.each(
-                records,
-                (e, cb) => {
-                    let condition = {code: e.code};
-                    e._id = mongoConnection.ObjectId(e._id);
-                    mongoConnection.update("products", condition, e, {'upsert': true}, () => {
-                        return cb();
-                    });
-                },
-                () => {
-                    return cb();
-                });
-        }
-        else
-            return cb();
-    },
-    tenant: (dataPath, mongoConnection, cb) => {
-        let records = [];
-        fs.readdirSync(dataPath).forEach(function (file) {
-            let rec = require(dataPath + file);
-            //TODO: validate tenant
-            records.push(rec);
-        });
-        if (records && Array.isArray(records) && records.length > 0) {
-            async.each(
-                records,
-                (e, cb) => {
-                    let condition = {code: e.code};
-                    e._id = mongoConnection.ObjectId(e._id);
-                    mongoConnection.update("tenants", condition, e, {'upsert': true}, () => {
-                        return cb();
-                    });
-                },
-                () => {
-                    return cb();
-                });
-        }
-        else
-            return cb();
-    },
-    */
     oauth: (dataPath, mongoConnection, cb) => {
         let records = [];
         fs.readdirSync(dataPath).forEach(function (file) {
@@ -294,7 +148,6 @@ module.exports = (profilePath, dataPath, callback) => {
                             "objId": "_id"
                         };
                         return lib.basic(config, dataPath + "environment/", mongoConnection, cb);
-                        //return lib.environment(dataPath + "environment/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -308,21 +161,6 @@ module.exports = (profilePath, dataPath, callback) => {
                             "objId": "_id"
                         };
                         return lib.basic(config, dataPath + "hosts/", mongoConnection, cb);
-                        //return lib.hosts(dataPath + "hosts/", mongoConnection, cb);
-                    }
-                    else
-                        return cb(null);
-                },
-                function (cb) {
-                    //check for products data
-                    if (fs.existsSync(dataPath + "products/")) {
-                        let config = {
-                            "colName": "products",
-                            "condAnchor": "code",
-                            "objId": "_id"
-                        };
-                        return lib.basic(config, dataPath + "products/", mongoConnection, cb);
-                        //return lib.product(dataPath + "products/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -336,7 +174,6 @@ module.exports = (profilePath, dataPath, callback) => {
                             "objId": "_id"
                         };
                         return lib.basic(config, dataPath + "resources/", mongoConnection, cb);
-                        //return lib.resources(dataPath + "resources/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -350,7 +187,6 @@ module.exports = (profilePath, dataPath, callback) => {
                             "objId": "_id"
                         };
                         return lib.basic(config, dataPath + "services/", mongoConnection, cb);
-                        //return lib.services(dataPath + "services/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -364,7 +200,6 @@ module.exports = (profilePath, dataPath, callback) => {
                             "objId": "_id"
                         };
                         return lib.basic(config, dataPath + "products/", mongoConnection, cb);
-                        //return lib.product(dataPath + "products/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
@@ -378,7 +213,6 @@ module.exports = (profilePath, dataPath, callback) => {
                             "objId": "_id"
                         };
                         return lib.basic(config, dataPath + "tenants/", mongoConnection, cb);
-                        //return lib.tenant(dataPath + "tenants/", mongoConnection, cb);
                     }
                     else
                         return cb(null);
