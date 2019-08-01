@@ -1,6 +1,5 @@
 "use strict";
 const assert = require('assert');
-const shell = require('shelljs');
 const imported = require("../data/import.js");
 
 describe("starting integration tests", () => {

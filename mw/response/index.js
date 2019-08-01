@@ -34,8 +34,9 @@ module.exports = (configuration) => {
         };
         if (configuration && configuration.controllerResponse) {
             req.soajs.controllerResponse = function (jsonObj) {
+                let jsonRes = jsonObj;
                 if (req.soajs.buildResponse && jsonObj.code && jsonObj.msg)
-                    jsonObj = req.soajs.buildResponse(jsonObj);
+                    jsonRes = req.soajs.buildResponse(jsonObj);
 
 
                 let headObj = jsonObj.headObj || {};
@@ -45,7 +46,7 @@ module.exports = (configuration) => {
                 else
                     res.writeHead(200, headObj);
 
-                res.end(JSON.stringify(jsonObj));
+                res.end(JSON.stringify(jsonRes));
             };
         }
         return next();
