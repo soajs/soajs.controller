@@ -24,6 +24,11 @@ function logErrors(err, req, res, next) {
             else
                 return next({"code": err.code, "msg": err.message});
         }
+        else if (err.code && err.msg) {
+            err.message = err.msg;
+            req.soajs.log.error(err);
+            return next(err);
+        }
         else {
             req.soajs.log.error(err);
             req.soajs.log.error(core.error.generate(164));
@@ -51,7 +56,8 @@ function controllerClientErrorHandler(err, req, res, next) {
         req.soajs.log.error(core.error.generate(150));
         let errObj = core.error.getError(150);
         errObj.status = 500;
-        req.soajs.controllerResponse(errObj);
+        return next (errObj);
+        //req.soajs.controllerResponse(errObj);
     } else {
         return next(err);
     }
