@@ -295,8 +295,8 @@ let utils = {
         let oAuthTurnedOn = true;
         if (obj.soajs.oauth)
             oAuthTurnedOn = true;
-        if (obj.soajs.oauthService && obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.tokenApi || obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.authorizationApi))
-            oAuthTurnedOn = false;
+        //if (obj.soajs.oauthService && obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.tokenApi || obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.authorizationApi))
+        //    oAuthTurnedOn = false;
 
         if (oAuthTurnedOn) {
             let oauthExec = function () {
@@ -310,6 +310,14 @@ let utils = {
                     else {
                         if (obj.req.oauth && obj.req.oauth.bearerToken && obj.req.oauth.bearerToken.user && (obj.req.oauth.bearerToken.user.loginMode === 'urac') && obj.req.oauth.bearerToken.user.pinLocked) {
                             if (obj.soajs.oauthService && (obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name) && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.pinApi)) {
+                                return cb(error, obj);
+                            }
+                            else if (obj.req.soajs.registry &&
+                                obj.req.soajs.registry.custom &&
+                                obj.req.soajs.registry.custom.oauth &&
+                                obj.req.soajs.registry.custom.oauth.value &&
+                                obj.req.soajs.registry.custom.oauth.value.pinAPI &&
+                                (obj.req.soajs.registry.custom.oauth.value.pinAPI === obj.req.soajs.controller.serviceParams.path)) {
                                 return cb(error, obj);
                             }
                             else {
