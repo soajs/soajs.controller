@@ -78,7 +78,15 @@ Controller.prototype.init = function (callback) {
             app.use(response_mw({"controllerResponse": true}));
 
             log.info("Loading Provision ...");
-            provision.init(registry.coreDB.provision, log);
+            let dbConfig = registry.coreDB.provision;
+            if (registry.coreDB.oauth) {
+                dbConfig = {
+                    "provision": registry.coreDB.provision,
+                    "oauth": registry.coreDB.oauth
+                };
+            }
+            provision.init(dbConfig, log);
+            //provision.init(registry.coreDB.provision, log);
             provision.loadProvision((loaded) => {
                 if (loaded) {
                     log.info("Service provision loaded.");

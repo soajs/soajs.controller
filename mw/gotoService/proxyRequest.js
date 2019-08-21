@@ -5,6 +5,9 @@ const request = require('request');
 module.exports = (configuration) => {
     let core = configuration.core;
 
+    let regEnvironment = (process.env.SOAJS_ENV || "dev");
+    regEnvironment = regEnvironment.toLowerCase();
+
     /**
      * load controller information for remote requested environment and proxy the request to its controller.
      *
@@ -23,6 +26,9 @@ module.exports = (configuration) => {
                 'jar': false,
                 'headers': req.headers
             };
+
+            requestConfig.headers.soajs_roaming = regEnvironment;
+
             if (remoteExtKey) {
                 //add remote ext key in headers
                 requestConfig.headers.key = remoteExtKey;
