@@ -28,6 +28,7 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/mt/index.js");
         require("./mw/mt/urac.js");
         require("./mw/mt/utils.js");
+        require("./mw/mt/lib.js");
 
         require("./mw/oauth/index.js");
         require("./mw/response/index.js");

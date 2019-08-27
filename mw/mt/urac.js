@@ -1,11 +1,16 @@
 "use strict";
 const uracDriver = require('soajs.urac.driver');
+const coreModules = require("soajs.core.modules");
+let provision = coreModules.provision;
+
+const lib = require("./lib.js");
 
 function Urac(param) {
     let _self = this;
 
     _self.soajs = param.soajs;
     _self.userRecord = null;
+    _self.user_ACL = null;
     _self.id = null;
 
     if (param.oauth && 0 === param.oauth.type)
@@ -38,23 +43,64 @@ function Urac(param) {
  */
 Urac.prototype.init = function (cb) {
     let _self = this;
-    if (_self.userRecord)
-        return cb(null, _self.userRecord);
-
-    if (_self.id) {
+    if (_self.userRecord) {
+        if (_self.user_ACL)
+            return cb(null, _self.userRecord);
+        else {
+            _self.resolveACL(() => {
+                return cb(null, _self.userRecord);
+            });
+        }
+    }
+    else if (_self.id) {
         uracDriver.getRecord(_self.soajs, {id: _self.id.toString(), username: _self.username}, function (err, record) {
             if (record) {
                 _self.userRecord = record;
+                _self.resolveACL(() => {
+                    return cb(null, _self.userRecord);
+                });
             }
-            if (err && err.msg)
+            if (err && err.msg) {
                 err = new Error(err.msg);
-            cb(err, record);
+            }
+            return cb(err, null);
         });
     }
     else {
         let error = new Error('oAuth userId is not available to pull URAC profile');
         cb(error, null);
     }
+};
+
+
+urac.prototype.resolveACL = function (cb) {
+    let _self = this;
+    if (_self.userRecord) {
+        let productCode = _self.soajs.tenant.application.product;
+        if (_self.userRecord.groupsConfig && _self.userRecord.groupsConfig.allowedPackages) {
+            if (_self.userRecord.groupsConfig.allowedPackages[productCode]) {
+                provision.getPackagesData(_self.userRecord.groupsConfig.allowedPackages[productCode], (error, arrayACLs) => {
+                    if (error) {
+                        return cb();
+                    }
+                    else {
+                        lib.mergeACLArray(arrayACLs, (error, ACLobject) => {
+                            if (ACLobject)
+                                _self.user_ACL = ACLobject;
+
+                            return cb();
+                        })
+                    }
+                });
+            }
+            else
+                return cb();
+        }
+        else
+            return cb();
+    }
+    else
+        return cb();
 };
 
 /**
@@ -120,6 +166,12 @@ Urac.prototype.getProfile = function (_ALL) {
  */
 Urac.prototype.getAcl = function () {
     let _self = this;
+
+    if (_self.user_ACL && _self.user_ACL.acl)
+        return _self.user_ACL.acl;
+    else
+        return null;
+    /*
     let productCode = _self.soajs.tenant.application.product;
 
     let acl = null;
@@ -136,6 +188,7 @@ Urac.prototype.getAcl = function () {
     }
 
     return acl;
+    */
 };
 
 /**
@@ -143,6 +196,13 @@ Urac.prototype.getAcl = function () {
  */
 Urac.prototype.getAclAllEnv = function () {
     let _self = this;
+
+    if (_self.user_ACL && _self.user_ACL.acl_all_env)
+        return _self.user_ACL.acl_all_env;
+    else
+        return null;
+
+    /*
     let productCode = _self.soajs.tenant.application.product;
 
     let acl = null;
@@ -158,6 +218,7 @@ Urac.prototype.getAclAllEnv = function () {
     }
 
     return acl;
+    */
 };
 
 /**

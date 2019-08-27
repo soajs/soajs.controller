@@ -238,9 +238,9 @@ module.exports = (configuration) => {
                                                     if (serviceParam.urac_Profile)
                                                         injectObj.urac.profile = uracObj.profile;
                                                     if (serviceParam.urac_ACL)
-                                                        injectObj.urac.acl = null;//req.soajs.uracDriver.getAcl();
+                                                        injectObj.urac.acl = req.soajs.uracDriver.getAcl();
                                                     if (serviceParam.urac_ACL)
-                                                        injectObj.urac.acl_AllEnv = null;//req.soajs.uracDriver.getAclAllEnv();
+                                                        injectObj.urac.acl_AllEnv = req.soajs.uracDriver.getAclAllEnv();
 
                                                     if (serviceParam.urac_Config) {
                                                         injectObj.urac.config = uracObj.config;

@@ -84,9 +84,9 @@ let utils = {
             return cb(null, obj);
 
         obj.req.soajs.log.debug("Found ACL at URAC level, overriding default ACL configuration.");
-        obj.provision.getPackageData(uracACL, (error, pack) => {
-            if (pack && pack.acl) {
-                obj.finalAcl = pack.acl[obj.req.soajs.controller.serviceParams.name];
+        //obj.provision.getPackageData(uracACL, (error, pack) => {
+            if (uracACL) {
+                obj.finalAcl = uracACL[obj.req.soajs.controller.serviceParams.name];
                 if (obj.finalAcl) {
                     let san_v = coreLibs.version.sanitize(obj.req.soajs.controller.serviceParams.version);
                     obj.finalAcl = obj.finalAcl[san_v] || obj.finalAcl;
@@ -111,7 +111,7 @@ let utils = {
                 }
             }
             return cb(null, obj);
-        });
+        //});
     },
 
     "aclCheck": (obj, cb) => {
