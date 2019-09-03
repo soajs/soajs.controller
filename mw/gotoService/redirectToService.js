@@ -19,7 +19,7 @@ module.exports = (configuration) => {
             let requestOptions = {
                 'method': req.method,
                 'uri': obj.uri,
-                'timeout': obj.requestTO * 1000,
+                //'timeout': obj.requestTO * 1000,
                 'headers': req.headers,
                 'jar': false
             };
@@ -30,7 +30,9 @@ module.exports = (configuration) => {
                 req.soajs.controller.redirectedRequest = request(requestOptions);
                 req.soajs.controller.redirectedRequest.on('error', function (err) {
                     req.soajs.log.error(err);
-                    return req.soajs.controllerResponse(core.error.getError(135));
+                    if (!req.soajs.controller.monitorEndingReq) {
+                        return req.soajs.controllerResponse(core.error.getError(135));
+                    }
 
                 });
 
@@ -41,7 +43,9 @@ module.exports = (configuration) => {
                 }
             } catch (e) {
                 req.soajs.log.error(e);
-                return req.soajs.controllerResponse(core.error.getError(135));
+                if (!req.soajs.controller.monitorEndingReq) {
+                    return req.soajs.controllerResponse(core.error.getError(135));
+                }
             }
         });
     };

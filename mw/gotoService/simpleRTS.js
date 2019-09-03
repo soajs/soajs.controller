@@ -39,13 +39,17 @@ module.exports = (configuration) => {
                 });
                 req.soajs.controller.redirectedRequest.on('error', function (err) {
                     req.soajs.log.error(err);
-                    return req.soajs.controllerResponse(core.error.getError(135));
+                    if (!req.soajs.controller.monitorEndingReq) {
+                        return req.soajs.controllerResponse(core.error.getError(135));
+                    }
                 });
                 req.pipe(req.soajs.controller.redirectedRequest, {end: true});
                 req.resume();
             } catch (e) {
                 req.soajs.log.error(e);
-                return req.soajs.controllerResponse(core.error.getError(135));
+                if (!req.soajs.controller.monitorEndingReq) {
+                    return req.soajs.controllerResponse(core.error.getError(135));
+                }
             }
         });
     };

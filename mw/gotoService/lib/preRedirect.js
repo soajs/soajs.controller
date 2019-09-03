@@ -60,22 +60,30 @@ module.exports = (req, res, core, cb) => {
                     'uri': uri,
                     'headers': req.headers
                 }, function (error, response) {
-                    if (!error && response.statusCode === 200) {
-                        req.soajs.log.info('... able to renew request for ', requestTO * 10, 'seconds');
-                        res.setTimeout(timeToRenew, renewReqMonitor);
-                    } else {
-                        req.soajs.log.error('Service heartbeat is not responding');
-                        return req.soajs.controllerResponse(core.error.getError(133));
+                    let resContentType = res.getHeader('content-type');
+                    if (resContentType.match (/stream/i)) {
+                        req.soajs.controller.renewalCount--;
+                        req.soajs.log.info('Stream detected for ['+ req.url + ']. Connection will remain open ...');
+                    }
+                    else {
+                        if (!error && response.statusCode === 200) {
+                            req.soajs.log.info('... able to renew request for ', requestTO * 10, 'seconds');
+                            res.setTimeout(timeToRenew, renewReqMonitor);
+                        } else {
+                            req.soajs.controller.monitorEndingReq = true;
+                            req.soajs.log.error('Service heartbeat is not responding');
+                            return req.soajs.controllerResponse(core.error.getError(133));
+                        }
                     }
                 });
             } else {
+                if (req.soajs.controller.redirectedRequest) {
+                    req.soajs.log.info("Request aborted:", req.url);
+                    req.soajs.controller.redirectedRequest.abort();
+                }
                 if (!req.soajs.controller.monitorEndingReq) {
                     req.soajs.controller.monitorEndingReq = true;
                     req.soajs.log.error('Request time exceeded the requestTimeoutRenewal:', requestTO + requestTO * requestTOR);
-                    if (req.soajs.controller.redirectedRequest) {
-                        req.soajs.log.info("Request aborted:", req.url);
-                        req.soajs.controller.redirectedRequest.abort();
-                    }
                     return req.soajs.controllerResponse(core.error.getError(134));
                 }
             }
