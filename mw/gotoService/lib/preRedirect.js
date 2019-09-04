@@ -61,19 +61,21 @@ module.exports = (req, res, core, cb) => {
                     'headers': req.headers
                 }, function (error, response) {
                     let resContentType = res.getHeader('content-type');
-                    if (resContentType.match (/stream/i)) {
-                        req.soajs.controller.renewalCount--;
-                        req.soajs.log.info('Stream detected for ['+ req.url + ']. Connection will remain open ...');
-                    }
-                    else {
-                        if (!error && response.statusCode === 200) {
-                            req.soajs.log.info('... able to renew request for ', requestTO * 10, 'seconds');
-                            res.setTimeout(timeToRenew, renewReqMonitor);
-                        } else {
-                            req.soajs.controller.monitorEndingReq = true;
-                            req.soajs.log.error('Service heartbeat is not responding');
-                            return req.soajs.controllerResponse(core.error.getError(133));
+                    let isStream = resContentType.match(/stream/i);
+                    if (!error && response.statusCode === 200) {
+                        if (isStream) {
+                            req.soajs.controller.renewalCount--;
+                            req.soajs.log.info('Stream detected for [' + req.url + ']. Connection will remain open ...');
                         }
+                        else {
+                            req.soajs.log.info('... able to renew request for ', requestTO, 'seconds');
+                            res.setTimeout(timeToRenew, renewReqMonitor);
+                        }
+                    } else {
+                        req.soajs.controller.monitorEndingReq = true;
+                        req.soajs.log.error('Service heartbeat is not responding');
+                        req.soajs.controller.redirectedRequest.abort();
+                        return req.soajs.controllerResponse(core.error.getError(133));
                     }
                 });
             } else {
