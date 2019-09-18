@@ -36,7 +36,7 @@ module.exports = (configuration) => {
 
                 });
 
-                if (req.method === 'POST' || req.method === 'PUT') {
+                if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
                     req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
                 } else {
                     req.soajs.controller.redirectedRequest.pipe(res);

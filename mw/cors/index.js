@@ -11,7 +11,7 @@ module.exports = () => {
             let origin = req.soajs.registry.serviceConfig.cors.origin || '*';
             let credentials = req.soajs.registry.serviceConfig.cors.credentials || 'true';
             let methods = req.soajs.registry.serviceConfig.cors.methods || 'GET,HEAD,PUT,PATCH,POST,DELETE';
-            let headers = req.soajs.registry.serviceConfig.cors.headers || 'key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
+            let headers = req.soajs.registry.serviceConfig.cors.headers || '__env,key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type';
             let maxage = req.soajs.registry.serviceConfig.cors.maxage || 1728000;
 
             if (method === 'OPTIONS') {
