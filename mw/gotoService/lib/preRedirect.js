@@ -55,7 +55,7 @@ module.exports = (req, res, core, cb) => {
                     }
                     uri = 'http://' + host + ':' + maintenancePort + path;
                 }
-                req.soajs.log.info("heartead @: " + uri);
+                req.soajs.log.info("heartbeat @: " + uri);
                 request({
                     'uri': uri,
                     'headers': req.headers

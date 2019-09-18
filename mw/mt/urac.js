@@ -73,7 +73,7 @@ Urac.prototype.init = function (cb) {
 };
 
 
-urac.prototype.resolveACL = function (cb) {
+Urac.prototype.resolveACL = function (cb) {
     let _self = this;
     if (_self.userRecord) {
         let productCode = _self.soajs.tenant.application.product;
@@ -85,6 +85,8 @@ urac.prototype.resolveACL = function (cb) {
                     }
                     else {
                         lib.mergeACLArray(arrayACLs, (error, ACLobject) => {
+	                        console.log("----------------------------------- ACLobject")
+                        	console.log(JSON.stringify(ACLobject,null))
                             if (ACLobject)
                                 _self.user_ACL = ACLobject;
 
