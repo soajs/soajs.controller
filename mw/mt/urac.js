@@ -85,8 +85,6 @@ Urac.prototype.resolveACL = function (cb) {
                     }
                     else {
                         lib.mergeACLArray(arrayACLs, (error, ACLobject) => {
-	                        console.log("----------------------------------- ACLobject")
-                        	console.log(JSON.stringify(ACLobject,null))
                             if (ACLobject)
                                 _self.user_ACL = ACLobject;
 

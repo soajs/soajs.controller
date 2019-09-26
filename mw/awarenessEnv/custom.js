@@ -19,7 +19,7 @@ let fetchControllerHosts = function (core, log, next) {
         else {
             controllerHosts = hosts;
         }
-        log.info("Self Awareness ENV reloaded controller hosts. next reload is in [" + registry.serviceConfig.awareness.autoRelaodRegistry + "] milliseconds");
+        log.debug("Self Awareness ENV reloaded controller hosts. next reload is in [" + registry.serviceConfig.awareness.autoRelaodRegistry + "] milliseconds");
         setTimeout(() => {
             fetchControllerHosts(core, log);
         }, registry.serviceConfig.awareness.autoRelaodRegistry);
