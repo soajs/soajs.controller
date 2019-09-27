@@ -1,3 +1,13 @@
+'use strict';
+
+/**
+ * @license
+ * Copyright SOAJS All Rights Reserved.
+ *
+ * Use of this source code is governed by an Apache license that can be
+ * found in the LICENSE file at the root of this repository
+ */
+
 /**
  *
  * @param param
@@ -10,8 +20,7 @@ module.exports = {
 			if (!process.env.SOAJS_DEPLOY_HA) {
 				driver = require("./custom.js");
 				driver.init(param);
-			}
-			else {
+			} else {
 				driver = require("./ha.js");
 				driver.init(param);
 			}
