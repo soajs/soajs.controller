@@ -104,7 +104,7 @@ module.exports = function (grunt) {
 		env: {
 			mochaTest: {
 				SOAJS_ENV: "dev",
-				APP_DIR_FOR_CODE_COVERAGE: '../test/coverage/instrument/'
+				APP_DIR_FOR_CODE_COVERAGE: '../'
 			},
 			coverage: {
 				SOAJS_ENV: "dev",
@@ -188,8 +188,10 @@ module.exports = function (grunt) {
 	
 	process.env.SHOW_LOGS = grunt.option('showLogs');
 	grunt.registerTask("default", ['jshint']);
-	grunt.registerTask("integration", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:integration']);
-	grunt.registerTask("unit", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit']);
+	grunt.registerTask("integration", ['env:mochaTest', 'mochaTest:integration']);
+	grunt.registerTask("integration-coverage", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:integration', 'storeCoverage', 'makeReport']);
+	grunt.registerTask("unit", ['env:mochaTest', 'mochaTest:unit']);
+	grunt.registerTask("unit-coverage", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'storeCoverage', 'makeReport']);
 	grunt.registerTask("test", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration']);
 	grunt.registerTask("coverage", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport', 'coveralls']);
 	

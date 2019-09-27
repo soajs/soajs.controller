@@ -44,6 +44,7 @@
     "grunt-istanbul": "0.8.0",
     "grunt-jsdoc": "2.4.0",
     "grunt-mocha-test": "0.13.3",
-    "mocha": "6.2.0"
+    "mocha": "6.2.0",
+    "sinon": "7.5.0"
   }
 }
