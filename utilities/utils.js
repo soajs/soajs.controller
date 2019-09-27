@@ -1,5 +1,13 @@
 'use strict';
 
+/**
+ * @license
+ * Copyright SOAJS All Rights Reserved.
+ *
+ * Use of this source code is governed by an Apache license that can be
+ * found in the LICENSE file at the root of this repository
+ */
+
 const coreModules = require("soajs.core.modules");
 let core = coreModules.core;
 
@@ -19,10 +27,12 @@ function logErrors(err, req, res, next) {
     if (typeof err === "object") {
         if (err.code && err.message) {
             req.soajs.log.error(err);
-            if (err.name === "OAuth2Error")
-                return next({"code": err.code, "status": err.code, "msg": err.message});
-            else
-                return next({"code": err.code, "msg": err.message});
+            if (err.name === "OAuth2Error") {
+	            return next({"code": err.code, "status": err.code, "msg": err.message});
+            }
+            else {
+	            return next({"code": err.code, "msg": err.message});
+            }
         }
         else if (err.code && err.msg) {
             err.message = err.msg;
@@ -57,7 +67,6 @@ function controllerClientErrorHandler(err, req, res, next) {
         let errObj = core.error.getError(150);
         errObj.status = 500;
         return next (errObj);
-        //req.soajs.controllerResponse(errObj);
     } else {
         return next(err);
     }
@@ -70,7 +79,7 @@ function controllerClientErrorHandler(err, req, res, next) {
  * @param res
  * @param next
  */
-function controllerErrorHandler(err, req, res, next) {
+function controllerErrorHandler(err, req) {
     if (err.code && err.msg) {
         err.status = err.status || 500;
         req.soajs.controllerResponse(err);

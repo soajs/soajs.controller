@@ -89,7 +89,7 @@ Urac.prototype.resolveACL = function (cb) {
                                 _self.user_ACL = ACLobject;
 
                             return cb();
-                        })
+                        });
                     }
                 });
             }
