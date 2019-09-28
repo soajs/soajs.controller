@@ -79,7 +79,7 @@ function controllerClientErrorHandler(err, req, res, next) {
  * @param res
  * @param next
  */
-function controllerErrorHandler(err, req) {
+function controllerErrorHandler(err, req, res, next) {
     if (err.code && err.msg) {
         err.status = err.status || 500;
         req.soajs.controllerResponse(err);

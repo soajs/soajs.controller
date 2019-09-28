@@ -271,6 +271,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 					"awareness": param.awareness,
 					"serviceName": param.serviceName,
 					"log": log,
+					"core": core,
 					"serviceIp": serviceIp
 				})(req, res, () => {
 					req.soajs.awareness.getHost('controller', function (controllerHostInThisEnvironment) {

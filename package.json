@@ -35,6 +35,7 @@
     "soajs.urac.driver": "2.0.11"
   },
   "devDependencies": {
+    "express": "4.17.1",
     "grunt": "1.0.4",
     "grunt-contrib-clean": "2.0.0",
     "grunt-contrib-copy": "1.0.0",

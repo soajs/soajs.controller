@@ -60,10 +60,12 @@ Urac.prototype.init = function (cb) {
                     return cb(null, _self.userRecord);
                 });
             }
-            if (err && err.msg) {
-                err = new Error(err.msg);
+            else {
+	            if (err && err.msg) {
+		            err = new Error(err.msg);
+	            }
+	            return cb(err, null);
             }
-            return cb(err, null);
         });
     }
     else {
