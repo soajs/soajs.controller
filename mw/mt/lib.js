@@ -1,4 +1,13 @@
 'use strict';
+
+/**
+ * @license
+ * Copyright SOAJS All Rights Reserved.
+ *
+ * Use of this source code is governed by an Apache license that can be
+ * found in the LICENSE file at the root of this repository
+ */
+
 let async = require("async");
 let _ = require("lodash");
 
@@ -6,7 +15,7 @@ module.exports = {
 	"mergeACLArray": function (arrayACL, cb) {
 		
 		//if only one return it
-		if (arrayACL.length === 1){
+		if (arrayACL.length === 1) {
 			return cb(null, arrayACL[0]);
 		}
 		let acl = {};
