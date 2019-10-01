@@ -154,7 +154,7 @@ let lib = {
 						clearTimeout(timeout);
 					}
 					param.log.debug("rebuilding cache in: " + cacheTTL);
-					setTimeout(lib.rebuildAwarenessCache, cacheTTL);
+					timeout = setTimeout(lib.rebuildAwarenessCache, cacheTTL);
 				}
 			});
 		});
