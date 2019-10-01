@@ -16,6 +16,7 @@ const coreModules = require("soajs.core.modules");
 let core = coreModules.core;
 
 let param = null;
+let timeout = null;
 let regEnvironment = (process.env.SOAJS_ENV || "dev");
 regEnvironment = regEnvironment.toLowerCase();
 
@@ -149,6 +150,9 @@ let lib = {
 				
 				let cacheTTL = core.registry.get().serviceConfig.awareness.cacheTTL;
 				if (cacheTTL) {
+					if (timeout) {
+						clearTimeout(timeout);
+					}
 					param.log.debug("rebuilding cache in: " + cacheTTL);
 					setTimeout(lib.rebuildAwarenessCache, cacheTTL);
 				}
