@@ -149,6 +149,7 @@ let lib = {
 				
 				let cacheTTL = core.registry.get().serviceConfig.awareness.cacheTTL;
 				if (cacheTTL) {
+					param.log.debug("rebuilding cache in: " + cacheTTL);
 					setTimeout(lib.rebuildAwarenessCache, cacheTTL);
 				}
 			});
