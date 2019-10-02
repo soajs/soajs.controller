@@ -61,13 +61,13 @@ let lib = {
 		if (awarenessCache[serviceName] &&
 			awarenessCache[serviceName][version] &&
 			awarenessCache[serviceName][version].host) {
-			param.log.debug('Got ' + awarenessCache[serviceName][version].host + ' from awareness cache');
+			param.log.debug('Got ' + serviceName + ' - ' + version + ' - ' + awarenessCache[serviceName][version].host + ' from awareness cache');
 			return awarenessCache[serviceName][version].host;
 		}
 		
 		return null;
 	},
-	
+	/*
 	"setHostInCache": function (serviceName, version, hostname) {
 		if (!awarenessCache[serviceName]) {
 			awarenessCache[serviceName] = {};
@@ -78,7 +78,7 @@ let lib = {
 		
 		awarenessCache[serviceName][version].host = hostname;
 	},
-	
+	*/
 	"getHostFromAPI": function (serviceName, version, cb) {
 		let options = lib.constructDriverParam(serviceName);
 		if (!version) {
@@ -108,8 +108,8 @@ let lib = {
 					return cb(null);
 				}
 				
-				lib.setHostInCache(serviceName, version, response);
-				param.log.debug('Got ' + response + ' from cluster API');
+				//lib.setHostInCache(serviceName, version, response);
+				param.log.debug('Got ' + serviceName + ' - ' + version + ' - ' + response + ' from cluster API');
 				return cb(response);
 			});
 		}
@@ -139,14 +139,17 @@ let lib = {
 				
 				//if no version is found, lib.getHostFromAPI() will get it from cluster api
 				lib.getHostFromAPI(serviceName, version, function (hostname) {
-					myCache[serviceName] = {};
-					myCache[serviceName][version] = {host: hostname};
+					if (!myCache[serviceName]) myCache[serviceName] = {};
+					if (!myCache[serviceName][version]) myCache[serviceName][version] = {};
+					myCache[serviceName][version].host = hostname;
+					//myCache[serviceName] = {};
+					//myCache[serviceName][version] = {host: hostname};
 					return callback();
 				});
 			}, function () {
 				awarenessCache = myCache;
 				param.log.debug("Awareness cache rebuilt successfully");
-				// param.log.debug(awarenessCache);
+				param.log.debug(awarenessCache);
 				
 				let cacheTTL = core.registry.get().serviceConfig.awareness.cacheTTL;
 				if (cacheTTL) {

@@ -23,7 +23,9 @@ module.exports = {
 			}
 			else {
 				driver = require("./ha.js");
-				driver.init(param);
+				if (!param.doNotRebuildCache) {
+					driver.init(param);
+				}
 			}
 		}
 		return function (req, res, next) {
