@@ -29,6 +29,6 @@ jobs:
         - if [ "$TRAVIS_BRANCH" != "master" ]; then grunt test; fi
         - if [ "$TRAVIS_BRANCH" = "master" ]; then grunt coverage; fi
     - stage: Publish to npm
-      if: branch = master
       script:
-        -echo "npm master --next"
+        - if [ "$TRAVIS_BRANCH" != "master" ]; echo "Nothing to pubish, only works if master ..." fi
+        - if [ "$TRAVIS_BRANCH" != "master" ]; echo "PUBLISH" fi
