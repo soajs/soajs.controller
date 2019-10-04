@@ -67,18 +67,7 @@ let lib = {
 		
 		return null;
 	},
-	/*
-	"setHostInCache": function (serviceName, version, hostname) {
-		if (!awarenessCache[serviceName]) {
-			awarenessCache[serviceName] = {};
-		}
-		if (!awarenessCache[serviceName][version]) {
-			awarenessCache[serviceName][version] = {};
-		}
-		
-		awarenessCache[serviceName][version].host = hostname;
-	},
-	*/
+	
 	"getHostFromAPI": function (serviceName, version, cb) {
 		let options = lib.constructDriverParam(serviceName);
 		if (!version) {
@@ -139,16 +128,18 @@ let lib = {
 				
 				param.log.debug('Building awareness for ' + serviceName + ' - ' + version + ' ....');
 				
-				if (!serviceName)
+				if (!serviceName) {
 					return callback();
-				
+				}
 				//if no version is found, lib.getHostFromAPI() will get it from cluster api
 				lib.getHostFromAPI(serviceName, version, function (hostname) {
-					if (!myCache[serviceName]) myCache[serviceName] = {};
-					if (!myCache[serviceName][version]) myCache[serviceName][version] = {};
+					if (!myCache[serviceName]) {
+						myCache[serviceName] = {};
+					}
+					if (!myCache[serviceName][version]) {
+						myCache[serviceName][version] = {};
+					}
 					myCache[serviceName][version].host = hostname;
-					//myCache[serviceName] = {};
-					//myCache[serviceName][version] = {host: hostname};
 					return callback();
 				});
 			}, function () {
