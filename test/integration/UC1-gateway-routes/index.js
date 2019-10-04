@@ -35,8 +35,10 @@ describe("Integration for Usecase 1", function () {
                 });
                 ptserver.startServer({s: {port: 4003}, m: {port: 5003}, name: "PT2"}, function (servers) {
                     pt2Servers = servers;
-                    done();
                 });
+	            setTimeout(function () {
+		            done();
+	            }, 5000);
             });
         });
     });
