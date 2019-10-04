@@ -26,6 +26,9 @@ jobs:
         - sleep 10
       script:
         - grunt
+        if: branch != master
+        - grunt test
+        if: branch = master
         - grunt coverage
     - stage: Publish to npm
       if: branch = master
