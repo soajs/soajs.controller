@@ -10,8 +10,7 @@ env:
 
 jobs:
   include:
-
-    - stage: install
+    - stage: install & check code style
       addons:
         apt:
           sources:
@@ -27,7 +26,6 @@ jobs:
         - sleep 10
       script:
         - grunt
-
-    - stage: coverage
-        script:
-        - grunt coverage
+    - stage: test and check coverage
+      script:
+      - grunt coverage
