@@ -51,7 +51,7 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 		) {
 			//service = service.toLowerCase();
 			//service_nv = service_nv.toLowerCase();
-			
+			console.log(req.soajs.registry.services[service]);
 			let nextStep = (version) => {
 				let extKeyRequired = false;
 				if (req.soajs.registry.services[service].versions && req.soajs.registry.services[service].versions[version]) {
