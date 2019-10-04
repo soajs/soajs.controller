@@ -42,11 +42,6 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 		}
 		return callback(null, proxyInfo);
 	} else {
-		if (req && req.soajs &&
-			req.soajs.registry &&
-			req.soajs.registry.services) {
-			console.log(req.soajs.registry.services[service]);
-		}
 		if (service && req && req.soajs &&
 			req.soajs.registry &&
 			req.soajs.registry.services &&
