@@ -60,11 +60,12 @@ module.exports = (configuration) => {
 				}
 				
 				if (!parameters) {
-					req.soajs.log.fatal("URL [" + req.url + "] couldn't be matched to a service or the service entry in registry is missing [port || hosts]");
+					req.soajs.log.fatal("Service [" + service_n + "] URL [" + req.url + "] couldn't be matched to a service or the service entry in registry is missing [port || hosts]");
 					if (req && req.soajs &&
 						req.soajs.registry &&
 						req.soajs.registry.services) {
 						req.soajs.log.debug(req.soajs.registry.services[service_n]);
+						req.soajs.log.debug(req.soajs.registry.services);
 					}
 					req.soajs.log.debug(req.headers);
 					return req.soajs.controllerResponse(core.error.getError(130));
