@@ -42,6 +42,7 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 		}
 		return callback(null, proxyInfo);
 	} else {
+		console.log(req.soajs.registry.services[service]);
 		if (service &&
 			req.soajs.registry &&
 			req.soajs.registry.services &&
@@ -49,9 +50,6 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 			req.soajs.registry.services[service].port &&
 			(process.env.SOAJS_DEPLOY_HA || req.soajs.registry.services[service].hosts || req.soajs.registry.services[service].srcType === "endpoint")
 		) {
-			//service = service.toLowerCase();
-			//service_nv = service_nv.toLowerCase();
-			console.log(req.soajs.registry.services[service]);
 			let nextStep = (version) => {
 				let extKeyRequired = false;
 				if (req.soajs.registry.services[service].versions && req.soajs.registry.services[service].versions[version]) {
