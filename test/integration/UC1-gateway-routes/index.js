@@ -277,7 +277,7 @@ describe("Integration for Usecase 1", function () {
         });
     });
 
-    it("PT - registry url", function (done) {
+    it("PT - enpoint", function (done) {
         let options = {
             uri: 'http://127.0.0.1:4000/pt/CheckPhoneNumber',
             headers: {
@@ -295,7 +295,7 @@ describe("Integration for Usecase 1", function () {
         });
     });
 
-    it("PT - provision url", function (done) {
+    it("PT2 - endpoint service not in acl", function (done) {
         let options = {
             uri: 'http://127.0.0.1:4000/pt2/CheckPhoneNumber',
             headers: {
@@ -307,9 +307,10 @@ describe("Integration for Usecase 1", function () {
             }
         };
         helper.requester('get', options, (error, body) => {
-            assert.ok(body);
-            assert.equal(body.data.type, "endpoint");
-            done();
+	        assert.ok(body);
+	        assert.strictEqual(body.result, false);
+	        assert.deepStrictEqual(body.errors.codes, [154]);
+	        done();
         });
     });
 

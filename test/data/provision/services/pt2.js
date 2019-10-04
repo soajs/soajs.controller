@@ -27,8 +27,8 @@ let service = {
     swagger: true,
     versions: {
         "1": {
-            oauth: false,
-            extKeyRequired: false,
+            oauth: true,
+            extKeyRequired: true,
             urac: false,
             urac_Profile: false,
             urac_ACL: false,
