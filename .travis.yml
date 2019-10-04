@@ -2,15 +2,14 @@ language: node_js
 
 node_js: 8
 
-services:
-  - mongodb
-
-env:
-  - CXX=g++-4.8
-
 jobs:
   include:
+
     - stage: install, check code style and coverage
+      services:
+        - mongodb
+      env:
+        - CXX=g++-4.8
       addons:
         apt:
           sources:
@@ -28,7 +27,13 @@ jobs:
         - grunt
         - if [ "$TRAVIS_BRANCH" != "master" ]; then grunt test; fi
         - if [ "$TRAVIS_BRANCH" = "master" ]; then grunt coverage; fi
+
     - stage: Publish to npm
+      if: branch = master
       script:
-        - if [ "$TRAVIS_BRANCH" != "master" ]; echo "Nothing to pubish, only works if master ..." fi
-        - if [ "$TRAVIS_BRANCH" != "master" ]; echo "PUBLISH" fi
+        - echo "PUBLISH npm"
+
+    - stage: Publish to docker registry
+      if: branch = master
+      script:
+      - echo "PUBLISH docker"
