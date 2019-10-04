@@ -26,10 +26,8 @@ jobs:
         - sleep 10
       script:
         - grunt
-        if: branch != master
-        - grunt test
-        if: branch = master
-        - grunt coverage
+        - if [ "$TRAVIS_BRANCH" != "master" ]; then grunt test; fi
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then grunt coverage; fi
     - stage: Publish to npm
       if: branch = master
       script:
