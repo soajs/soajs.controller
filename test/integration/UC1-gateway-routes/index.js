@@ -2,6 +2,7 @@
 
 const assert = require('assert');
 const helper = require("../../helper.js");
+const requester = require('../requester');
 let Controller = helper.requireModule('./server/controller');
 
 let uracServers = null;
@@ -51,7 +52,7 @@ describe("Integration for Usecase 1", function () {
                 key: extKey
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body);
             assert.strictEqual(body.result, false);
             assert.deepStrictEqual(body.errors.codes, [158]);
@@ -69,7 +70,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body.acl);
             done();
         });
@@ -88,7 +89,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ifError(error);
             assert.ok(body);
             assert.strictEqual(body.result, false);
@@ -109,7 +110,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body);
             assert.strictEqual(body.result, false);
             assert.deepStrictEqual(body.errors.codes, [208]);
@@ -130,7 +131,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body);
             assert.strictEqual(body.result, false);
             assert.deepStrictEqual(body.errors.codes, [135]);
@@ -149,7 +150,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body);
             assert.equal(body.data.type, "endpoint");
             done();
@@ -167,7 +168,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             console.log(JSON.stringify(body))
             assert.ok(body);
             assert.strictEqual(body.result, false);
@@ -184,7 +185,7 @@ describe("Integration for Usecase 1", function () {
                 key: extKey
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.deepStrictEqual(body, {
                 result: true,
                 data: {firstname: 'antoine', lastname: 'hage'}
@@ -203,7 +204,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.deepStrictEqual(body, {
                 result: true,
                 data: {firstname: 'antoine', lastname: 'hage'}
@@ -219,7 +220,7 @@ describe("Integration for Usecase 1", function () {
                 key: extKey
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body);
             assert.strictEqual(body.result, false);
             assert.deepStrictEqual(body.errors.codes, [400]);
@@ -237,7 +238,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.equal(body.data.id, '/muser/:12?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
             done();
         });
@@ -250,7 +251,7 @@ describe("Integration for Usecase 1", function () {
                 key: extKey
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.deepStrictEqual(body, {
                 result: true,
                 data: {firstname: 'antoine', lastname: 'hage'}
@@ -269,7 +270,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body);
             assert.strictEqual(body.result, false);
             assert.deepStrictEqual(body.errors.codes, [159]);
@@ -288,7 +289,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
             assert.ok(body);
             assert.equal(body.data.type, "endpoint");
             done();
@@ -306,7 +307,7 @@ describe("Integration for Usecase 1", function () {
                 access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
             }
         };
-        helper.requester('get', options, (error, body) => {
+        requester('get', options, (error, body) => {
 	        assert.ok(body);
 	        assert.strictEqual(body.result, false);
 	        assert.deepStrictEqual(body.errors.codes, [154]);
