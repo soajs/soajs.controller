@@ -10,6 +10,7 @@ env:
 
 jobs:
   include:
+
     - stage: install
       addons:
         apt:
@@ -24,6 +25,9 @@ jobs:
       before_script:
         - npm install -g grunt-cli
         - sleep 10
-    - stage: codeStyle
       script:
         - grunt
+
+    - stage: coverage
+        script:
+        - grunt coverage
