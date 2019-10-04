@@ -82,11 +82,11 @@ function controllerClientErrorHandler(err, req, res, next) {
 function controllerErrorHandler(err, req, res, next) {
     if (err.code && err.msg) {
         err.status = err.status || 500;
-        req.soajs.controllerResponse(err);
+        req.soajs.controllerResponse(err, next);
     } else {
         let errObj = core.error.getError(err);
         errObj.status = errObj.status || 500;
-        req.soajs.controllerResponse(errObj);
+        req.soajs.controllerResponse(errObj, next);
     }
 }
 
