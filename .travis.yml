@@ -10,7 +10,7 @@ env:
 
 jobs:
   include:
-    - stage: install & check code style
+    - stage: install, check code style and coverage
       addons:
         apt:
           sources:
@@ -26,9 +26,7 @@ jobs:
         - sleep 10
       script:
         - grunt
-    - stage: test and check coverage
-      script:
-      - grunt coverage
+        - grunt coverage
     - stage: Publish to npm
       if: branch = master
       script:
