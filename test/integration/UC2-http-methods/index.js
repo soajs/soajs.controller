@@ -54,28 +54,106 @@ describe("Integration for Usecase 2", function () {
 	    });
     });
 	it("Test post method", function (done) {
-		done();
-	
+		let options = {
+			uri: 'http://127.0.0.1:4000/httpmethods/myroute',
+			headers: {
+				'Content-Type': 'application/json',
+				key: extKey
+			},
+			"qs": {
+				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+			}
+		};
+		requester('post', options, (error, body) => {
+			console.log(error);
+			console.log(body);
+			done();
+		});
 	});
 	it("Test put method", function (done) {
-		done();
-	
+		let options = {
+			uri: 'http://127.0.0.1:4000/httpmethods/myroute',
+			headers: {
+				'Content-Type': 'application/json',
+				key: extKey
+			},
+			"qs": {
+				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+			}
+		};
+		requester('put', options, (error, body) => {
+			console.log(error);
+			console.log(body);
+			done();
+		});
 	});
 	it("Test delete method", function (done) {
-		done();
-	
+		let options = {
+			uri: 'http://127.0.0.1:4000/httpmethods/myroute',
+			headers: {
+				'Content-Type': 'application/json',
+				key: extKey
+			},
+			"qs": {
+				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+			}
+		};
+		requester('delete', options, (error, body) => {
+			console.log(error);
+			console.log(body);
+			done();
+		});
 	});
 	it("Test patch method", function (done) {
-		done();
-	
+		let options = {
+			uri: 'http://127.0.0.1:4000/httpmethods/myroute',
+			headers: {
+				'Content-Type': 'application/json',
+				key: extKey
+			},
+			"qs": {
+				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+			}
+		};
+		requester('patch', options, (error, body) => {
+			console.log(error);
+			console.log(body);
+			done();
+		});
 	});
 	it("Test head method", function (done) {
-		done();
-	
+		let options = {
+			uri: 'http://127.0.0.1:4000/httpmethods/myroute',
+			headers: {
+				'Content-Type': 'application/json',
+				key: extKey
+			},
+			"qs": {
+				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+			}
+		};
+		requester('head', options, (error, body) => {
+			console.log(error);
+			console.log(body);
+			done();
+		});
 	});
 	it("Test other method", function (done) {
-		done();
-	
+		let options = {
+			uri: 'http://127.0.0.1:4000/httpmethods/myroute',
+			headers: {
+				'Content-Type': 'application/json',
+				key: extKey
+			},
+			"qs": {
+				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+			}
+		};
+		requester('options', options, (error, body) => {
+			console.log(error);
+			console.log(body);
+			done();
+		});
 	});
 
     after((done) => {
