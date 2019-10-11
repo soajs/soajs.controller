@@ -34,11 +34,17 @@ function requester(method, params, cb) {
 		});
 	} else if (method === 'head') {
 		request.head(requestOptions, function (error, response, body) {
-			return cb(null, body);
+			assert.ifError(error);
+			assert.ifError(body);
+			assert.ok(response.headers);
+			return cb(null, response.headers);
 		});
 	} else if (method === 'options') {
 		request.options(requestOptions, function (error, response, body) {
-			return cb(null, body);
+			assert.ifError(error);
+			assert.ifError(body);
+			assert.ok(response.headers);
+			return cb(null, response.headers);
 		});
 	} else {
 		request[method](requestOptions, function (error, response, body) {

@@ -48,8 +48,10 @@ describe("Integration for Usecase 2", function () {
 		    }
 	    };
 	    requester('get', options, (error, body) => {
-		    console.log(error);
-		    console.log(body);
+		    assert.ifError(error);
+	    	assert.ok(body);
+		    assert.deepEqual(body.data.method, 'GET');
+		    assert.deepEqual(body.data.url, '/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
 		    done();
 	    });
     });
@@ -65,8 +67,10 @@ describe("Integration for Usecase 2", function () {
 			}
 		};
 		requester('post', options, (error, body) => {
-			console.log(error);
-			console.log(body);
+			assert.ifError(error);
+			assert.ok(body);
+			assert.deepEqual(body.data.method, 'POST');
+			assert.deepEqual(body.data.url, '/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
 			done();
 		});
 	});
@@ -82,8 +86,10 @@ describe("Integration for Usecase 2", function () {
 			}
 		};
 		requester('put', options, (error, body) => {
-			console.log(error);
-			console.log(body);
+			assert.ifError(error);
+			assert.ok(body);
+			assert.deepEqual(body.data.method, 'PUT');
+			assert.deepEqual(body.data.url, '/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
 			done();
 		});
 	});
@@ -99,8 +105,10 @@ describe("Integration for Usecase 2", function () {
 			}
 		};
 		requester('delete', options, (error, body) => {
-			console.log(error);
-			console.log(body);
+			assert.ifError(error);
+			assert.ok(body);
+			assert.deepEqual(body.data.method, 'DELETE');
+			assert.deepEqual(body.data.url, '/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
 			done();
 		});
 	});
@@ -116,8 +124,10 @@ describe("Integration for Usecase 2", function () {
 			}
 		};
 		requester('patch', options, (error, body) => {
-			console.log(error);
-			console.log(body);
+			assert.ifError(error);
+			assert.ok(body);
+			assert.deepEqual(body.data.method, 'PATCH');
+			assert.deepEqual(body.data.url, '/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
 			done();
 		});
 	});
@@ -132,9 +142,11 @@ describe("Integration for Usecase 2", function () {
 				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
 			}
 		};
-		requester('head', options, (error, body) => {
-			console.log(error);
-			console.log(body);
+		requester('head', options, (error, headers) => {
+			assert.ifError(error);
+			assert.ok(headers);
+			assert.ok(headers["content-length"]);
+			assert.deepEqual(headers['content-type'], 'application/json; charset=utf-8');
 			done();
 		});
 	});
@@ -149,9 +161,12 @@ describe("Integration for Usecase 2", function () {
 				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
 			}
 		};
-		requester('options', options, (error, body) => {
-			console.log(error);
-			console.log(body);
+		requester('options', options, (error, headers) => {
+			assert.ifError(error);
+			assert.ok(headers);
+			assert.ok(headers['access-control-allow-methods']);
+			assert.deepEqual(headers['access-control-allow-methods'], 'GET,HEAD,PUT,PATCH,POST,DELETE');
+			assert.ok(headers['access-control-allow-headers']);
 			done();
 		});
 	});
