@@ -32,6 +32,14 @@ function requester(method, params, cb) {
 			assert.ok(body);
 			return cb(null, body);
 		});
+	} else if (method === 'head') {
+		request.head(requestOptions, function (error, response, body) {
+			return cb(null, body);
+		});
+	} else if (method === 'options') {
+		request.options(requestOptions, function (error, response, body) {
+			return cb(null, body);
+		});
 	} else {
 		request[method](requestOptions, function (error, response, body) {
 			assert.ifError(error);
