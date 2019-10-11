@@ -28,6 +28,10 @@ describe("starting integration tests", () => {
 		// to cover specific routes key/permission/get & proxy/redirect
 		require("./UC1-gateway-routes/index.js");
 		
+		
+		// to test all http methods
+		require("./UC2-http-methods/index.js");
+		
 		done();
 	});
 });

@@ -4,16 +4,18 @@ const sApp = express();
 const mApp = express();
 
 function startServer(serverConfig, callback) {
-	if (!serverConfig){
+	if (!serverConfig) {
 		serverConfig = {}
 	}
-	if(!serverConfig.name){
+	if (!serverConfig.name) {
 		serverConfig.name = "httpmethods";
 	}
-	if (!serverConfig.s){
+	if (!serverConfig.s) {
+		serverConfig.s = {};
 		serverConfig.s.port = 4010;
 	}
-	if (!serverConfig.m){
+	if (!serverConfig.m) {
+		serverConfig.m = {};
 		serverConfig.m.port = 5010;
 	}
 	
