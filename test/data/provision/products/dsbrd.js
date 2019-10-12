@@ -11,8 +11,72 @@ let prod = {
 			"dev": {
 				"httpmethods": {
 					"1": {
-						"access": true
+						"access": true,
+						"get": [
+							{
+								"group": "HTTP Method group",
+								"apis": {
+									"/myroute": {}
+								}
+								
+							}
+						],
+						"post": [
+							{
+								"group": "HTTP Method group",
+								"apis": {
+									"/myroute": {}
+								}
+								
+							}
+						],
+						"put": [
+							{
+								"group": "HTTP Method group",
+								"apis": {
+									"/myroute": {}
+								}
+								
+							}
+						],
+						"delete": [
+							{
+								"group": "HTTP Method group",
+								"apis": {
+									"/myroute": {}
+								}
+								
+							}
+						],
+						"head": [
+							{
+								"group": "HTTP Method group",
+								"apis": {
+									"/myroute": {}
+								}
+								
+							}
+						],
+						"patch": [
+							{
+								"group": "HTTP Method group",
+								"apis": {
+									"/myroute": {}
+								}
+								
+							}
+						],
+						"options": [
+							{
+								"group": "HTTP Method group",
+								"apis": {
+									"/myroute": {}
+								}
+								
+							}
+						]
 					}
+					
 				},
 				"urac": {
 					"2": {
@@ -115,7 +179,28 @@ let prod = {
 				"dev": {
 					"httpmethods": [
 						{
-							"version": "1"
+							"version": "1",
+							"get": [
+								"HTTP Method group"
+							],
+							"post": [
+								"HTTP Method group"
+							],
+							"put": [
+								"HTTP Method group"
+							],
+							"delete": [
+								"HTTP Method group"
+							],
+							"head": [
+								"HTTP Method group"
+							],
+							"patch": [
+								"HTTP Method group"
+							],
+							"options": [
+								"HTTP Method group"
+							]
 						}
 					],
 					"oauth": [
