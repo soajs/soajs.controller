@@ -37,3 +37,12 @@ jobs:
       if: branch = master
       script:
       - echo "PUBLISH docker"
+      - export PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+      - export MAJOR_VERSION=$(echo ${PACKAGE_VERSION} | awk -F. '{ print $1 }')
+      - echo Package version ${PACKAGE_VERSION}
+      - echo Major version ${MAJOR_VERSION}
+      - docker login -u $docker_username -p $docker_password
+      - docker build -t gateway .
+      - docker tag gateway:latest ${docker_username}/gateway:${PACKAGE_VERSION}
+      - docker tag gateway:latest ${docker_username}/gateway:${MAJOR_VERSION}
+      - docker push ${docker_username}/soajsgodemo
