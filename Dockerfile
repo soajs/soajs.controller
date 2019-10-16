@@ -1,4 +1,4 @@
-FROM soajsorg:soajs
+FROM soajsorg/soajs
 
 RUN mkdir -p /opt/soajs/soajs.contoller/node_modules/
 WORKDIR /opt/soajs/soajs.contoller/

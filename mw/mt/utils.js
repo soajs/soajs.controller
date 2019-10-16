@@ -320,6 +320,7 @@ let utils = {
 		if (oAuthTurnedOn) {
 			let oauthExec = function () {
 				if (obj.req.soajs.tenantOauth && obj.req.soajs.tenantOauth.disabled) {
+					obj.req.soajs.log.debug("oAuth for tenant " + obj.req.soajs.tenant.id + " is disabled, skipping logging in user ...");
 					return cb(null, obj);
 				}
 				return obj.soajs.oauth(obj.req, obj.res, function (error) {
