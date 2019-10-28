@@ -1,7 +1,7 @@
-FROM soajsorg/soajs
+FROM soajsorg/node
 
-RUN mkdir -p /opt/soajs/soajs.contoller/node_modules/
-WORKDIR /opt/soajs/soajs.contoller/
+RUN mkdir -p /opt/soajs/soajs.controller/node_modules/
+WORKDIR /opt/soajs/soajs.controller/
 COPY . .
 RUN npm install
 
