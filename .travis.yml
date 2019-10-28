@@ -1,0 +1,56 @@
+language: node_js
+
+node_js: 8
+
+jobs:
+  include:
+
+  - stage: install, check code style and coverage
+    services:
+    - mongodb
+    env:
+    - CXX=g++-4.8
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-4.8
+      hosts:
+      - localhost
+    before_script:
+    - npm install -g grunt-cli
+    - sleep 10
+    script:
+    - grunt
+
+  - stage: Publish to npm
+    if: branch =~ /(release)/
+    script:
+    - echo "PUBLISH npm"
+    deploy:
+      provider: npm
+      email: $NPM_EMAIL
+      api_key: $NPM_TOKEN
+      on:
+        all_branches: true
+        condition: $TRAVIS_BRANCH =~ ^(release)*
+
+  - stage: Publish to docker registry
+    if: branch =~ /(release)/
+    script:
+    - echo "PUBLISH docker"
+    - export PACKAGE_VERSION=$(cat package.json | grep version | head -1 | awk -Fn '{ print $2 }' | sed 's/[n:",]//g' | tr -d '[[:space:]]')
+    - export MAJOR_VERSION=$(echo ${PACKAGE_VERSION} | awk -F. '{ print $1 }')
+    - echo Package version ${PACKAGE_VERSION}
+    - echo Major version ${MAJOR_VERSION}
+    - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+
+    - docker build -t soajsorg/gateway .
+
+    - docker images
+
+    - docker tag soajsorg/gateway:latest soajsorg/gateway:${PACKAGE_VERSION}
+    - docker tag soajsorg/gateway:latest soajsorg/gateway:${MAJOR_VERSION}.x
+
+    - docker push soajsorg/gateway
