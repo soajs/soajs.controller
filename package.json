@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs services controller",
-  "version": "2.5.21",
+  "version": "2.5.22",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -19,6 +19,6 @@
     "grunt-contrib-jshint": "2.1.0"
   },
   "dependencies": {
-    "soajs":"2.5.21"
+    "soajs":"2.5.22"
   }
 }
