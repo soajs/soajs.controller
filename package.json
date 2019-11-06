@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs API gateway",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -31,7 +31,7 @@
     "validator": "11.1.0",
     "soajs.core.libs": "1.2.0",
     "soajs.core.modules": "2.5.21",
-    "soajs.core.drivers": "3.5.24",
+    "soajs.core.drivers": "3.5.26",
     "soajs.urac.driver": "2.0.13"
   },
   "devDependencies": {
