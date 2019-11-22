@@ -1,0 +1,84 @@
+{
+  "acl": {
+    "oauth": {
+      "1": {
+        "access": false,
+        "delete": {
+          "apis": {
+            "/refreshToken/:token": {
+              "access": true
+            }
+          }
+        }
+      }
+    },
+    "urac": {
+      "2": {
+        "access": false,
+        "get": {
+          "apis": {
+            "/admin/all": {
+              "access": true
+            }
+          }
+        },
+        "post": {
+          "apis": {
+            "/admin/group/addUsers": {
+              "access": true
+            }
+          }
+        }
+      }
+    },
+    "dashboard": {
+      "1": {
+        "access": true,
+        "post": {}
+      }
+    }
+  },
+  "acl_all_env": {
+    "dashboard": {
+      "oauth": {
+        "1": {
+          "access": false,
+          "delete": {
+            "apis": {
+              "/refreshToken/:token": {
+                "access": true
+              }
+            }
+          }
+        }
+      },
+      "urac": {
+        "2": {
+          "access": false,
+          "get": {
+            "apis": {
+              "/admin/all": {
+                "access": true
+              }
+            }
+          },
+          "post": {
+            "apis": {
+              "/admin/group/addUsers": {
+                "access": true
+              }
+            }
+          }
+        }
+      },
+      "dashboard": {
+        "1": {
+          "access": true,
+          "post": {}
+        }
+      }
+    }
+  },
+  "_TTL": 604800000,
+  "_TIME": 1553956103465
+}

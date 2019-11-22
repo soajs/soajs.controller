@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
-  "description": "soajs services controller",
-  "version": "2.5.23",
+  "description": "soajs API gateway",
+  "version": "3.0.3",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -14,11 +14,38 @@
   "engines": {
     "node": "*"
   },
-  "devDependencies": {
-    "grunt": "1.0.4",
-    "grunt-contrib-jshint": "2.1.0"
+  "scripts": {
+    "test": "grunt test"
   },
   "dependencies": {
-    "soajs":"2.5.23"
+    "async": "3.1.0",
+    "connect": "3.7.0",
+    "http-proxy": "1.18.0",
+    "jsonwebtoken": "8.5.1",
+    "merge": "1.2.1",
+    "netmask": "1.0.6",
+    "oauth2-server": "2.4.1",
+    "path-to-regexp": "6.1.0",
+    "request": "2.88.0",
+    "useragent": "2.3.0",
+    "validator": "12.1.0",
+    "soajs.core.libs": "1.2.0",
+    "soajs.core.modules": "3.0.3",
+    "soajs.core.drivers": "3.5.29",
+    "soajs.urac.driver": "2.0.15"
+  },
+  "devDependencies": {
+    "express": "4.17.1",
+    "grunt": "1.0.4",
+    "grunt-contrib-clean": "2.0.0",
+    "grunt-contrib-copy": "1.0.0",
+    "grunt-contrib-jshint": "2.1.0",
+    "grunt-coveralls": "2.0.0",
+    "grunt-env": "1.0.1",
+    "grunt-istanbul": "0.8.0",
+    "grunt-jsdoc": "2.4.0",
+    "grunt-mocha-test": "0.13.3",
+    "mocha": "6.2.1",
+    "sinon": "7.5.0"
   }
 }
