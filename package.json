@@ -25,14 +25,14 @@
     "merge": "1.2.1",
     "netmask": "1.0.6",
     "oauth2-server": "2.4.1",
-    "path-to-regexp": "3.1.0",
+    "path-to-regexp": "6.1.0",
     "request": "2.88.0",
     "useragent": "2.3.0",
-    "validator": "11.1.0",
+    "validator": "12.1.0",
     "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "2.5.21",
-    "soajs.core.drivers": "3.5.26",
-    "soajs.urac.driver": "2.0.13"
+    "soajs.core.modules": "3.0.3",
+    "soajs.core.drivers": "3.5.29",
+    "soajs.urac.driver": "2.0.15"
   },
   "devDependencies": {
     "express": "4.17.1",
