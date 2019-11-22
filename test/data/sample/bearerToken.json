@@ -1,0 +1,39 @@
+{
+  "_id": "5c9fcc3cebe1e507b1ea680d",
+  "type": "accessToken",
+  "token": "89794abce467c570b81b7b96fc415f5c79c0961c",
+  "clientId": "5c0e74ba9acc3c5a84a51259",
+  "user": {
+    "_id": "5c8d0c505653de3985aa0ffd",
+    "locked": true,
+    "username": "owner",
+    "firstName": "owner",
+    "lastName": "owner",
+    "email": "me@localhost.com",
+    "ts": 1552747600152,
+    "status": "active",
+    "profile": {},
+    "groups": [
+      "owner"
+    ],
+    "config": {
+      "packages": {},
+      "keys": {}
+    },
+    "tenant": {
+      "id": "5c0e74ba9acc3c5a84a51259",
+      "code": "DBTN"
+    },
+    "groupsConfig": {
+      "allowedPackages": {
+        "DSBRD": [
+          "DSBRD_OWNER"
+        ]
+      }
+    },
+    "loginMode": "oauth",
+    "id": "5c8d0c505653de3985aa0ffd"
+  },
+  "env": "dashboard",
+  "expires": "2019-03-30T22:06:20.385Z"
+}

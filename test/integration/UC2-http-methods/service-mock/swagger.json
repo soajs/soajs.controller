@@ -1,0 +1,232 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "Test Service for SoaJS",
+    "version": "1.0.0",
+    "title": "http methods Test Service",
+    "termsOfService": "http://soajs.org/terms/",
+    "contact": {
+      "email": "fadi@soajs.org"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    }
+  },
+  "host": "soajs.org",
+  "basePath": "/v2",
+  "tags": [
+    {
+      "name": "test",
+      "description": "Tests"
+    }
+  ],
+  "schemes": [
+    "https",
+    "http"
+  ],
+  "paths": {
+    "/myroute": {
+      "post": {
+        "tags": [
+          "test"
+        ],
+        "summary": "Some Sum",
+        "description": "",
+        "operationId": "addTest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "test object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/test"
+            }
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/myroute": {
+      "put": {
+        "tags": [
+          "test"
+        ],
+        "summary": "Some Sum",
+        "description": "",
+        "operationId": "updateTest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "test object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/test"
+            }
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/myroute": {
+      "get": {
+        "tags": [
+          "test"
+        ],
+        "summary": "Some Sum",
+        "description": "",
+        "operationId": "getTest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/myroute": {
+      "patch": {
+        "tags": [
+          "test"
+        ],
+        "summary": "Some Sum",
+        "description": "",
+        "operationId": "patchTest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "test object",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/test"
+            }
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+
+      }
+    },
+    "/myroute": {
+      "head": {
+        "tags": [
+          "test"
+        ],
+        "summary": "Some Sum",
+        "description": "",
+        "operationId": "headTest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+
+      }
+    },
+    "/myroute": {
+      "delete": {
+        "tags": [
+          "test"
+        ],
+        "summary": "Some Sum",
+        "description": "",
+        "operationId": "deleteTest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "ID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    },
+    "/myroute": {
+      "options": {
+        "tags": [
+          "test"
+        ],
+        "summary": "Some Sum",
+        "description": "",
+        "operationId": "otherTest",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "405": {
+            "description": "Invalid input"
+          }
+        }
+      }
+    }
+  }
+}
