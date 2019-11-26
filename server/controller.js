@@ -241,7 +241,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 			if (err) {
 				log.error(err);
 			} else {
-				log.info(_self.serviceName + " service started on port: " + registry.services.controller.port);
+				log.info(_self.soajs.param.init.serviceName + " service started on port: " + registry.services.controller.port);
 				if (!process.env.SOAJS_DEPLOY_HA) {
 					core.registry.registerHost({
 						"serviceName": _self.soajs.param.init.serviceName,
