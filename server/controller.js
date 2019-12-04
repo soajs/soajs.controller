@@ -33,6 +33,7 @@ const key_mw = require("../mw/key/index");
 const keyACL_mw = require("../mw/keyACL/index");
 const gotoService_mw = require("../mw/gotoService/index");
 const mt_mw = require("../mw/mt/index");
+const roaming_mw = require("../mw/roaming/index");
 const traffic_mw = require("../mw/traffic/index");
 
 const utils = require("../utilities/utils");
@@ -152,6 +153,8 @@ Controller.prototype.init = function (callback) {
 						"provision": provision
 					}));
 					log.info("SOAJS MT middleware initialization done.");
+					
+					app.use(roaming_mw({}));
 					
 					app.use(traffic_mw({}));
 					
