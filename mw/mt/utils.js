@@ -329,19 +329,35 @@ let utils = {
 					} else {
 						if (obj.req.oauth && obj.req.oauth.bearerToken && obj.req.oauth.bearerToken.user && (obj.req.oauth.bearerToken.user.loginMode === 'urac') && obj.req.oauth.bearerToken.user.pinLocked) {
 							if (obj.soajs.oauthService && (obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name) && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.pinApi)) {
-								return cb(error, obj);
+								return cb(null, obj);
 							} else if (obj.req.soajs.registry &&
 								obj.req.soajs.registry.custom &&
 								obj.req.soajs.registry.custom.oauth &&
 								obj.req.soajs.registry.custom.oauth.value &&
-								obj.req.soajs.registry.custom.oauth.value.pinAPI &&
-								(obj.req.soajs.registry.custom.oauth.value.pinAPI === obj.req.soajs.controller.serviceParams.path)) {
-								return cb(error, obj);
+								obj.req.soajs.registry.custom.oauth.value.pinWrapper &&
+								(obj.req.soajs.registry.custom.oauth.value.pinWrapper.servicename === obj.req.soajs.controller.serviceParams.name) &&
+								(obj.req.soajs.registry.custom.oauth.value.pinWrapper.apiname === obj.req.soajs.controller.serviceParams.path)
+							) {
+								return cb(null, obj);
 							} else {
+								//TODO add pin whitelist to be fetch from the registry
+								//obj.req.soajs.registry.custom.oauth.value.whitelist "servicename": {"method": ["api1, api2", ...], ...}, version ???
+								if (obj.req.soajs.registry &&
+									obj.req.soajs.registry.custom &&
+									obj.req.soajs.registry.custom.oauth &&
+									obj.req.soajs.registry.custom.oauth.value &&
+									obj.req.soajs.registry.custom.oauth.value.pinWhitelist &&
+									obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name]) {
+									let method = obj.req.method.toLocaleLowerCase();
+									let whitelist = obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name];
+									if (whitelist[method] && Array.isArray(whitelist[method]) && whitelist[method].includes(obj.req.soajs.controller.serviceParams.path)) {
+										return cb(null, obj);
+									}
+								}
 								return cb(145, obj);
 							}
 						} else {
-							return cb(error, obj);
+							return cb(null, obj);
 						}
 					}
 				});

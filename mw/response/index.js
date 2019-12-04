@@ -48,6 +48,9 @@ module.exports = (configuration) => {
 				let headObj = {};
 				if (jsonObj && jsonObj.headObj) {
 					headObj = jsonObj.headObj;
+					if (jsonRes.headObj) {
+						delete jsonRes.headObj;
+					}
 				}
 				headObj['Content-Type'] = 'application/json';
 				if (!res.headersSent) {
