@@ -23,7 +23,11 @@ module.exports = () => {
 					let clientIp = req.getClientIP();
 					let whitelistips = serviceRoamingConfig.whitelistips;
 					if (whitelistips && Array.isArray(whitelistips) && whitelistips.includes(clientIp)) {
-						let response = {"headObj": {"soajsinjectobj": req.headers.soajsinjectobj},};
+						let response = {
+							"headObj": {"soajsinjectobj": req.headers.soajsinjectobj},
+							result: true,
+							data: true
+						};
 						return req.soajs.controllerResponse(response);
 					} else {
 						req.soajs.log.debug("Detected soajsroaming but ip[" + clientIp + "] not whitelistips for service[" + req.soajs.controller.serviceParams.name + "] under custom registry oauth.roaming.services ...");
