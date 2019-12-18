@@ -8,7 +8,7 @@
  * found in the LICENSE file at the root of this repository
  */
 
-const domain = require('domain');
+//const domain = require('domain');
 const gtw_keyPermission = require("./../soajsRoutes/keyPermission/index");
 
 /**
@@ -75,7 +75,7 @@ module.exports = (configuration) => {
 						req.soajs.controller.serviceParams[param] = parameters[param];
 					}
 				}
-				
+				/*
 				let d = domain.create();
 				d.add(req);
 				d.add(res);
@@ -91,6 +91,7 @@ module.exports = (configuration) => {
 						d.dispose();
 					}
 				});
+				*/
 				let passportLogin = false;
 				if (serviceInfo[1] === "urac") {
 					if (serviceInfo[2] === "passport" && serviceInfo[3] === "login") {
@@ -118,8 +119,7 @@ module.exports = (configuration) => {
 						}
 						return next();
 					});
-				}
-				else {
+				} else {
 					if (passportLogin) {
 						req.soajs.controller.gotoservice = simpleRTS;
 					} else if (proxy) {
