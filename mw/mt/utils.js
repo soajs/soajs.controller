@@ -393,7 +393,7 @@ let utils = {
 			//case 5:
 			//acl.systemName.apisPermission = "restricted"
 			//acl.systemName.apis.apiName.access = false
-			
+			console.log(JSON.stringify(system))
 			let serviceApiPublic = false;
 			if (system) {
 				if (system.access) {
