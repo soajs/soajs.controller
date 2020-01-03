@@ -73,6 +73,12 @@ module.exports = () => {
 			
 			//ACL with method support restful
 			let method = obj.req.method.toLocaleLowerCase();
+			console.log("---------------------------")
+			console.log(method)
+			console.log(JSON.stringify(aclObj))
+			console.log("---------------------------")
+			console.log(aclObj[method])
+			console.log("---------------------------")
 			if (aclObj && aclObj[method] && typeof aclObj[method] === "object") {
 				let newAclObj = {};
 				if (aclObj.hasOwnProperty('access')) {
