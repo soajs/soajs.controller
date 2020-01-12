@@ -31,8 +31,8 @@
     "validator": "12.1.0",
     "soajs.core.libs": "1.2.0",
     "soajs.core.modules": "3.0.3",
-    "soajs.core.drivers":"3.5.33",
-    "soajs.urac.driver":"2.1.1"
+    "soajs.core.drivers": "3.5.33",
+    "soajs.urac.driver":"2.1.2"
   },
   "devDependencies": {
     "express": "4.17.1",

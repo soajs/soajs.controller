@@ -93,7 +93,7 @@ module.exports = (configuration) => {
 				});
 				*/
 				let passportLogin = false;
-				if (serviceInfo[1] === "urac") {
+				if (serviceInfo[1] === "oauth") {
 					if (serviceInfo[2] === "passport" && serviceInfo[3] === "login") {
 						passportLogin = true;
 					}
