@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs API gateway",
-  "version": "3.0.10",
+  "version": "3.0.11",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
