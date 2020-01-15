@@ -8,6 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const coreLibs = require("soajs.core.libs");
+
 module.exports = (configuration) => {
 	let core = configuration.core;
 	
@@ -21,8 +23,49 @@ module.exports = (configuration) => {
 		if (!ACL) {
 			ACL = tenant.application.acl;
 		}
+		let finalACL = null;
+		if (ACL) {
+			finalACL = {};
+			for (let s in ACL) {
+				if (ACL.hasOwnProperty(s)) {
+					for (let v in ACL[s]) {
+						if (ACL[s].hasOwnProperty(v)) {
+							let sv = ACL[s][v];
+							if (finalACL[s] && finalACL[s].version) {
+								let version = coreLibs.version.getLatest(finalACL[s].version, v);
+								if (version !== v) {
+									break;
+								}
+							}
+							finalACL[s] = {
+								"version": v
+							};
+							if (sv.apisPermission && sv.apisPermission === "restricted") {
+								for (let m in sv) {
+									if (sv.hasOwnProperty(m)) {
+										if (m !== "access" || m !== "apisPermission") {
+											if (sv[m].apis) {
+												for (let a in sv[m].apis) {
+													if (sv[m].apis.hasOwnProperty(a)) {
+														if (!finalACL[s][m]) {
+															finalACL[s][m] = [];
+														}
+														finalACL[s][m].push(a);
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		let response = {
-			"acl": ACL
+			"acl": ACL,
+			"finalACL": finalACL
 		};
 		return req.soajs.controllerResponse(response);
 	};
