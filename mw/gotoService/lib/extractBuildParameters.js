@@ -19,10 +19,12 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 		if (proxyInfo.query && proxyInfo.query.proxyRoute) {
 			requestedRoute = decodeURIComponent(proxyInfo.query.proxyRoute);
 		}
+		/*
 		//possible requested route is provided as path param
 		if (!requestedRoute && proxyInfo.pathname.replace(/^\/proxy/, '') !== '') {
 			requestedRoute = proxyInfo.pathname.replace(/^\/proxy/, '');
 		}
+		*/
 		proxyInfo = {
 			"url": requestedRoute,
 			"extKeyRequired": false
@@ -73,7 +75,7 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 				serviceInfo.path = path;
 				return callback(null, serviceInfo);
 			};
-			
+			//NOTE: since keyACL is getting th version from ACL, we do not need to get version at this point anymore
 			if (!version) {
 				if (process.env.SOAJS_DEPLOY_HA) {
 					let latestCachedVersion = req.soajs.awareness.getLatestVersionFromCache(service);

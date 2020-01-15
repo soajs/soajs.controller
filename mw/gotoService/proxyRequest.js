@@ -25,7 +25,7 @@ module.exports = (configuration) => {
 	 * @param {String} remoteExtKey
 	 * @param {String} requestedRoute
 	 */
-	let proxyRequestToRemoteEnv = (req, res, remoteENV, remoteExtKey, requestedRoute) => {
+	let proxyRequestToRemoteEnv = (req, res, next, remoteENV, remoteExtKey, requestedRoute) => {
 		let triggerProxy = (myUri, requestTO) => {
 			let requestConfig = {
 				'uri': myUri,
@@ -136,7 +136,7 @@ module.exports = (configuration) => {
 		core.provision.getTenantByCode(tCode, cb);
 	};
 	
-	return (req, res) => {
+	return (req, res, next) => {
 		/*
 		 get ext key for remote env requested
 		 */
@@ -155,10 +155,6 @@ module.exports = (configuration) => {
 		if (parsedUrl.query && parsedUrl.query.proxyRoute) {
 			requestedRoute = decodeURIComponent(parsedUrl.query.proxyRoute);
 		}
-		//possible requested route is provided as path param
-		//if (!requestedRoute && parsedUrl.pathname.replace(/^\/proxy/, '') !== '') {
-		//    requestedRoute = parsedUrl.pathname.replace(/^\/proxy/, '');
-		//}
 		
 		//stop if no requested path was found
 		if (!requestedRoute) {
@@ -185,7 +181,7 @@ module.exports = (configuration) => {
 		}
 		if (tExtKey) {
 			//proceed with proxying the request
-			proxyRequestToRemoteEnv(req, res, remoteENV, tExtKey, requestedRoute);
+			proxyRequestToRemoteEnv(req, res, next, remoteENV, tExtKey, requestedRoute);
 		} else if (tCode && remoteENV) {
 			getOriginalTenantRecord(tCode, function (error, originalTenant) {
 				if (error) {
@@ -201,13 +197,13 @@ module.exports = (configuration) => {
 					return req.soajs.controllerResponse(core.error.getError(137));
 				} else {
 					//proceed with proxying the request
-					proxyRequestToRemoteEnv(req, res, remoteENV, remoteExtKey, requestedRoute);
+					proxyRequestToRemoteEnv(req, res, next, remoteENV, remoteExtKey, requestedRoute);
 				}
 				
 			});
 		}
 		else {
-			proxyRequestToRemoteEnv(req, res, remoteENV, null, requestedRoute);
+			proxyRequestToRemoteEnv(req, res, next, remoteENV, null, requestedRoute);
 		}
 	};
 };

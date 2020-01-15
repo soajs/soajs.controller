@@ -6,9 +6,11 @@ const requester = require('../requester');
 let Controller = helper.requireModule('./server/controller');
 
 let uracServers = null;
+let oauthServers = null;
 let ptServers = null;
 let pt2Servers = null;
 let uracserver = require('./urac-service-mock.js');
+let oauthserver = require('./oauth-service-mock.js');
 let ptserver = require('./passthrough-service-mock.js');
 
 describe("Integration for Usecase 1", function () {
@@ -31,6 +33,9 @@ describe("Integration for Usecase 1", function () {
                 uracserver.startServer({s: {port: 4001}, m: {port: 5001}, name: "URAC"}, function (servers) {
                     uracServers = servers;
                 });
+	            oauthserver.startServer({s: {port: 4004}, m: {port: 5004}, name: "OAUTH"}, function (servers) {
+		            oauthServers = servers;
+	            });
                 ptserver.startServer({s: {port: 4002}, m: {port: 5002}, name: "PT"}, function (servers) {
                     ptServers = servers;
                 });
@@ -46,7 +51,7 @@ describe("Integration for Usecase 1", function () {
 
     it("Get permissions - no logged in user", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/key/permission/get',
+            uri: 'http://127.0.0.1:4000/soajs/acl',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -61,7 +66,7 @@ describe("Integration for Usecase 1", function () {
     });
     it("Get permissions - with logged in user", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/key/permission/get',
+            uri: 'http://127.0.0.1:4000/soajs/acl',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -78,7 +83,7 @@ describe("Integration for Usecase 1", function () {
 
     it("fail - Access Forbidden to requested environment (invalid), error 137", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/proxy/redirect',
+            uri: 'http://127.0.0.1:4000/soajs/proxy',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -99,7 +104,7 @@ describe("Integration for Usecase 1", function () {
     });
     it("fail - missing registry configuration, error 208 ", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/proxy/redirect',
+            uri: 'http://127.0.0.1:4000/soajs/proxy',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -120,7 +125,7 @@ describe("Integration for Usecase 1", function () {
 
     it("fail - Access Forbidden to requested environment (invalid), error 137", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/proxy/redirect',
+            uri: 'http://127.0.0.1:4000/soajs/proxy',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -140,7 +145,7 @@ describe("Integration for Usecase 1", function () {
     });
     it("Proxy - valid full URI", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/proxy/redirect',
+            uri: 'http://127.0.0.1:4000/soajs/proxy',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -158,7 +163,7 @@ describe("Integration for Usecase 1", function () {
     });
     it("Proxy - invalid URI", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/proxy/redirect',
+            uri: 'http://127.0.0.1:4000/soajs/proxy',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -169,7 +174,6 @@ describe("Integration for Usecase 1", function () {
             }
         };
         requester('get', options, (error, body) => {
-            console.log(JSON.stringify(body))
             assert.ok(body);
             assert.strictEqual(body.result, false);
             assert.deepStrictEqual(body.errors.codes, [135]);
@@ -193,9 +197,9 @@ describe("Integration for Usecase 1", function () {
             done();
         });
     });
-    it("Urac - passport", function (done) {
+    it("oAuth - passport", function (done) {
         let options = {
-            uri: 'http://127.0.0.1:4000/urac/passport/login',
+            uri: 'http://127.0.0.1:4000/oauth/passport/login',
             headers: {
                 'Content-Type': 'application/json',
                 key: extKey
@@ -318,6 +322,7 @@ describe("Integration for Usecase 1", function () {
     after((done) => {
         c.stop(registry, log, service, server, serverMaintenance, () => {
             uracserver.killServer(uracServers);
+	        oauthserver.killServer(oauthServers);
             ptserver.killServer(ptServers);
             ptserver.killServer(pt2Servers);
             done();

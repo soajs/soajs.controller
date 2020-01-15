@@ -25,10 +25,19 @@ module.exports = (configuration) => {
 	let provision = configuration.provision;
 	
 	return (req, res, next) => {
+		
 		//if there is a proxy no need to do any of the below, return next
-		let proxyInfo = req.soajs.controller.serviceParams.serviceInfo;
-		let proxy = (proxyInfo[1] === 'proxy' && proxyInfo[2] === 'redirect');
-		let keyPermissionGet = (proxyInfo[1] === 'key' && proxyInfo[2] === 'permission' && proxyInfo[3] === 'get');
+		let urlInfo = req.soajs.controller.serviceParams.serviceInfo;
+		//let proxy = (urlInfo[1] === 'proxy' && urlInfo[2] === 'redirect');
+		let proxy = false;
+		if (urlInfo[1] === 'proxy' && urlInfo[2] === 'redirect') {
+			proxy = true;
+		} else if (urlInfo[1] === 'soajs' && urlInfo[2] === 'proxy') {
+			proxy = true;
+		}
+		let url_keyPermission = (urlInfo[1] === 'key' && urlInfo[2] === 'permission' && urlInfo[3] === 'get');
+		let url_keyACL = (urlInfo[1] === 'soajs' && urlInfo[2] === 'acl');
+		
 		let serviceParam = {};
 		if (!proxy) {
 			let serviceInfo = req.soajs.controller.serviceParams.registry.versions[req.soajs.controller.serviceParams.version];
@@ -65,16 +74,9 @@ module.exports = (configuration) => {
 			};
 		}
 		
-		if (proxyInfo[2] === "swagger" && proxyInfo[proxyInfo.length - 1] === proxyInfo[2]) {
-			return next();
-		}
 		let oauthExec = () => {
 			if (serviceParam.oauth) {
-				if (soajs.oauthService && req.soajs.controller.serviceParams.name === soajs.oauthService.name && (req.soajs.controller.serviceParams.path === soajs.oauthService.tokenApi || req.soajs.controller.serviceParams.path === soajs.oauthService.authorizationApi)) {
-					return next();
-				} else {
-					soajs.oauth(req, res, next);
-				}
+				soajs.oauth(req, res, next);
 			}
 			else {
 				return next();
@@ -144,7 +146,7 @@ module.exports = (configuration) => {
 								async.waterfall(serviceCheckArray, (err, data) => {
 									
 									//if this is controller route: /key/permission/get, ignore async waterfall response
-									if (keyPermissionGet) {
+									if (url_keyPermission || url_keyACL) {
 										if (!req.soajs.uracDriver) {
 											//doesn't work if you are not logged in
 											return next(158);

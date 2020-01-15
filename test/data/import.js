@@ -172,6 +172,19 @@ module.exports = (profilePath, dataPath, callback) => {
 		//use soajs.core.modules to create a connection to core_provision database
 		let mongoConnection = new Mongo(profile);
 		async.series([
+				
+				function (cb) {
+					//check for environment data
+					if (fs.existsSync(dataPath + "custom_registry/")) {
+						let config = {
+							"colName": "custom_registry",
+							"condAnchor": "name",
+							"objId": "_id"
+						};
+						return lib.basic(config, dataPath + "custom_registry/", mongoConnection, cb);
+					} else
+						return cb(null);
+				},
 				function (cb) {
 					//check for environment data
 					if (fs.existsSync(dataPath + "environment/")) {

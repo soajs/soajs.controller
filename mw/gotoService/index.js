@@ -8,8 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
-//const domain = require('domain');
-const gtw_keyPermission = require("./../soajsRoutes/keyPermission/index");
+const gtw_keyPermission = require("./../soajsRoutes/keyPermission/index.js");
+const gtw_keyACL = require("./../soajsRoutes/keyACL/index.js");
 
 /**
  *
@@ -20,13 +20,15 @@ module.exports = (configuration) => {
 	let provision = configuration.provision;
 	let core = configuration.core;
 	
-	let keyPermission = gtw_keyPermission({"provision": provision, "core": core});
+	let soajs_keyPermission = gtw_keyPermission({"provision": provision, "core": core});
+	let soajs_keyACL = gtw_keyACL({"provision": provision, "core": core});
 	
 	let extractBuildParameters = require("./lib/extractBuildParameters.js");
 	
 	let simpleRTS = require("./simpleRTS.js")(configuration);
 	let redirectToService = require("./redirectToService.js")(configuration);
 	let proxyRequest = require("./proxyRequest.js")(configuration);
+	let roaming = require("./roaming.js")(configuration);
 	
 	
 	return (req, res, next) => {
@@ -37,14 +39,23 @@ module.exports = (configuration) => {
 		let service_v = req.soajs.controller.serviceParams.service_v;
 		
 		//check if route is key/permission/get then you also need to bypass the exctract Build Param BL
-		let keyPermissionGet = (serviceInfo[1] === 'key' && serviceInfo[2] === 'permission' && serviceInfo[3] === 'get');
-		if (keyPermissionGet) {
-			return keyPermission(req, res, next);
+		let url_keyPermission = (serviceInfo[1] === 'key' && serviceInfo[2] === 'permission' && serviceInfo[3] === 'get');
+		let url_keyACL = (serviceInfo[1] === 'soajs' && serviceInfo[2] === 'acl');
+		if (url_keyPermission) {
+			return soajs_keyPermission(req, res, next);
+		} else if (url_keyACL) {
+			return soajs_keyACL(req, res, next);
 		} else {
 			//check if proxy/redirect
 			//create proxy info object before calling extractbuildparams
-			let proxy = (serviceInfo[1] === 'proxy' && serviceInfo[2] === 'redirect');
-			let proxyInfo;
+			let proxy = false;
+			if (serviceInfo[1] === 'proxy' && serviceInfo[2] === 'redirect') {
+				req.soajs.log.error(new Error("Route: [/proxy/redirect] is deprecated. You should use [/soajs/proxy]."));
+				proxy = true;
+			} else if (serviceInfo[1] === 'soajs' && serviceInfo[2] === 'proxy') {
+				proxy = true;
+			}
+			let proxyInfo = null;
 			if (proxy) {
 				proxyInfo = {
 					query: parsedUrl.query,
@@ -75,31 +86,30 @@ module.exports = (configuration) => {
 						req.soajs.controller.serviceParams[param] = parameters[param];
 					}
 				}
-				/*
-				let d = domain.create();
-				d.add(req);
-				d.add(res);
-				d.on('error', function (err) {
-					req.soajs.log.error('Error', err, req.url);
-					try {
-						req.soajs.log.error('Controller domain error, trying to dispose ...');
-						res.on('close', function () {
-							d.dispose();
-						});
-					} catch (err) {
-						req.soajs.log.error('Controller domain error, unable to dispose: ', err, req.url);
-						d.dispose();
-					}
-				});
-				*/
-				let passportLogin = false;
-				if (serviceInfo[1] === "oauth") {
-					if (serviceInfo[2] === "passport" && serviceInfo[3] === "login") {
-						passportLogin = true;
-					}
-				}
 				
-				if ((serviceInfo[2] !== "swagger" || (serviceInfo[2] === "swagger" && serviceInfo[serviceInfo.length - 1] === 2)) && parameters.extKeyRequired) {
+				let set_gotoservice = () => {
+					
+					let passportLogin = false;
+					if (serviceInfo[1] === "oauth") {
+						if (serviceInfo[2] === "passport" && serviceInfo[3] === "login") {
+							passportLogin = true;
+						}
+					}
+					
+					let soajsroaming = req.get("soajsroaming");
+					
+					if (passportLogin) {
+						req.soajs.controller.gotoservice = simpleRTS;
+					} else if (soajsroaming) {
+						req.soajs.controller.gotoservice = roaming;
+					} else if (proxy) {
+						req.soajs.controller.gotoservice = proxyRequest;
+					} else {
+						req.soajs.controller.gotoservice = redirectToService;
+					}
+				};
+				
+				if (parameters.extKeyRequired) {
 					let key = req.headers.key || parsedUrl.query.key;
 					if (!key) {
 						return req.soajs.controllerResponse(core.error.getError(132));
@@ -110,24 +120,11 @@ module.exports = (configuration) => {
 							req.soajs.log.warn(err.message);
 							return req.soajs.controllerResponse(core.error.getError(132));
 						}
-						if (passportLogin) {
-							req.soajs.controller.gotoservice = simpleRTS;
-						} else if (proxy) {
-							req.soajs.controller.gotoservice = proxyRequest;
-						} else {
-							req.soajs.controller.gotoservice = redirectToService;
-						}
+						set_gotoservice();
 						return next();
 					});
 				} else {
-					if (passportLogin) {
-						req.soajs.controller.gotoservice = simpleRTS;
-					} else if (proxy) {
-						req.soajs.controller.gotoservice = proxyRequest;
-					} else {
-						req.soajs.controller.gotoservice = redirectToService;
-					}
-					
+					set_gotoservice();
 					return next();
 				}
 			});

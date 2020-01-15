@@ -42,6 +42,9 @@ module.exports = (configuration) => {
 			req.soajs.controllerResponse = function (jsonObj) {
 				let jsonRes = jsonObj;
 				if (req.soajs.buildResponse && jsonObj && jsonObj.code && jsonObj.msg) {
+					if (!jsonObj.status) {
+						jsonObj.status = 500;
+					}
 					jsonRes = req.soajs.buildResponse(jsonObj);
 				}
 				

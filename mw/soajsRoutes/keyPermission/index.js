@@ -24,8 +24,11 @@ module.exports = (configuration) => {
 	let returnKeyAndPermissions = (req) => {
 		let tenant = req.soajs.tenant;
 		
-		if (req.soajs.uracDriver && req.soajs.uracDriver.getProfile() && req.soajs.uracDriver.getProfile().tenant) {
-			tenant = req.soajs.uracDriver.getProfile().tenant;
+		if (req.soajs.uracDriver) {
+			let profile = req.soajs.uracDriver.getProfile(false);
+			if (profile && profile.tenant) {
+				tenant = profile.tenant;
+			}
 		}
 		
 		if (req.soajs.tenant.locked) {
@@ -94,6 +97,7 @@ module.exports = (configuration) => {
 	
 	return (req, res, next) => {
 		let serviceInfo = req.soajs.controller.serviceParams.serviceInfo;
+		req.soajs.log.error(new Error("Route: [/key/permission/get] is deprecated. You should use [/soajs/acl]."));
 		
 		//check if route is key/permission/get then you also need to bypass the exctract Build Param BL
 		let keyPermissionGet = (serviceInfo[1] === 'key' && serviceInfo[2] === 'permission' && serviceInfo[3] === 'get');

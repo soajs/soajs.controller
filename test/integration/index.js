@@ -32,6 +32,10 @@ describe("starting integration tests", () => {
 		// to test all http methods
 		require("./UC2-http-methods/index.js");
 		
+		
+		// to test roaming
+		require("./UC3-roaming/index.js");
+		
 		done();
 	});
 });

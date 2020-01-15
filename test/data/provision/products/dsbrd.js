@@ -82,31 +82,26 @@ let prod = {
 					"2": {
 						"access": true,
 						"apisPermission": "restricted",
-						"get": [{
-							"group": "Guest",
-							"apis": {
-								"/user": {
-									"access": false
-								},
-								"/luser": {
-									"access": false
+						"get": [
+							{
+								"group": "Guest",
+								"apis": {
+									"/user": {
+										"access": false
+									},
+									"/luser": {
+										"access": false
+									}
 								}
-							}
-						}, {
-							"group": "Login",
-							"apis": {
-								"/passport/login": {
-									"access": true
+							},
+							{
+								"group": "Member",
+								"apis": {
+									"/muser/:id": {
+										"access": true
+									}
 								}
-							}
-						}, {
-							"group": "Member",
-							"apis": {
-								"/muser/:id": {
-									"access": true
-								}
-							}
-						}],
+							}],
 					}
 				},
 				"dashboard": {
@@ -127,6 +122,16 @@ let prod = {
 				"oauth": {
 					"1": {
 						"access": false,
+						"get":[
+							{
+								"group": "Guest",
+								"apis": {
+									"/token": {
+										"access": false
+									}
+								}
+							}
+						],
 						"delete": [
 							{
 								"group": "Tokenization",
@@ -143,8 +148,21 @@ let prod = {
 										"access": true
 									}
 								}
+							},
+							{
+								"group": "Login",
+								"apis": {
+									"/passport/login": {
+										"access": true
+									}
+								}
 							}
 						]
+					}
+				},
+				"payment": {
+					"1": {
+						"access": true
 					}
 				}
 			}
@@ -234,6 +252,11 @@ let prod = {
 							"post": [
 								"Private Tenant ACL"
 							]
+						}
+					],
+					"payment": [
+						{
+							"version": "1"
 						}
 					]
 				}
