@@ -21,13 +21,11 @@ function Urac(param) {
 	_self.userRecord = null;
 	_self.user_ACL = null;
 	_self.id = null;
-	
 	if (param.oauth && 0 === param.oauth.type) {
 		_self.userRecord = param.oauth.bearerToken;
 	} else {
 		// if type === 2
 		if (param.oauth && param.oauth.bearerToken && param.oauth.bearerToken.user) {
-			
 			_self.id = param.oauth.bearerToken.user.id;
 			if (param.oauth.bearerToken.user.username) {
 				_self.username = param.oauth.bearerToken.user.username;
@@ -36,7 +34,12 @@ function Urac(param) {
 				_self.userRecord = param.oauth.bearerToken.user;
 			}
 			else if (_self.soajs.registry.serviceConfig.oauth.getUserFromToken) {
-				_self.userRecord = param.oauth.bearerToken.user;
+				// NOTE:
+				// if roaming, must load again user
+				// if the clientId is not the same as _self.soajs.tenant.id then we should get the record
+				if (!_self.soajs.tenant.roaming && (param.oauth.bearerToken.clientId === _self.soajs.tenant.id)) {
+					_self.userRecord = param.oauth.bearerToken.user;
+				}
 			}
 		} else if (param._id) {
 			_self.id = param._id;
