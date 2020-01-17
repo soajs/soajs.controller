@@ -501,31 +501,32 @@ let utils = {
 			});
 		};
 		
-		if (obj.req && obj.req.oauth && obj.req.oauth.bearerToken && obj.req.oauth.bearerToken.env === "dashboard") {
-			obj.req.soajs.tenant.roaming = {
-				"tId": obj.req.oauth.bearerToken.clientId,
-				"user": obj.req.oauth.bearerToken.user
-			};
-			
-			async.parallel({"tenant": getTenantInfo, "registry": getEnvRegistry}, function (error, response) {
-				if (error) {
-					return cb(170);
-				}
-				
-				if (response.registry && response.registry.tenantMetaDB) {
-					obj.req.soajs.tenant.roaming.tenantMetaDB = response.registry.tenantMetaDB;
-				}
-				obj.req.soajs.tenant.roaming.code = response.tenant.code;
-				
-				return callURACDriver();
-			});
-		}
-		else {
-			if (obj.req && obj.req.oauth && obj.req.oauth.bearerToken) {
-				return callURACDriver();
+		//NOTE: we go here only if the possibility of roaming is true
+		if (obj.req && obj.req.oauth && obj.req.oauth.bearerToken) {
+			if (obj.req.oauth.bearerToken.env === "dashboard" && obj.req.oauth.bearerToken.env !== obj.regEnvironment) {
+				async.parallel({"tenant": getTenantInfo, "registry": getEnvRegistry}, function (error, response) {
+					if (error) {
+						return cb(170);
+					}
+					//NOTE we need tId and id because in urac.driver we reference them both, we must fix urac.driver to use only 1 of them
+					obj.req.soajs.tenant.roaming = {
+						"tId": obj.req.oauth.bearerToken.clientId,
+						"id": obj.req.oauth.bearerToken.clientId,
+						"user": obj.req.oauth.bearerToken.user,
+						"code": response.tenant.code
+					};
+					
+					if (response.registry && response.registry.tenantMetaDB) {
+						obj.req.soajs.tenant.roaming.tenantMetaDB = response.registry.tenantMetaDB;
+					}
+					
+					return callURACDriver();
+				});
 			} else {
-				return cb(null, obj);
+				return callURACDriver();
 			}
+		} else {
+			return cb(null, obj);
 		}
 	},
 	
