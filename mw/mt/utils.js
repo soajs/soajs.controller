@@ -327,7 +327,8 @@ let utils = {
 					if (error) {
 						return cb(error, obj);
 					} else {
-						if (obj.req.oauth && obj.req.oauth.bearerToken && obj.req.oauth.bearerToken.user && (obj.req.oauth.bearerToken.user.loginMode === 'urac') && obj.req.oauth.bearerToken.user.pinLocked) {
+						
+						let pin_allowedAPI_check = () => {
 							if (obj.soajs.oauthService && (obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name) && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.pinApi)) {
 								return cb(null, obj);
 							} else if (obj.req.soajs.registry &&
@@ -356,7 +357,21 @@ let utils = {
 								}
 								return cb(145, obj);
 							}
+						};
+						
+						if (obj.req.oauth && obj.req.oauth.bearerToken && obj.req.oauth.bearerToken.user && (obj.req.oauth.bearerToken.user.loginMode === 'urac') && obj.req.oauth.bearerToken.user.pinLocked) {
+							return pin_allowedAPI_check();
 						} else {
+							let product = null;
+							if (obj.req.soajs.tenant && obj.req.soajs.tenant.application) {
+								product = obj.req.soajs.tenant.application.product;
+							}
+							if (product && obj.req.oauth.bearerToken.user.loginMode === 'urac' && obj.req.soajs.tenantOauth.pin && obj.req.soajs.tenantOauth.pin[product] && obj.req.soajs.tenantOauth.pin[product].enabled) {
+								if (obj.req.oauth.bearerToken.user.pinLogin) {
+									return cb(null, obj);
+								}
+								return pin_allowedAPI_check();
+							}
 							return cb(null, obj);
 						}
 					}
