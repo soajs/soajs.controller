@@ -48,6 +48,7 @@ module.exports = () => {
 					if (obj.service_v) {
 						let san_v = coreLibs.version.sanitize(obj.service_v);
 						if (!aclObj[san_v]) {
+							obj.req.soajs.log.error("Problem accessing service [" + obj.req.soajs.controller.serviceParams.service_n + "] & version [" + obj.req.soajs.controller.serviceParams.service_v + "]");
 							return cb(154, null);
 						}
 						aclObj = aclObj[san_v];

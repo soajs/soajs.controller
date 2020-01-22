@@ -157,6 +157,7 @@ module.exports = (configuration) => {
 									}
 									
 									if (err) {
+										req.soajs.log.error("Problem accessing service [" + req.soajs.controller.serviceParams.name + "], API [" + req.soajs.controller.serviceParams.path + "] & version [" + req.soajs.controller.serviceParams.version + "]");
 										return next(err);
 									} else {
 										let serviceName = data.req.soajs.controller.serviceParams.name;
