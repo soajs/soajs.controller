@@ -14,8 +14,6 @@ module.exports = (configuration) => {
 	let core = configuration.core;
 	
 	let return_SOAJS_keyACL = (req) => {
-		let tenant = req.soajs.tenant;
-		
 		let ACL = null;
 		if (req.soajs.uracDriver) {
 			ACL = req.soajs.uracDriver.getAcl();
