@@ -20,8 +20,13 @@ module.exports = (configuration) => {
 		if (req.soajs.uracDriver) {
 			ACL = req.soajs.uracDriver.getAcl();
 		}
-		if (!ACL) {
-			ACL = tenant.application.acl;
+		if (!ACL && req.soajs.controller.serviceParams.keyObj.application.acl) {
+			req.soajs.log.debug("Found ACL at Tenant Application level, overriding default ACL configuration.");
+			ACL = req.soajs.controller.serviceParams.keyObj.application.acl;
+		}
+		if (!ACL && req.soajs.controller.serviceParams.packObj.acl) {
+			req.soajs.log.debug("Found Default ACL at Package level, setting default ACL configuration.");
+			ACL = req.soajs.controller.serviceParams.packObj.acl;
 		}
 		let finalACL = null;
 		if (ACL) {
