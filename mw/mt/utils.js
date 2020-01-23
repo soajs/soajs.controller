@@ -92,6 +92,45 @@ let _api = {
 };
 
 let utils = {
+	
+	"ipWhitelist": (obj, cb) => {
+		if (obj.req.soajs.registry &&
+			obj.req.soajs.registry.custom &&
+			obj.req.soajs.registry.custom.gateway &&
+			obj.req.soajs.registry.custom.gateway.value &&
+			obj.req.soajs.registry.custom.gateway.value.acl &&
+			obj.req.soajs.registry.custom.gateway.value.acl.whitelist) {
+			let clientIp = obj.req.getClientIP();
+			let geoAccess = obj.req.soajs.registry.custom.gateway.value.acl.whitelist; //["127.0.0.0/8"];
+			
+			let checkAccess = (geoAccessArr, ip) => {
+				return (geoAccessArr.some(function (addr) {
+					try {
+						let block = new Netmask(addr);
+						return block.contains(ip);
+					} catch (err) {
+						obj.req.soajs.log.error('Geographic security configuration failed: ', addr);
+						obj.req.soajs.log.error(err);
+					}
+					return false;
+				}));
+			};
+			
+			if (clientIp && geoAccess && geoAccess && Array.isArray(geoAccess)) {
+				let allowed = checkAccess(geoAccess.allow, clientIp);
+				if (!allowed) {
+					obj.req.soajs.log.debug("ACL skip detected for ip: " + clientIp);
+					obj.skipACL = true;
+				}
+			}
+			
+			return cb(null, obj);
+		} else {
+			obj.skipACL = false;
+			return cb(null, obj);
+		}
+	},
+	
 	"aclUrackCheck": (obj, cb) => {
 		if (!obj.req.soajs.uracDriver) {
 			return cb(null, obj);
@@ -148,6 +187,9 @@ let utils = {
 	 * @returns {function}
 	 */
 	"serviceCheck": (obj, cb) => {
+		if (obj.skipACL) {
+			return cb(null, obj);
+		}
 		let system = _system.getAcl(obj);
 		if (system) {
 			return cb(null, obj);
@@ -165,6 +207,9 @@ let utils = {
 	 * @returns {function}
 	 */
 	"securityGeoCheck": (obj, cb) => {
+		if (obj.skipACL) {
+			return cb(null, obj);
+		}
 		let clientIp = obj.req.getClientIP();
 		let geoAccess = obj.keyObj.geo; //{"allow": ["127.0.0.1"], "deny": []};
 		obj.geo = {"ip": clientIp};
@@ -208,6 +253,9 @@ let utils = {
 	 * @returns {function}
 	 */
 	"securityDeviceCheck": (obj, cb) => {
+		if (obj.skipACL) {
+			return cb(null, obj);
+		}
 		let clientUA = obj.req.getClientUserAgent();
 		let deviceAccess = obj.keyObj.device; //{"allow": [{"family": "chrome"}], "deny": []};
 		obj.device = clientUA;
@@ -552,6 +600,9 @@ let utils = {
 	 * @returns {function}
 	 */
 	"apiCheck": (obj, cb) => {
+		if (obj.skipACL) {
+			return cb(null, obj);
+		}
 		let system = _system.getAcl(obj);
 		let api = (system && system.apis ? system.apis[obj.req.soajs.controller.serviceParams.path] : null);
 		if (!api && system && system.apisRegExp && Object.keys(system.apisRegExp).length) {

@@ -11,6 +11,7 @@
 const async = require("async");
 
 const utils = require("./utils");
+const Netmask = require('netmask').Netmask;
 
 /**
  *
@@ -127,6 +128,8 @@ module.exports = (configuration) => {
 										"packObj": packObj
 									});
 								}];
+								
+								serviceCheckArray.push(utils.ipWhitelist);
 								
 								serviceCheckArray.push(utils.securityGeoCheck);
 								serviceCheckArray.push(utils.securityDeviceCheck);
