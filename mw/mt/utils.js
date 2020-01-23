@@ -94,15 +94,18 @@ let _api = {
 let utils = {
 	
 	"ipWhitelist": (obj, cb) => {
+		
+		obj.skipACL = false;
+		obj.skipOAUTH = false;
+		
 		if (obj.req.soajs.registry &&
 			obj.req.soajs.registry.custom &&
 			obj.req.soajs.registry.custom.gateway &&
 			obj.req.soajs.registry.custom.gateway.value &&
-			obj.req.soajs.registry.custom.gateway.value.acl &&
-			obj.req.soajs.registry.custom.gateway.value.acl.whitelist) {
+			obj.req.soajs.registry.custom.gateway.value.mt &&
+			obj.req.soajs.registry.custom.gateway.value.mt.whitelist) {
 			let clientIp = obj.req.getClientIP();
-			let geoAccess = obj.req.soajs.registry.custom.gateway.value.acl.whitelist; //["127.0.0.0/8"];
-			
+			let geoAccess = obj.req.soajs.registry.custom.gateway.value.mt.whitelist; //["127.0.0.0/8"];
 			let checkAccess = (geoAccessArr, ip) => {
 				return (geoAccessArr.some(function (addr) {
 					try {
@@ -115,23 +118,29 @@ let utils = {
 					return false;
 				}));
 			};
-			
 			if (clientIp && geoAccess && geoAccess && Array.isArray(geoAccess)) {
 				let allowed = checkAccess(geoAccess.allow, clientIp);
 				if (!allowed) {
 					obj.req.soajs.log.debug("ACL skip detected for ip: " + clientIp);
-					obj.skipACL = true;
+					if (obj.req.soajs.registry.custom.gateway.value.mt.acl) {
+						obj.skipACL = true;
+					}
+					if (obj.req.soajs.registry.custom.gateway.value.mt.oauth) {
+						obj.skipOAUTH = true;
+					}
 				}
 			}
 			
 			return cb(null, obj);
 		} else {
-			obj.skipACL = false;
 			return cb(null, obj);
 		}
 	},
 	
 	"aclUrackCheck": (obj, cb) => {
+		if (obj.skipOAUTH) {
+			return cb(null, obj);
+		}
 		if (!obj.req.soajs.uracDriver) {
 			return cb(null, obj);
 		}
@@ -361,7 +370,10 @@ let utils = {
 	 * @returns {function}
 	 */
 	"oauthCheck": (obj, cb) => {
-		let oAuthTurnedOn = true;
+		if (obj.skipOAUTH) {
+			return cb(null, obj);
+		}
+		let oAuthTurnedOn = false;
 		if (obj.soajs.oauth) {
 			oAuthTurnedOn = true;
 		}
@@ -496,6 +508,9 @@ let utils = {
 	 * @returns {*}
 	 */
 	"uracCheck": (obj, cb) => {
+		if (obj.skipOAUTH) {
+			return cb(null, obj);
+		}
 		let callURACDriver = function () {
 			obj.req.soajs.uracDriver = new UracDriver({"soajs": obj.req.soajs, "oauth": obj.req.oauth});
 			obj.req.soajs.uracDriver.init((error) => {

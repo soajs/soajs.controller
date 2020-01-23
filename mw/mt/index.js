@@ -11,7 +11,6 @@
 const async = require("async");
 
 const utils = require("./utils");
-const Netmask = require('netmask').Netmask;
 
 /**
  *
