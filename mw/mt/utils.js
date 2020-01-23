@@ -103,9 +103,10 @@ let utils = {
 			obj.req.soajs.registry.custom.gateway &&
 			obj.req.soajs.registry.custom.gateway.value &&
 			obj.req.soajs.registry.custom.gateway.value.mt &&
-			obj.req.soajs.registry.custom.gateway.value.mt.whitelist) {
+			obj.req.soajs.registry.custom.gateway.value.mt.whitelist &&
+			obj.req.soajs.registry.custom.gateway.value.mt.whitelist.ips) {
 			let clientIp = obj.req.getClientIP();
-			let geoAccess = obj.req.soajs.registry.custom.gateway.value.mt.whitelist; //["127.0.0.0/8"];
+			let geoAccess = obj.req.soajs.registry.custom.gateway.value.mt.whitelist.ips; //["127.0.0.0/8"];
 			let checkAccess = (geoAccessArr, ip) => {
 				return (geoAccessArr.some(function (addr) {
 					try {
@@ -122,10 +123,10 @@ let utils = {
 				let allowed = checkAccess(geoAccess.allow, clientIp);
 				if (!allowed) {
 					obj.req.soajs.log.debug("ACL skip detected for ip: " + clientIp);
-					if (obj.req.soajs.registry.custom.gateway.value.mt.acl) {
+					if (obj.req.soajs.registry.custom.gateway.value.mt.whitelist.acl) {
 						obj.skipACL = true;
 					}
-					if (obj.req.soajs.registry.custom.gateway.value.mt.oauth) {
+					if (obj.req.soajs.registry.custom.gateway.value.mt.whitelist.oauth) {
 						obj.skipOAUTH = true;
 					}
 				}
