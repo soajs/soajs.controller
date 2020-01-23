@@ -97,7 +97,19 @@ let utils = {
 		
 		obj.skipACL = false;
 		obj.skipOAUTH = false;
-		
+		/**
+		 * obj.req.soajs.registry.custom.gateway.value.mt
+		 * {
+			  "mt": {
+			    "whitelist": {
+			        "ips": ["10.0.0.0/8"],
+			        "acl": true,
+			        "oauth": true
+			    }
+			  }
+			}
+		 *
+		 */
 		if (obj.req.soajs.registry &&
 			obj.req.soajs.registry.custom &&
 			obj.req.soajs.registry.custom.gateway &&
