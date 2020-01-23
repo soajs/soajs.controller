@@ -113,15 +113,15 @@ let utils = {
 						let block = new Netmask(addr);
 						return block.contains(ip);
 					} catch (err) {
-						obj.req.soajs.log.error('Geographic security configuration failed: ', addr);
+						obj.req.soajs.log.error('IP whitelist security configuration failed: ', addr);
 						obj.req.soajs.log.error(err);
 					}
 					return false;
 				}));
 			};
 			if (clientIp && geoAccess && geoAccess && Array.isArray(geoAccess)) {
-				let allowed = checkAccess(geoAccess.allow, clientIp);
-				if (!allowed) {
+				let matched = checkAccess(geoAccess, clientIp);
+				if (matched) {
 					obj.req.soajs.log.debug("ACL skip detected for ip: " + clientIp);
 					if (obj.req.soajs.registry.custom.gateway.value.mt.whitelist.acl) {
 						obj.skipACL = true;
