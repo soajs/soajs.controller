@@ -422,11 +422,23 @@ let utils = {
 									obj.req.soajs.registry.custom.oauth.value &&
 									obj.req.soajs.registry.custom.oauth.value.pinWhitelist &&
 									obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name]) {
+									
 									let method = obj.req.method.toLocaleLowerCase();
 									let whitelist = obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name];
-									if (whitelist[method] && Array.isArray(whitelist[method]) && whitelist[method].includes(obj.req.soajs.controller.serviceParams.path)) {
-										return cb(null, obj);
+									
+									if (whitelist[method] && whitelist[method].apis && Array.isArray(whitelist[method].apis)) {
+										if (whitelist[method].apis.includes(obj.req.soajs.controller.serviceParams.path)) {
+											return cb(null, obj);
+										}
 									}
+									if (whitelist[method] && whitelist[method].regex && Array.isArray(whitelist[method].regex)) {
+										for (let i = 0; i < whitelist[method].regex.length; i++) {
+											if (obj.req.soajs.controller.serviceParams.path.match(whitelist[method].regex[i])) {
+												return cb(null, obj);
+											}
+										}
+									}
+									
 								}
 								return cb(145, obj);
 							}
