@@ -112,6 +112,7 @@ module.exports = (configuration) => {
 			req.soajs.controller.serviceParams.registry = req.soajs.registry.services[serviceName];
 			req.soajs.controller.serviceParams.name = serviceName;
 			req.soajs.controller.serviceParams.url = "/key/permission/get";
+			req.soajs.controller.serviceParams.path = "/key/permission/get";
 			req.soajs.controller.serviceParams.version = "1";
 			req.soajs.controller.serviceParams.extKeyRequired = true;
 			req.soajs.controller.serviceParams.registry.versions = {
