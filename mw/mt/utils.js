@@ -426,18 +426,23 @@ let utils = {
 									let method = obj.req.method.toLocaleLowerCase();
 									let whitelist = obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name];
 									
-									if (whitelist[method] && whitelist[method].apis && Array.isArray(whitelist[method].apis)) {
-										if (whitelist[method].apis.includes(obj.req.soajs.controller.serviceParams.path)) {
-											return cb(null, obj);
-										}
-									}
-									if (whitelist[method] && whitelist[method].regex && Array.isArray(whitelist[method].regex)) {
-										for (let i = 0; i < whitelist[method].regex.length; i++) {
-											if (obj.req.soajs.controller.serviceParams.path.match(whitelist[method].regex[i])) {
+									obj.req.soajs.log.debug("pinWhitelist detected for service [" + obj.req.soajs.controller.serviceParams.name + "]");
+									if (whitelist[method]) {
+										console.log(whitelist[method]);
+										if (whitelist[method].apis && Array.isArray(whitelist[method].apis)) {
+											if (whitelist[method].apis.includes(obj.req.soajs.controller.serviceParams.path)) {
 												return cb(null, obj);
 											}
 										}
+										if (whitelist[method].regex && Array.isArray(whitelist[method].regex)) {
+											for (let i = 0; i < whitelist[method].regex.length; i++) {
+												if (obj.req.soajs.controller.serviceParams.path.match(whitelist[method].regex[i])) {
+													return cb(null, obj);
+												}
+											}
+										}
 									}
+									obj.req.soajs.log.debug("pinWhitelist not found for method [" + method + "] and path [" + obj.req.soajs.controller.serviceParams.path + "]");
 									
 								}
 								return cb(145, obj);
