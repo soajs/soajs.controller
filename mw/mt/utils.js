@@ -19,6 +19,17 @@ const merge = require('merge');
 
 const UracDriver = require("./urac.js");
 
+
+const { pathToRegexp } = require("path-to-regexp");
+function constructRegExp(route) {
+	let keys = [];
+	let out = pathToRegexp(route, keys, {sensitive: true});
+	if (out && out.keys && out.keys.length > 0) {
+		out = new RegExp(out.toString());
+	}
+	return out;
+}
+
 /**
  * Contains functions to calculate and retrieve the ACL based on SOAJS layers
  *
@@ -436,7 +447,8 @@ let utils = {
 										}
 										if (whitelist[method].regex && Array.isArray(whitelist[method].regex)) {
 											for (let i = 0; i < whitelist[method].regex.length; i++) {
-												if (obj.req.soajs.controller.serviceParams.path.match(whitelist[method].regex[i])) {
+												let regexp_out = constructRegExp (whitelist[method].regex[i]);
+												if (obj.req.soajs.controller.serviceParams.path.match(regexp_out)) {
 													return cb(null, obj);
 												}
 											}
