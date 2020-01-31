@@ -439,7 +439,6 @@ let utils = {
 									
 									obj.req.soajs.log.debug("pinWhitelist detected for service [" + obj.req.soajs.controller.serviceParams.name + "]");
 									if (whitelist[method]) {
-										console.log(whitelist[method]);
 										if (whitelist[method].apis && Array.isArray(whitelist[method].apis)) {
 											if (whitelist[method].apis.includes(obj.req.soajs.controller.serviceParams.path)) {
 												return cb(null, obj);
