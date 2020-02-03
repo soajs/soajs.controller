@@ -20,7 +20,8 @@ const merge = require('merge');
 const UracDriver = require("./urac.js");
 
 
-const { pathToRegexp } = require("path-to-regexp");
+const {pathToRegexp} = require("path-to-regexp");
+
 function constructRegExp(route) {
 	let keys = [];
 	let out = pathToRegexp(route, keys, {sensitive: true});
@@ -413,7 +414,13 @@ let utils = {
 					} else {
 						
 						let pin_allowedAPI_check = () => {
+							// Skip is this is pin login route on oauth
+							// Skip if route on controller
+							// Skip if pinWrapper route aka custom pin login
+							// Skip if in pinWhitelist
 							if (obj.soajs.oauthService && (obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name) && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.pinApi)) {
+								return cb(null, obj);
+							} else if (obj.req.soajs.controller.serviceParams.name === "controller") {
 								return cb(null, obj);
 							} else if (obj.req.soajs.registry &&
 								obj.req.soajs.registry.custom &&
@@ -446,7 +453,7 @@ let utils = {
 										}
 										if (whitelist[method].regex && Array.isArray(whitelist[method].regex)) {
 											for (let i = 0; i < whitelist[method].regex.length; i++) {
-												let regexp_out = constructRegExp (whitelist[method].regex[i]);
+												let regexp_out = constructRegExp(whitelist[method].regex[i]);
 												if (obj.req.soajs.controller.serviceParams.path.match(regexp_out)) {
 													return cb(null, obj);
 												}

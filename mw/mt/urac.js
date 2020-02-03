@@ -234,4 +234,18 @@ Urac.prototype.getGroups = function () {
 	return groups;
 };
 
+Urac.prototype.getAllowedPackages = function () {
+	let _self = this;
+	let allowedPackages = null;
+	if (_self.userRecord) {
+		let productCode = _self.soajs.tenant.application.product;
+		if (_self.userRecord.groupsConfig && _self.userRecord.groupsConfig.allowedPackages) {
+			if (_self.userRecord.groupsConfig.allowedPackages[productCode]) {
+				allowedPackages = _self.userRecord.groupsConfig.allowedPackages[productCode];
+			}
+		}
+	}
+	return allowedPackages;
+};
+
 module.exports = Urac;

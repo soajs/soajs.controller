@@ -15,8 +15,13 @@ module.exports = (configuration) => {
 	
 	let return_SOAJS_keyACL = (req) => {
 		let ACL = null;
+		let ALLOWED_PACKAGES = null;
 		if (req.soajs.uracDriver) {
 			ACL = req.soajs.uracDriver.getAcl();
+			ALLOWED_PACKAGES = req.soajs.uracDriver.getAllowedPackages();
+		}
+		if (!ALLOWED_PACKAGES && req.soajs.controller.serviceParams.keyObj.application.package) {
+			ALLOWED_PACKAGES = [req.soajs.controller.serviceParams.keyObj.application.package];
 		}
 		if (!ACL && req.soajs.controller.serviceParams.keyObj.application.acl) {
 			req.soajs.log.debug("Found ACL at Tenant Application level, overriding default ACL configuration.");
@@ -68,7 +73,8 @@ module.exports = (configuration) => {
 		}
 		let response = {
 			"acl": ACL,
-			"finalACL": finalACL
+			"finalACL": finalACL,
+			"packages": ALLOWED_PACKAGES
 		};
 		return req.soajs.controllerResponse(response);
 	};
