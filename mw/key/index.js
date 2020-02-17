@@ -36,6 +36,7 @@ module.exports = (configuration) => {
 					}
 					configuration.provision.getPackageData(keyObj.application.package, function (err, packObj) {
 						if (err) {
+							req.soajs.log.error("Unable to fetch data about package [" + keyObj.application.package + "]");
 							req.soajs.log.error(err);
 							return next();
 						}
