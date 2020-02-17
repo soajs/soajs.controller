@@ -41,6 +41,8 @@ module.exports = (configuration) => {
 						if (!packObj) {
 							return next(149);
 						}
+						console.log("====packObj")
+						console.log(packObj)
 						req.soajs.controller.serviceParams.packObj = packObj;
 						
 						return next();
