@@ -36,13 +36,13 @@ module.exports = (configuration) => {
 					}
 					configuration.provision.getPackageData(keyObj.application.package, function (err, packObj) {
 						if (err) {
+							req.soajs.log.error(err);
 							return next();
 						}
 						if (!packObj) {
 							return next(149);
 						}
-						console.log("====packObj")
-						console.log(packObj)
+						
 						req.soajs.controller.serviceParams.packObj = packObj;
 						
 						return next();
