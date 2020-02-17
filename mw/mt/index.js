@@ -103,6 +103,7 @@ module.exports = (configuration) => {
 							}
 							req.soajs.tenant.application = keyObj.application;
 							
+							console.log(req.soajs.controller.serviceParams);
 							let packObj = req.soajs.controller.serviceParams.packObj;
 							if (packObj) {
 								req.soajs.tenant.application.package_acl = packObj.acl;
