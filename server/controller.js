@@ -168,7 +168,7 @@ Controller.prototype.init = function (callback) {
 						
 						req.on("close", () => {
 							if (req.soajs.controller.redirectedRequest) {
-								req.soajs.log.info("Request aborted:", req.url);
+								req.soajs.log.info("Request closed:", req.url);
 								req.soajs.controller.redirectedRequest.abort();
 							}
 						});

@@ -39,69 +39,81 @@ module.exports = (req, res, core, cb) => {
 		req.soajs.controller.renewalCount = 0;
 		req.soajs.controller.monitorEndingReq = false;
 		
+		let isStream = false;
+		
 		let renewReqMonitor = function () {
-			req.soajs.log.warn('Request is taking too much time ...');
-			req.soajs.controller.renewalCount++;
-			
-			if (req.soajs.controller.renewalCount < requestTOR) {
-				req.soajs.log.info('Trying to keep request alive by checking the service heartbeat ...');
+			if (!isStream) {
+				req.soajs.log.warn('Request is taking too much time ...');
+				req.soajs.controller.renewalCount++;
 				
-				let uri = 'http://' + host + ':' + (restServiceParams.registry.port + req.soajs.registry.serviceConfig.ports.maintenanceInc) + '/heartbeat';
-				
-				if (restServiceParams.registry.maintenance && restServiceParams.registry.maintenance.readiness && restServiceParams.registry.maintenance.port) {
-					let maintenancePort = port;
-					let path = restServiceParams.registry.maintenance.readiness;
-					if ("maintenance" === restServiceParams.registry.maintenance.port.type) {
-						maintenancePort = maintenancePort + req.soajs.registry.serviceConfig.ports.maintenanceInc;
-					} else if ("inherit" === restServiceParams.registry.maintenance.port.type) {
-						maintenancePort = port;
-					} else {
-						let tempPort = parseInt(restServiceParams.registry.maintenance.port.value);
-						if (!isNaN(tempPort)) {
-							maintenancePort = restServiceParams.registry.maintenance.port.value;
+				if (req.soajs.controller.renewalCount < requestTOR) {
+					req.soajs.log.info('Trying to keep request alive by checking the service heartbeat ... ' + req.soajs.controller.renewalCount);
+					
+					let uri = 'http://' + host + ':' + (restServiceParams.registry.port + req.soajs.registry.serviceConfig.ports.maintenanceInc) + '/heartbeat';
+					
+					if (restServiceParams.registry.maintenance && restServiceParams.registry.maintenance.readiness && restServiceParams.registry.maintenance.port) {
+						let maintenancePort = port;
+						let path = restServiceParams.registry.maintenance.readiness;
+						if ("maintenance" === restServiceParams.registry.maintenance.port.type) {
+							maintenancePort = maintenancePort + req.soajs.registry.serviceConfig.ports.maintenanceInc;
+						} else if ("inherit" === restServiceParams.registry.maintenance.port.type) {
+							maintenancePort = port;
+						} else {
+							let tempPort = parseInt(restServiceParams.registry.maintenance.port.value);
+							if (!isNaN(tempPort)) {
+								maintenancePort = restServiceParams.registry.maintenance.port.value;
+							}
 						}
+						uri = 'http://' + host + ':' + maintenancePort + path;
 					}
-					uri = 'http://' + host + ':' + maintenancePort + path;
-				}
-				req.soajs.log.info("heartbeat @: " + uri);
-				request({
-					'uri': uri,
-					'headers': req.headers
-				}, function (error, response) {
-					let resContentType = res.getHeader('content-type');
-					let isStream = false;
-					if (resContentType) {
-						isStream = resContentType.match(/stream/i);
-					}
-					if (!error && response.statusCode === 200) {
-						if (isStream) {
-							req.soajs.controller.renewalCount--;
-							req.soajs.log.info('Stream detected for [' + req.url + ']. Connection will remain open ...');
+					req.soajs.log.info("heartbeat @: " + uri);
+					request({
+						'uri': uri,
+						'headers': req.headers
+					}, function (error, response) {
+						let resContentType = res.getHeader('content-type');
+						//let isStream = false;
+						if (resContentType) {
+							isStream = resContentType.match(/stream/i);
 						}
-						else {
-							req.soajs.log.info('... able to renew request for ', requestTO, 'seconds');
-							res.setTimeout(timeToRenew, renewReqMonitor);
+						if (!error && response.statusCode === 200) {
+							if (isStream) {
+								req.soajs.controller.renewalCount--;
+								req.soajs.log.info('Stream detected for [' + req.url + ']. Connection will remain open ...');
+							} else {
+								req.soajs.log.info('... able to renew request for ', requestTO, 'seconds');
+								res.setTimeout(timeToRenew, renewReqMonitor);
+							}
+						} else {
+							req.soajs.controller.monitorEndingReq = true;
+							req.soajs.log.error('Service heartbeat is not responding');
+							req.soajs.controller.redirectedRequest.abort();
+							return req.soajs.controllerResponse(core.error.getError(133));
 						}
-					} else {
-						req.soajs.controller.monitorEndingReq = true;
-						req.soajs.log.error('Service heartbeat is not responding');
+					});
+				} else {
+					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.log.info("Request aborted: " + req.soajs.controller.renewalCount + " ", req.url);
 						req.soajs.controller.redirectedRequest.abort();
-						return req.soajs.controllerResponse(core.error.getError(133));
 					}
-				});
-			} else {
-				if (req.soajs.controller.redirectedRequest) {
-					req.soajs.log.info("Request aborted:", req.url);
-					req.soajs.controller.redirectedRequest.abort();
-				}
-				if (!req.soajs.controller.monitorEndingReq) {
-					req.soajs.controller.monitorEndingReq = true;
-					req.soajs.log.error('Request time exceeded the requestTimeoutRenewal:', requestTO + requestTO * requestTOR);
-					return req.soajs.controllerResponse(core.error.getError(134));
+					if (!req.soajs.controller.monitorEndingReq) {
+						req.soajs.controller.monitorEndingReq = true;
+						req.soajs.log.error('Request time exceeded the requestTimeoutRenewal:', requestTO + requestTO * requestTOR);
+						return req.soajs.controllerResponse(core.error.getError(134));
+					}
 				}
 			}
 		};
-		res.setTimeout(timeToRenew, renewReqMonitor);
+		if (req.soajs.registry &&
+			req.soajs.registry.custom &&
+			req.soajs.registry.custom.gateway &&
+			req.soajs.registry.custom.gateway.value &&
+			req.soajs.registry.custom.gateway.value.gotoService &&
+			req.soajs.registry.custom.gateway.value.gotoService.renewReqMonitorOff) {
+			req.soajs.log.debug("renewReqMonitor: is OFF");
+		} else {
+			res.setTimeout(timeToRenew, renewReqMonitor);
+		}
 		
 		return cb({
 			'host': host,
