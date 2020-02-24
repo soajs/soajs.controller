@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs API gateway",
-  "version": "3.0.25",
+  "version": "3.0.26",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -18,7 +18,7 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "async": "3.1.1",
+    "async": "3.2.0",
     "connect": "3.7.0",
     "http-proxy": "1.18.0",
     "jsonwebtoken": "8.5.1",
@@ -31,7 +31,7 @@
     "validator": "12.2.0",
     "soajs.core.libs": "1.2.0",
     "soajs.core.modules": "3.1.5",
-    "soajs.core.drivers": "3.5.35",
+    "soajs.core.drivers": "3.5.36",
     "soajs.urac.driver": "2.1.5"
   },
   "devDependencies": {
