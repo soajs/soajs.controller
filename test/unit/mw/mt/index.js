@@ -115,8 +115,8 @@ describe("Unit test for: mw - mt", () => {
             done();
         });
     });
-    it("test keyPermission route", (done) => {
-        req.soajs.controller.serviceParams.serviceInfo = ['', 'key', 'permission', 'get'];
+    it("test soajs/acl route", (done) => {
+        req.soajs.controller.serviceParams.serviceInfo = ['', 'soajs', 'acl', 'get'];
         let functionMw = mw(configuration);
         functionMw(req, res, () => {
             done();

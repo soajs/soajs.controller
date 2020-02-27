@@ -35,7 +35,6 @@ module.exports = (configuration) => {
 		} else if (urlInfo[1] === 'soajs' && urlInfo[2] === 'proxy') {
 			proxy = true;
 		}
-		let url_keyPermission = (urlInfo[1] === 'key' && urlInfo[2] === 'permission' && urlInfo[3] === 'get');
 		let url_keyACL = (urlInfo[1] === 'soajs' && urlInfo[2] === 'acl');
 		
 		let serviceParam = {};
@@ -148,7 +147,7 @@ module.exports = (configuration) => {
 								async.waterfall(serviceCheckArray, (err, data) => {
 									
 									//if this is controller route: /key/permission/get, ignore async waterfall response
-									if (url_keyPermission || url_keyACL) {
+									if (url_keyACL) {
 										if (!req.soajs.uracDriver) {
 											//doesn't work if you are not logged in
 											return next(158);

@@ -8,7 +8,6 @@
  * found in the LICENSE file at the root of this repository
  */
 
-const gtw_keyPermission = require("./../soajsRoutes/keyPermission/index.js");
 const gtw_keyACL = require("./../soajsRoutes/keyACL/index.js");
 
 /**
@@ -20,7 +19,6 @@ module.exports = (configuration) => {
 	let provision = configuration.provision;
 	let core = configuration.core;
 	
-	let soajs_keyPermission = gtw_keyPermission({"provision": provision, "core": core});
 	let soajs_keyACL = gtw_keyACL({"provision": provision, "core": core});
 	
 	let extractBuildParameters = require("./lib/extractBuildParameters.js");
@@ -38,12 +36,9 @@ module.exports = (configuration) => {
 		let service_n = req.soajs.controller.serviceParams.service_n;
 		let service_v = req.soajs.controller.serviceParams.service_v;
 		
-		//check if route is key/permission/get then you also need to bypass the exctract Build Param BL
-		let url_keyPermission = (serviceInfo[1] === 'key' && serviceInfo[2] === 'permission' && serviceInfo[3] === 'get');
+		//check if route is soajs/acl then you also need to bypass the exctract Build Param BL
 		let url_keyACL = (serviceInfo[1] === 'soajs' && serviceInfo[2] === 'acl');
-		if (url_keyPermission) {
-			return soajs_keyPermission(req, res, next);
-		} else if (url_keyACL) {
+		if (url_keyACL) {
 			return soajs_keyACL(req, res, next);
 		} else {
 			//check if proxy/redirect

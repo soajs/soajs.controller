@@ -32,7 +32,7 @@
     "soajs.core.libs": "1.2.0",
     "soajs.core.modules": "3.1.5",
     "soajs.core.drivers": "3.5.36",
-    "soajs.urac.driver": "2.1.5"
+    "soajs.urac.driver": "2.1.8"
   },
   "devDependencies": {
     "express": "4.17.1",
