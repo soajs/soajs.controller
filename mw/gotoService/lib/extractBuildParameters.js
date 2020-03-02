@@ -68,7 +68,7 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 				if (pathIndex !== -1) {
 					path = path.substring(0, pathIndex);
 					pathIndex = path.lastIndexOf("/");
-					if (pathIndex === (path.length - 1)) {
+					if (pathIndex > 0 && pathIndex === (path.length - 1)) {
 						path = path.substring(0, pathIndex);
 					}
 				}
