@@ -17,6 +17,7 @@ module.exports = (configuration) => {
 		let ACL = null;
 		let ALLOWED_PACKAGES = null;
 		if (req.soajs.uracDriver) {
+			req.soajs.log.debug("soajsRoute keyACL: uracDriver detected.");
 			ACL = req.soajs.uracDriver.getAcl();
 			ALLOWED_PACKAGES = req.soajs.uracDriver.getAllowedPackages();
 		}
