@@ -237,11 +237,8 @@ Urac.prototype.getGroups = function () {
 Urac.prototype.getAllowedPackages = function () {
 	let _self = this;
 	let allowedPackages = null;
-	console.log(JSON.stringify(_self.userRecord));
 	if (_self.userRecord) {
-		console.log(_self.soajs.tenant.application);
 		let productCode = _self.soajs.tenant.application.product;
-		console.log(productCode);
 		if (_self.userRecord.groupsConfig && _self.userRecord.groupsConfig.allowedPackages) {
 			if (_self.userRecord.groupsConfig.allowedPackages[productCode]) {
 				allowedPackages = _self.userRecord.groupsConfig.allowedPackages[productCode];
