@@ -24,19 +24,19 @@ module.exports = () => {
 		let finalAcl = null;
 		
 		if (!aclObj && obj.keyObj.application.acl) {
-			obj.req.soajs.log.debug("Found ACL at Tenant Application level, overriding default ACL configuration.");
+			obj.req.soajs.log.debug("keyACL: Found ACL at Tenant Application level, overriding default ACL configuration.");
 			aclObj = obj.keyObj.application.acl[obj.req.soajs.controller.serviceParams.name];
 		}
 		if (!aclObj && obj.packObj.acl) {
-			obj.req.soajs.log.debug("Found Default ACL at Package level, setting default ACL configuration.");
+			obj.req.soajs.log.debug("keyACL: Found Default ACL at Package level, setting default ACL configuration.");
 			aclObj = obj.packObj.acl[obj.req.soajs.controller.serviceParams.name];
 		}
 		
 		if (aclObj && (aclObj.apis || aclObj.apisRegExp)) {
-			obj.req.soajs.log.debug("Detected old schema ACL Configuration ...");
+			obj.req.soajs.log.debug("keyACL: Detected old schema ACL Configuration ...");
 			finalAcl = lib.apiPathParam2apiRegExp(aclObj);
 		} else {
-			obj.req.soajs.log.debug("Detected new schema ACL Configuration using http methods ...");
+			obj.req.soajs.log.debug("keyACL: Detected new schema ACL Configuration using http methods ...");
 			
 			if (aclObj) {
 				//check if acl has version schema

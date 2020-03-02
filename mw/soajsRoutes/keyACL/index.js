@@ -21,14 +21,15 @@ module.exports = (configuration) => {
 			ALLOWED_PACKAGES = req.soajs.uracDriver.getAllowedPackages();
 		}
 		if (!ALLOWED_PACKAGES && req.soajs.controller.serviceParams.keyObj.application.package) {
+			req.soajs.log.debug("soajsRoute keyACL: Found PACKAGE ACL at Tenant Application level, overriding default PACKAGE ACL configuration.");
 			ALLOWED_PACKAGES = [req.soajs.controller.serviceParams.keyObj.application.package];
 		}
 		if (!ACL && req.soajs.controller.serviceParams.keyObj.application.acl) {
-			req.soajs.log.debug("Found ACL at Tenant Application level, overriding default ACL configuration.");
+			req.soajs.log.debug("soajsRoute keyACL: Found ACL at Tenant Application level, overriding default ACL configuration.");
 			ACL = req.soajs.controller.serviceParams.keyObj.application.acl;
 		}
 		if (!ACL && req.soajs.controller.serviceParams.packObj.acl) {
-			req.soajs.log.debug("Found Default ACL at Package level, setting default ACL configuration.");
+			req.soajs.log.debug("soajsRoute keyACL: Found Default ACL at Package level, setting default ACL configuration.");
 			ACL = req.soajs.controller.serviceParams.packObj.acl;
 		}
 		let finalACL = null;
