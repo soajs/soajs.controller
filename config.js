@@ -14,11 +14,12 @@ let config = {
 		cpu: '',
 		memory: ''
 	},
-	serviceVersion: 1,
+	serviceVersion: "1",
 	serviceName: "controller",
 	serviceGroup: "SOAJS Core Service",
 	servicePort: 4000
 };
 
+process.env.SOAJS_GATEWAY_VER = config.serviceVersion;
 process.env.SOAJS_GATEWAY_NAME = config.serviceName;
 module.exports = config;

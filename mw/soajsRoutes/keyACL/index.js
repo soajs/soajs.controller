@@ -94,10 +94,10 @@ module.exports = (configuration) => {
 		req.soajs.controller.serviceParams.name = serviceName;
 		req.soajs.controller.serviceParams.url = "/soajs/acl";
 		req.soajs.controller.serviceParams.path = "/soajs/acl";
-		req.soajs.controller.serviceParams.version = "1";
+		req.soajs.controller.serviceParams.version = process.env.SOAJS_GATEWAY_VER;
 		req.soajs.controller.serviceParams.extKeyRequired = true;
 		req.soajs.controller.serviceParams.registry.versions = {
-			"1": {
+			[process.env.SOAJS_GATEWAY_VER]: {
 				"extKeyRequired": true,
 				"oauth": true,
 				"urac": true,

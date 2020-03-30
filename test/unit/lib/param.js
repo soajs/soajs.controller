@@ -9,6 +9,7 @@ describe("Unit test for: lib - param", function () {
 	let what2expect = {
 		"config": {
 			"serviceName": localConfig.serviceName,
+			"serviceVersion": localConfig.serviceVersion,
 			"maintenance": {
 				"port": {"type": "maintenance"},
 				"readiness": "/heartbeat",
@@ -26,12 +27,12 @@ describe("Unit test for: lib - param", function () {
 		"init": {
 			"awareness": true,
 			"serviceName": localConfig.serviceName,
-			"serviceVersion": "1",
+			"serviceVersion": localConfig.serviceVersion,
 			"serviceHATask": null
 		}
 	};
 	it("Vanilla test", function (done) {
-		let response = libParam({"serviceName": localConfig.serviceName});
+		let response = libParam({"serviceName": localConfig.serviceName, "serviceVersion": localConfig.serviceVersion});
 		assert.deepStrictEqual(response, what2expect, "lib.param vanilla test failed what2expect");
 		done();
 	});
