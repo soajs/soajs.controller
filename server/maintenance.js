@@ -214,7 +214,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			}
 			core.registry.loadByEnv({
 				"envCode": reqEnv,
-				"serviceName": "controller",
+				"serviceName": param.serviceName,
 				"donotBbuildSpecificRegistry": false
 			}, function (err, reg) {
 				let response = maintenanceResponse(parsedUrl, param);

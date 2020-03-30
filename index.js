@@ -9,8 +9,9 @@
  */
 
 const Controller = require("./server/controller");
+const localConfig = require("./config.js");
 let serviceStartCb = null;
-let c = new Controller();
+let c = new Controller({"serviceName": localConfig.serviceName});
 c.init((registry, log, service, server, serverMaintenance) => {
 	c.start(registry, log, service, server, serverMaintenance, () => {
 		if (serviceStartCb) {

@@ -166,13 +166,12 @@ let lib = {
 let ha = {
 	"init": function (_param) {
 		param = _param;
-		
 		lib.rebuildAwarenessCache();
 	},
 	
 	"getServiceHost": function () {
 		let serviceName, version, env, cb;
-		serviceName = "controller";
+		serviceName = param.serviceName;
 		cb = arguments[arguments.length - 1];
 		
 		switch (arguments.length) {

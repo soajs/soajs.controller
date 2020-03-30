@@ -15,6 +15,8 @@ describe("Testing awarenessEnv HA", () => {
 	
 	before((done) => {
 		ha = helper.requireModule('./mw/awarenessEnv/ha.js');
+		let localConfig = helper.requireModule('./config.js');
+		ha.init({"serviceName": localConfig.serviceName});
 		coreModules = require("soajs.core.modules");
 		core = coreModules.core;
 		

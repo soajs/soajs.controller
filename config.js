@@ -8,7 +8,7 @@
  * found in the LICENSE file at the root of this repository
  */
 
-module.exports = {
+let config = {
 	type: 'service',
 	prerequisites: {
 		cpu: '',
@@ -19,3 +19,6 @@ module.exports = {
 	serviceGroup: "SOAJS Core Service",
 	servicePort: 4000
 };
+
+process.env.SOAJS_GATEWAY_NAME = config.serviceName;
+module.exports = config;

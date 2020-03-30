@@ -23,6 +23,7 @@ module.exports = (configuration) => {
 	let regEnvironment = configuration.regEnvironment;
 	let core = configuration.core;
 	let provision = configuration.provision;
+	let gatewayServiceName = configuration.serviceName;
 	
 	return (req, res, next) => {
 		
@@ -115,6 +116,7 @@ module.exports = (configuration) => {
 								
 								let serviceCheckArray = [(cb) => {
 									cb(null, {
+										"gatewayServiceName": gatewayServiceName,
 										"regEnvironment": regEnvironment,
 										"core": core,
 										"provision": provision,

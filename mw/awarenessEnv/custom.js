@@ -11,6 +11,7 @@
 const request = require('request');
 const async = require('async');
 
+let gatewayServiceName = null;
 let regEnvironment = (process.env.SOAJS_ENV || "dev");
 regEnvironment = regEnvironment.toLowerCase();
 
@@ -122,8 +123,8 @@ function roundRobin() {
 	}
 	
 	env = env || regEnvironment;
-	s = "controller";
-	if (env, s && serviceAwarenessObj[env] && serviceAwarenessObj[env][s] && serviceAwarenessObj[env][s].healthy) {
+	s = gatewayServiceName;
+	if (env && s && serviceAwarenessObj[env] && serviceAwarenessObj[env][s] && serviceAwarenessObj[env][s].healthy) {
 		if (!v) {
 			v = serviceAwarenessObj[env][s].latest;
 		}
@@ -146,6 +147,7 @@ function roundRobin() {
 }
 
 function init(param) {
+	gatewayServiceName = param.serviceName;
 	registry = param.core.registry.get();
 	if (registry.serviceConfig.awareness.autoRelaodRegistry) {
 		setTimeout(() => {

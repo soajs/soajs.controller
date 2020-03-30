@@ -89,7 +89,7 @@ module.exports = (configuration) => {
 		}
 		
 		//mimic a service named controller with route /key/permission/get
-		let serviceName = "controller";
+		let serviceName = configuration.gatewayServiceName;
 		req.soajs.controller.serviceParams.registry = req.soajs.registry.services[serviceName];
 		req.soajs.controller.serviceParams.name = serviceName;
 		req.soajs.controller.serviceParams.url = "/soajs/acl";

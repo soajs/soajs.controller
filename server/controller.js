@@ -49,7 +49,6 @@ function Controller(config) {
 	
 	config = config || {};
 	let param = lib.param(config);
-	
 	_self.soajs = {"param": param};
 }
 
@@ -116,6 +115,7 @@ Controller.prototype.init = function (callback) {
 					//added mw awarenessEnv so that proxy can use req.soajs.awarenessEnv.getHost('dev', cb)
 					app.use(awarenessEnv_mw.getMw({
 						"awarenessEnv": true,
+						"serviceName": _self.soajs.param.init.serviceName,
 						"core": core,
 						"log": log
 					}));
@@ -129,7 +129,11 @@ Controller.prototype.init = function (callback) {
 					
 					app.use(keyACL_mw());
 					
-					app.use(gotoService_mw({"provision": provision, "core": core}));
+					app.use(gotoService_mw({
+						"provision": provision,
+						"serviceName": _self.soajs.param.init.serviceName,
+						"core": core
+					}));
 					
 					if (registry.serviceConfig.oauth) {
 						let oauth_mw = require("../mw/oauth/index");
@@ -147,6 +151,7 @@ Controller.prototype.init = function (callback) {
 						"soajs": _self.soajs,
 						"app": app,
 						"core": core,
+						"serviceName": _self.soajs.param.init.serviceName,
 						"regEnvironment": regEnvironment,
 						"provision": provision
 					}));

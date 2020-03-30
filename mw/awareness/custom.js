@@ -13,6 +13,7 @@ const async = require('async');
 
 let registry = null;
 
+let gatewayServiceName = null;
 let serviceAwarenessObj = {};
 let awarenessHosts = {
 	"registryLoadedTime": 0,
@@ -197,7 +198,7 @@ let roundRobin = function (s, v, env, cb) {
 		v = null;
 	} else if (!cb && typeof s === "function") {
 		cb = s;
-		s = "controller";
+		s = gatewayServiceName;
 	}
 	
 	if (s && registry.services[s] && registry.services[s].hosts && registry.services[s].hosts.latest && serviceAwarenessObj[s] && serviceAwarenessObj[s].healthy) {
@@ -232,6 +233,7 @@ let roundRobin = function (s, v, env, cb) {
 };
 
 function init(param) {
+	gatewayServiceName = param.serviceName;
 	registry = param.core.registry.get();
 	if (registry && registry.serviceConfig && registry.serviceConfig.awareness && registry.serviceConfig.awareness.healthCheckInterval) {
 		awareness_healthCheck(param.core, param.log);
