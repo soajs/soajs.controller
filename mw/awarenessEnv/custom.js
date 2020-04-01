@@ -22,7 +22,7 @@ let registry = null;
 
 let fetchControllerHosts = function (core, log, next) {
 	registry = core.registry.get();
-	core.registry.loadOtherEnvControllerHosts(function (error, hosts) {
+	core.registry.loadOtherEnvControllerHosts(gatewayServiceName, function (error, hosts) {
 		if (error) {
 			log.warn("Failed to load controller hosts. reusing from previous load. Reason: " + error.message);
 		} else {

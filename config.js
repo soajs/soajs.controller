@@ -20,6 +20,4 @@ let config = {
 	servicePort: 4000
 };
 
-process.env.SOAJS_GATEWAY_VER = config.serviceVersion;
-process.env.SOAJS_GATEWAY_NAME = config.serviceName;
 module.exports = config;

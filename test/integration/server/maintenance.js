@@ -8,7 +8,11 @@ const assert = require('assert');
 
 describe("Unit test for: server - controller maintenance", function () {
 	
-	let c = new Controller({"serviceName": localConfig.serviceName});
+	let c = new Controller({
+		"serviceName": localConfig.serviceName,
+		"serviceGroup": localConfig.serviceGroup,
+		"serviceVersion": localConfig.serviceVersion
+	});
 	let registry = null;
 	let log = null;
 	let service = null;

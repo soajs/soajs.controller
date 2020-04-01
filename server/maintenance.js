@@ -31,7 +31,8 @@ let maintenanceResponse = (parsedUrl, param, route) => {
 let reloadRegistry = (parsedUrl, core, log, param, serviceIp, cb) => {
 	core.registry.reload({
 		"serviceName": param.serviceName,
-		"serviceVersion": null,
+		"serviceGroup": param.serviceGroup,
+		"serviceVersion": param.serviceVersion,
 		"apiList": null,
 		"serviceIp": serviceIp
 	}, function (err, reg) {
@@ -214,7 +215,6 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			}
 			core.registry.loadByEnv({
 				"envCode": reqEnv,
-				"serviceName": param.serviceName,
 				"donotBbuildSpecificRegistry": false
 			}, function (err, reg) {
 				let response = maintenanceResponse(parsedUrl, param);

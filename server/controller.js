@@ -58,6 +58,7 @@ Controller.prototype.init = function (callback) {
 	lib.ip(autoRegHost, (service) => {
 		core.registry.load({
 			"serviceName": _self.soajs.param.init.serviceName,
+			"serviceGroup": _self.soajs.param.init.serviceGroup,
 			"serviceVersion": _self.soajs.param.init.serviceVersion,
 			"apiList": null,
 			"serviceIp": service.ip,
@@ -132,6 +133,8 @@ Controller.prototype.init = function (callback) {
 					app.use(gotoService_mw({
 						"provision": provision,
 						"serviceName": _self.soajs.param.init.serviceName,
+						"serviceVersion": _self.soajs.param.init.serviceVersion,
+						"serviceGroup": _self.soajs.param.init.serviceGroup,
 						"core": core
 					}));
 					

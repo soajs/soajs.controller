@@ -10,6 +10,7 @@ describe("Unit test for: lib - param", function () {
 		"config": {
 			"serviceName": localConfig.serviceName,
 			"serviceVersion": localConfig.serviceVersion,
+			"serviceGroup": localConfig.serviceGroup,
 			"maintenance": {
 				"port": {"type": "maintenance"},
 				"readiness": "/heartbeat",
@@ -28,11 +29,16 @@ describe("Unit test for: lib - param", function () {
 			"awareness": true,
 			"serviceName": localConfig.serviceName,
 			"serviceVersion": localConfig.serviceVersion,
+			"serviceGroup": localConfig.serviceGroup,
 			"serviceHATask": null
 		}
 	};
 	it("Vanilla test", function (done) {
-		let response = libParam({"serviceName": localConfig.serviceName, "serviceVersion": localConfig.serviceVersion});
+		let response = libParam({
+			"serviceName": localConfig.serviceName,
+			"serviceVersion": localConfig.serviceVersion,
+			"serviceGroup": localConfig.serviceGroup
+		});
 		assert.deepStrictEqual(response, what2expect, "lib.param vanilla test failed what2expect");
 		done();
 	});
