@@ -30,8 +30,8 @@
     "useragent": "2.3.0",
     "validator": "12.2.0",
     "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "3.2.6",
-    "soajs.core.drivers": "3.5.44",
+    "soajs.core.modules": "4.0.0",
+    "soajs.core.drivers": "3.5.45",
     "soajs.urac.driver": "2.1.15"
   },
   "devDependencies": {
