@@ -9,7 +9,13 @@
  */
 
 const Controller = require("./server/controller");
-let c = new Controller();
+const localConfig = require("./config.js");
+
+let c = new Controller({
+	"serviceName": localConfig.serviceName,
+	"serviceVersion": localConfig.serviceVersion,
+	"serviceGroup": localConfig.serviceGroup
+});
 
 function run(serviceStartCb) {
 	c.init((registry, log, service, server, serverMaintenance) => {
