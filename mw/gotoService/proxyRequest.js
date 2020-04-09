@@ -32,7 +32,7 @@ module.exports = (configuration) => {
 				'method': req.method,
 				'timeout': requestTO * 1000,
 				'jar': false,
-				'headers': req.headers
+				'headers': {} //req.headers
 			};
 			
 			requestConfig.headers.soajs_roaming = regEnvironment;
