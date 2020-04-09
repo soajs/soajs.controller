@@ -89,7 +89,7 @@ module.exports = function (grunt) {
 				}
 			},
 			files: {
-				src: ['index.js', 'config.js', 'Gruntfile.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js']
+				src: ['index.js', '_index.js', 'config.js', 'Gruntfile.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js']
 			},
 			gruntfile: {
 				src: 'Gruntfile.js'
@@ -127,7 +127,7 @@ module.exports = function (grunt) {
 		},
 		
 		instrument: {
-			files: ['index.js', 'config.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
+			files: ['index.js', '_index.js', 'config.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
 			options: {
 				lazy: false,
 				basePath: 'test/coverage/instrument/'
