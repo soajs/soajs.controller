@@ -32,7 +32,7 @@ module.exports = (configuration) => {
 				'method': req.method,
 				'timeout': requestTO * 1000,
 				'jar': false,
-				'headers': {} //req.headers
+				'headers': req.headers
 			};
 			
 			requestConfig.headers.soajs_roaming = regEnvironment;
@@ -64,7 +64,6 @@ module.exports = (configuration) => {
 				});
 				
 				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
-					console.log (res.getHeaders());
 					req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
 				} else {
 					req.soajs.controller.redirectedRequest.pipe(res);
