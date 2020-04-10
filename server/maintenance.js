@@ -215,6 +215,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			}
 			core.registry.loadByEnv({
 				"envCode": reqEnv,
+				"serviceName": param.serviceName,
 				"donotBbuildSpecificRegistry": false
 			}, function (err, reg) {
 				let response = maintenanceResponse(parsedUrl, param);
@@ -262,8 +263,12 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							response.data.services.controller = reg.services.controller;
 						}
 						if (reg.services[reqServiceName]) {
-							response.data.services[reqServiceName] = soajsUtils.cloneObj(reg.services[reqServiceName]);
-							delete response.data.services[reqServiceName].versions;
+							response.data.services[reqServiceName] = {
+								"group": reg.services[reqServiceName].group,
+								"port": reg.services[reqServiceName].port
+							};
+							//response.data.services[reqServiceName] = soajsUtils.cloneObj(reg.services[reqServiceName]);
+							//delete response.data.services[reqServiceName].versions;
 						}
 					}
 				}
