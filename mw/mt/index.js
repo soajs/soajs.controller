@@ -57,7 +57,8 @@ module.exports = (configuration) => {
 				"tenant_Profile": serviceInfo.tenant_Profile || false,
 				"provision_ACL": serviceInfo.provision_ACL || false,
 				"extKeyRequired": serviceInfo.extKeyRequired || false,
-				"oauth": oauth
+				"oauth": oauth,
+				"interConnect": serviceInfo.interConnect || null
 			};
 			if (serviceInfo[regEnvironment]) {
 				if (serviceInfo[regEnvironment].hasOwnProperty("extKeyRequired")) {
@@ -181,7 +182,13 @@ module.exports = (configuration) => {
 										if (dataServiceConfig[serviceName]) {
 											serviceConfig[serviceName] = dataServiceConfig[serviceName];
 										}
-										
+										if (serviceParam.interConnect && Array.isArray(serviceParam.interConnect) && serviceParam.interConnect.length > 0) {
+											for (let i = 0; i < serviceParam.interConnect.length; i++) {
+												if (serviceParam.interConnect[i].serviceName) {
+													serviceConfig[serviceParam.interConnect[i].serviceName] = dataServiceConfig[serviceParam.interConnect[i].serviceName];
+												}
+											}
+										}
 										let injectObj = {
 											"tenant": {
 												"id": keyObj.tenant.id,

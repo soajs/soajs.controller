@@ -87,6 +87,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 				awareness_mw.getMw({
 					"awareness": param.awareness,
 					"serviceName": param.serviceName,
+					"serviceVersion": param.serviceVersion,
 					"log": log,
 					"serviceIp": serviceIp
 				});
@@ -156,6 +157,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							regOptions.extKeyRequired = infoObj.extKeyRequired;
 							regOptions.requestTimeout = parseInt(infoObj.requestTimeout);
 							regOptions.requestTimeoutRenewal = parseInt(infoObj.requestTimeoutRenewal);
+							regOptions.interConnect = infoObj.interConnect;
 							
 							if (body && body.apiList) {
 								regOptions.apiList = body.apiList;
@@ -275,6 +277,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 				awareness_mw.getMw({
 					"awareness": param.awareness,
 					"serviceName": param.serviceName,
+					"serviceVersion": param.serviceVersion,
 					"log": log,
 					"core": core,
 					"serviceIp": serviceIp,

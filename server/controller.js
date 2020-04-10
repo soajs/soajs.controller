@@ -107,6 +107,7 @@ Controller.prototype.init = function (callback) {
 					app.use(awareness_mw.getMw({
 						"awareness": _self.soajs.param.init.awareness,
 						"serviceName": _self.soajs.param.init.serviceName,
+						"serviceVersion": _self.soajs.param.init.serviceVersion,
 						"core": core,
 						"log": log,
 						"serviceIp": service.ip
@@ -117,6 +118,7 @@ Controller.prototype.init = function (callback) {
 					app.use(awarenessEnv_mw.getMw({
 						"awarenessEnv": true,
 						"serviceName": _self.soajs.param.init.serviceName,
+						"serviceVersion": _self.soajs.param.init.serviceVersion,
 						"core": core,
 						"log": log
 					}));
