@@ -195,7 +195,7 @@ let ha = {
 		
 		env = regEnvironment;
 		
-		if (serviceName === 'controller') {
+		if (serviceName === param.serviceName) {
 			if (process.env.SOAJS_DEPLOY_HA === 'kubernetes') {
 				serviceName += "-v1-service";
 			}

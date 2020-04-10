@@ -219,7 +219,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 				if (terminate) {
 					for (let serviceName in awarenessStatData.data.services) {
 						if (Object.hasOwnProperty.call(awarenessStatData.data.services, serviceName)) {
-							if (serviceName === 'controller') {
+							if (serviceName === registry.services.controller.name) {
 								for (let serviceIP in awarenessStatData.data.services.controller.awarenessStats) {
 									if (Object.hasOwnProperty.call(awarenessStatData.data.services.controller.awarenessStats, serviceIP)) {
 										if (serviceIP === _self.serviceIp) {

@@ -83,7 +83,7 @@ module.exports = (configuration) => {
 			}
 		};
 		
-		req.soajs.awareness.getHost('controller', (controllerHostInThisEnvironment) => {
+		req.soajs.awareness.getHost(gatewayServiceName, (controllerHostInThisEnvironment) => {
 			if (serviceParam.extKeyRequired) {
 				req.soajs.controller.serviceParams.isAPIPublic = false;
 				try {
