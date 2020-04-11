@@ -14,7 +14,8 @@ const localConfig = require("./config.js");
 let c = new Controller({
 	"serviceName": localConfig.serviceName,
 	"serviceVersion": localConfig.serviceVersion,
-	"serviceGroup": localConfig.serviceGroup
+	"serviceGroup": localConfig.serviceGroup,
+	"maintenance": localConfig.maintenance
 });
 
 function run(serviceStartCb) {

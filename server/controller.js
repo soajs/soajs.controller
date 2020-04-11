@@ -62,7 +62,7 @@ Controller.prototype.init = function (callback) {
 			"serviceVersion": _self.soajs.param.init.serviceVersion,
 			"apiList": null,
 			"serviceIp": service.ip,
-			"maintenance": _self.soajs.param.config.maintenance
+			"maintenance": _self.soajs.param.init.maintenance
 		}, (reg) => {
 			let registry = reg;
 			let log = core.getLogger(_self.soajs.param.init.serviceName, registry.serviceConfig.logger);
