@@ -299,6 +299,7 @@ module.exports = (configuration) => {
 														if (host) {
 															item.host = host;
 															item.port = req.soajs.registry.services[item.name].port;
+															item.latest = req.soajs.awareness.getLatestVersionFromCache(item.name);
 															injectObj.awareness.interConnect.push(item);
 														} else {
 															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "]");
