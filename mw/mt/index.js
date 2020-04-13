@@ -283,16 +283,20 @@ module.exports = (configuration) => {
 											async.each(
 												serviceParam.interConnect,
 												(item, callback) => {
-													if (item.name && dataServiceConfig[item.name]) {
+													if (!item.name) {
+														return callback();
+													}
+													if (dataServiceConfig[item.name]) {
 														serviceConfig[item.name] = dataServiceConfig[item.name];
 													}
-													req.soajs.awareness.getHost(item.name, item.version, (host) => {
+													let ver = item.version || null;
+													req.soajs.awareness.getHost(item.name, ver, (host) => {
 														if (host) {
 															injectObj.awareness.interConnect[item.name] = host;
 														} else {
-															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "]");
+															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + ver + "]");
 														}
-														callback();
+														return callback();
 													});
 												},
 												(err) => {
