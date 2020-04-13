@@ -278,7 +278,7 @@ module.exports = (configuration) => {
 										
 										if (process.env.SOAJS_DEPLOY_HA && serviceParam.interConnect && Array.isArray(serviceParam.interConnect) && serviceParam.interConnect.length > 0) {
 											if (!injectObj.awareness.interConnect) {
-												injectObj.awareness.interConnect = {};
+												injectObj.awareness.interConnect = [];
 											}
 											async.each(
 												serviceParam.interConnect,
@@ -286,15 +286,22 @@ module.exports = (configuration) => {
 													if (!item.name) {
 														return callback();
 													}
+													if (!req.soajs.registry || !req.soajs.registry.services || !req.soajs.registry.services[item.name] || !req.soajs.registry.services[item.name].port) {
+														return callback();
+													}
 													if (dataServiceConfig[item.name]) {
 														serviceConfig[item.name] = dataServiceConfig[item.name];
 													}
-													let ver = item.version || null;
-													req.soajs.awareness.getHost(item.name, ver, (host) => {
+													if (!item.version) {
+														item.version = null;
+													}
+													req.soajs.awareness.getHost(item.name, item.version, (host) => {
 														if (host) {
-															injectObj.awareness.interConnect[item.name] = host;
+															item.host = host;
+															item.port = req.soajs.registry.services[item.name].port;
+															injectObj.awareness.interConnect.push(item);
 														} else {
-															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + ver + "]");
+															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "]");
 														}
 														return callback();
 													});
