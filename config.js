@@ -15,9 +15,9 @@ let config = {
 		"memory": ''
 	},
 	"serviceVersion": "1",
-	"serviceName": "gateway",
+	"serviceName": "controller",
 	"serviceGroup": "SOAJS Core Service",
-	"servicePort": 3999,
+	"servicePort": 4000,
 	"maintenance": {
 		"readiness": "/heartbeat",
 		"port": {"type": "maintenance"},
