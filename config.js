@@ -22,9 +22,9 @@ let config = {
 		"readiness": "/heartbeat",
 		"port": {"type": "maintenance"},
 		"commands": [
-			{"label": "Releoad Provision", "path": "/loadProvision", "icon": "provision"},
-			{"label": "Releoad Registry", "path": "/reloadRegistry", "icon": "registry"},
-			{"label": "Statistics Info", "path": "/awarenessStat", "icon": "awareness"}
+			{"label": "Reload Provision", "path": "/loadProvision", "icon": "fas fa-download"},
+			{"label": "Reload Registry", "path": "/reloadRegistry", "icon": "fas fa-undo"},
+			{"label": "Reload Awareness", "path": "/awarenessStat", "icon": "fas fa-wifi"}
 		]
 	}
 };
