@@ -81,8 +81,7 @@ let lib = {
 				
 				getHost(obtainedVersion);
 			});
-		}
-		else {
+		} else {
 			getHost(version);
 		}
 		
@@ -211,8 +210,7 @@ let ha = {
 			}
 			
 			return cb(env + "-" + serviceName + namespace);
-		}
-		else {
+		} else {
 			let hostname = lib.getHostFromCache(serviceName, version);
 			if (hostname) {
 				return cb(hostname);

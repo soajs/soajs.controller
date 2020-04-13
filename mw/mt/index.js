@@ -178,16 +178,8 @@ module.exports = (configuration) => {
 												}
 											}
 										}
-										
 										if (dataServiceConfig[serviceName]) {
 											serviceConfig[serviceName] = dataServiceConfig[serviceName];
-										}
-										if (serviceParam.interConnect && Array.isArray(serviceParam.interConnect) && serviceParam.interConnect.length > 0) {
-											for (let i = 0; i < serviceParam.interConnect.length; i++) {
-												if (serviceParam.interConnect[i].serviceName) {
-													serviceConfig[serviceParam.interConnect[i].serviceName] = dataServiceConfig[serviceParam.interConnect[i].serviceName];
-												}
-											}
 										}
 										let injectObj = {
 											"tenant": {
@@ -230,12 +222,6 @@ module.exports = (configuration) => {
 										}
 										if (serviceParam.tenant_Profile && keyObj.tenant.profile) {
 											injectObj.tenant.profile = keyObj.tenant.profile;
-										}
-										if (controllerHostInThisEnvironment) {
-											injectObj.awareness = {
-												"host": controllerHostInThisEnvironment,
-												"port": req.soajs.registry.serviceConfig.ports.controller
-											};
 										}
 										if (req.soajs.uracDriver) {
 											if (serviceParam.urac) {
@@ -283,9 +269,43 @@ module.exports = (configuration) => {
 											delete injectObj.package.acl_all_env;
 											delete injectObj.package.acl;
 										}
+										if (controllerHostInThisEnvironment) {
+											injectObj.awareness = {
+												"host": controllerHostInThisEnvironment,
+												"port": req.soajs.registry.serviceConfig.ports.controller
+											};
+										}
 										
-										req.headers.soajsinjectobj = JSON.stringify(injectObj);
-										return next();
+										if (process.env.SOAJS_DEPLOY_HA && serviceParam.interConnect && Array.isArray(serviceParam.interConnect) && serviceParam.interConnect.length > 0) {
+											if (!injectObj.awareness.interConnect) {
+												injectObj.awareness.interConnect = {};
+											}
+											async.each(
+												serviceParam.interConnect,
+												(item, callback) => {
+													if (item.name && dataServiceConfig[item.name]) {
+														serviceConfig[item.name] = dataServiceConfig[item.name];
+													}
+													req.soajs.awareness.getHost(item.name, item.version, (host) => {
+														if (host) {
+															injectObj.awareness.interConnect[item.name] = host;
+														} else {
+															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "]");
+														}
+														callback();
+													});
+												},
+												(err) => {
+													if (err) {
+														req.soajs.log.error(err);
+													}
+													req.headers.soajsinjectobj = JSON.stringify(injectObj);
+													return next();
+												});
+										} else {
+											req.headers.soajsinjectobj = JSON.stringify(injectObj);
+											return next();
+										}
 									}
 								});
 							} else {
