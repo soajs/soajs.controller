@@ -11,6 +11,7 @@
 const async = require('async');
 
 const drivers = require('soajs.core.drivers');
+const coreLibs = require("soajs.core.libs");
 
 const coreModules = require("soajs.core.modules");
 let core = coreModules.core;
@@ -81,8 +82,7 @@ let lib = {
 				
 				getHost(obtainedVersion);
 			});
-		}
-		else {
+		} else {
 			getHost(version);
 		}
 		
@@ -211,8 +211,7 @@ let ha = {
 			}
 			
 			return cb(env + "-" + serviceName + namespace);
-		}
-		else {
+		} else {
 			let hostname = lib.getHostFromCache(serviceName, version);
 			if (hostname) {
 				return cb(hostname);
@@ -228,22 +227,24 @@ let ha = {
 			return null;
 		}
 		
-		let serviceVersions = Object.keys(awarenessCache[serviceName]), latestVersion = 0;
+		let serviceVersions = Object.keys(awarenessCache[serviceName]);
 		if (serviceVersions.length === 0) {
 			return null;
 		}
-		
+		let latestVersion = null;
 		for (let i = 0; i < serviceVersions.length; i++) {
+			latestVersion = coreLibs.version.getLatest(latestVersion, serviceVersions[i]);
+			/*
 			if (serviceVersions[i] > latestVersion) {
 				latestVersion = serviceVersions[i];
 			}
+			*/
 		}
-		
-		if (latestVersion === 0) {
+		if (latestVersion) {
+			return latestVersion;
+		} else {
 			return null;
 		}
-		
-		return latestVersion;
 	}
 };
 
