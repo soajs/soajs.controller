@@ -420,7 +420,7 @@ let utils = {
 							// Skip if in pinWhitelist
 							if (obj.soajs.oauthService && (obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name) && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.pinApi)) {
 								return cb(null, obj);
-							} else if (obj.req.soajs.controller.serviceParams.name === "controller") {
+							} else if (obj.req.soajs.controller.serviceParams.name === obj.gatewayServiceName) {
 								return cb(null, obj);
 							} else if (obj.req.soajs.registry &&
 								obj.req.soajs.registry.custom &&

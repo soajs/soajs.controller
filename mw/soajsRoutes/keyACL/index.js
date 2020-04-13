@@ -89,15 +89,15 @@ module.exports = (configuration) => {
 		}
 		
 		//mimic a service named controller with route /key/permission/get
-		let serviceName = "controller";
+		let serviceName = configuration.serviceName;
 		req.soajs.controller.serviceParams.registry = req.soajs.registry.services[serviceName];
 		req.soajs.controller.serviceParams.name = serviceName;
 		req.soajs.controller.serviceParams.url = "/soajs/acl";
 		req.soajs.controller.serviceParams.path = "/soajs/acl";
-		req.soajs.controller.serviceParams.version = "1";
+		req.soajs.controller.serviceParams.version = configuration.serviceVersion;
 		req.soajs.controller.serviceParams.extKeyRequired = true;
 		req.soajs.controller.serviceParams.registry.versions = {
-			"1": {
+			[configuration.serviceVersion]: {
 				"extKeyRequired": true,
 				"oauth": true,
 				"urac": true,

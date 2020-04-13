@@ -8,17 +8,5 @@
  * found in the LICENSE file at the root of this repository
  */
 
-const Controller = require("./server/controller");
-let serviceStartCb = null;
-let c = new Controller();
-c.init((registry, log, service, server, serverMaintenance) => {
-	c.start(registry, log, service, server, serverMaintenance, () => {
-		if (serviceStartCb) {
-			serviceStartCb();
-		}
-	});
-});
-
-module.exports = function (cb) {
-	serviceStartCb = cb;
-};
+const service = require('./_index.js');
+service.runService();

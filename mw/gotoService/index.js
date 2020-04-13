@@ -19,7 +19,12 @@ module.exports = (configuration) => {
 	let provision = configuration.provision;
 	let core = configuration.core;
 	
-	let soajs_keyACL = gtw_keyACL({"provision": provision, "core": core});
+	let soajs_keyACL = gtw_keyACL({
+		"provision": provision,
+		"serviceName": configuration.serviceName,
+		"serviceVersion": configuration.serviceVersion,
+		"core": core
+	});
 	
 	let extractBuildParameters = require("./lib/extractBuildParameters.js");
 	

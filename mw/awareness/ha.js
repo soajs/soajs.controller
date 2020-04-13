@@ -166,13 +166,12 @@ let lib = {
 let ha = {
 	"init": function (_param) {
 		param = _param;
-		
 		lib.rebuildAwarenessCache();
 	},
 	
 	"getServiceHost": function () {
 		let serviceName, version, env, cb;
-		serviceName = "controller";
+		serviceName = param.serviceName;
 		cb = arguments[arguments.length - 1];
 		
 		switch (arguments.length) {
@@ -196,9 +195,9 @@ let ha = {
 		
 		env = regEnvironment;
 		
-		if (serviceName === 'controller') {
+		if (serviceName === param.serviceName) {
 			if (process.env.SOAJS_DEPLOY_HA === 'kubernetes') {
-				serviceName += "-v1-service";
+				serviceName += "-v" + param.serviceVersion + "-service";
 			}
 			
 			let info = core.registry.get().deployer.selected.split('.');
@@ -207,7 +206,7 @@ let ha = {
 			if (deployerConfig && deployerConfig.namespace && deployerConfig.namespace.default) {
 				namespace = '.' + deployerConfig.namespace.default;
 				if (deployerConfig.namespace.perService) {
-					namespace += '-' + env + '-controller-v1';
+					namespace += '-' + env + '-' + param.serviceName + '-v' + param.serviceVersion;
 				}
 			}
 			

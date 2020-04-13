@@ -31,7 +31,8 @@ let maintenanceResponse = (parsedUrl, param, route) => {
 let reloadRegistry = (parsedUrl, core, log, param, serviceIp, cb) => {
 	core.registry.reload({
 		"serviceName": param.serviceName,
-		"serviceVersion": null,
+		"serviceGroup": param.serviceGroup,
+		"serviceVersion": param.serviceVersion,
 		"apiList": null,
 		"serviceIp": serviceIp
 	}, function (err, reg) {
@@ -86,6 +87,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 				awareness_mw.getMw({
 					"awareness": param.awareness,
 					"serviceName": param.serviceName,
+					"serviceVersion": param.serviceVersion,
 					"log": log,
 					"serviceIp": serviceIp
 				});
@@ -155,6 +157,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							regOptions.extKeyRequired = infoObj.extKeyRequired;
 							regOptions.requestTimeout = parseInt(infoObj.requestTimeout);
 							regOptions.requestTimeoutRenewal = parseInt(infoObj.requestTimeoutRenewal);
+							regOptions.interConnect = infoObj.interConnect;
 							
 							if (body && body.apiList) {
 								regOptions.apiList = body.apiList;
@@ -214,7 +217,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			}
 			core.registry.loadByEnv({
 				"envCode": reqEnv,
-				"serviceName": "controller",
+				"serviceName": param.serviceName,
 				"donotBbuildSpecificRegistry": false
 			}, function (err, reg) {
 				let response = maintenanceResponse(parsedUrl, param);
@@ -262,20 +265,25 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							response.data.services.controller = reg.services.controller;
 						}
 						if (reg.services[reqServiceName]) {
-							response.data.services[reqServiceName] = soajsUtils.cloneObj(reg.services[reqServiceName]);
-							delete response.data.services[reqServiceName].versions;
+							response.data.services[reqServiceName] = {
+								"group": reg.services[reqServiceName].group,
+								"port": reg.services[reqServiceName].port
+							};
+							//response.data.services[reqServiceName] = soajsUtils.cloneObj(reg.services[reqServiceName]);
+							//delete response.data.services[reqServiceName].versions;
 						}
 					}
 				}
 				awareness_mw.getMw({
 					"awareness": param.awareness,
 					"serviceName": param.serviceName,
+					"serviceVersion": param.serviceVersion,
 					"log": log,
 					"core": core,
 					"serviceIp": serviceIp,
 					"doNotRebuildCache": true
 				})(req, res, () => {
-					req.soajs.awareness.getHost('controller', function (controllerHostInThisEnvironment) {
+					req.soajs.awareness.getHost(reg.services.controller.name, function (controllerHostInThisEnvironment) {
 						if (reg && reg.serviceConfig && reg.serviceConfig.ports && reg.serviceConfig.ports.controller) {
 							response.data.awareness = {
 								"host": controllerHostInThisEnvironment,
