@@ -309,7 +309,7 @@ module.exports = (configuration) => {
 												},
 												(err) => {
 													if (err) {
-														req.soajs.log.error(err);
+														req.soajs.log.error(err.message);
 													}
 													req.headers.soajsinjectobj = JSON.stringify(injectObj);
 													return next();

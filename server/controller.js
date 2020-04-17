@@ -207,7 +207,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 				log.error('Address [port: ' + registry.services.controller.port + '] in use by another service, exiting');
 			}
 			else {
-				log.error(err);
+				log.error(err.message);
 			}
 		});
 		
@@ -248,7 +248,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 		
 		server.listen(registry.services.controller.port, (err) => {
 			if (err) {
-				log.error(err);
+				log.error(err.message);
 			} else {
 				log.info(_self.soajs.param.init.serviceName + " service started on port: " + registry.services.controller.port);
 				if (!process.env.SOAJS_DEPLOY_HA) {
@@ -266,7 +266,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 							setTimeout(() => {
 								getAwarenessInfo(false, (error) => {
 									if (error) {
-										log.error(error);
+										log.error(error.message);
 									}
 								});
 							}, registry.serviceConfig.awareness.healthCheckInterval);
@@ -276,7 +276,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 							process.on('SIGINT', () => {
 								getAwarenessInfo(true, (error) => {
 									if (error) {
-										log.error(error);
+										log.error(error.message);
 									}
 									log.warn("Service Terminated via interrupt signal.");
 									process.exit();
@@ -296,12 +296,12 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 			if (err.code === 'EADDRINUSE') {
 				log.error('Address [port: ' + (maintenancePort) + '] in use by another service, exiting');
 			} else {
-				log.error(err);
+				log.error(err.message);
 			}
 		});
 		serverMaintenance.listen(maintenancePort, (err) => {
 			if (err) {
-				log.error(err);
+				log.error(err.message);
 			} else {
 				log.info(_self.soajs.param.init.serviceName + " service maintenance is listening on port: " + maintenancePort);
 			}

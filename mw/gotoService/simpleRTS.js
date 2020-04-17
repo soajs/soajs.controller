@@ -46,7 +46,7 @@ module.exports = (configuration) => {
 					serverResponse.resume();
 				});
 				req.soajs.controller.redirectedRequest.on('error', function (err) {
-					req.soajs.log.error(err);
+					req.soajs.log.error(err.message);
 					if (!req.soajs.controller.monitorEndingReq) {
 						return req.soajs.controllerResponse(core.error.getError(135));
 					}
@@ -54,7 +54,7 @@ module.exports = (configuration) => {
 				req.pipe(req.soajs.controller.redirectedRequest, {end: true});
 				req.resume();
 			} catch (e) {
-				req.soajs.log.error(e);
+				req.soajs.log.error(e.message);
 				if (!req.soajs.controller.monitorEndingReq) {
 					return req.soajs.controllerResponse(core.error.getError(135));
 				}

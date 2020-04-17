@@ -34,10 +34,12 @@ module.exports = (configuration) => {
 			if (obj.config.authorization) {
 				isRequestAuthorized(req, core, requestOptions);
 			}
+			
+			let restServiceParams = req.soajs.controller.serviceParams;
 			try {
 				req.soajs.controller.redirectedRequest = request(requestOptions);
 				req.soajs.controller.redirectedRequest.on('error', function (err) {
-					req.soajs.log.error(err);
+					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
 					if (!req.soajs.controller.monitorEndingReq) {
 						return req.soajs.controllerResponse(core.error.getError(135));
 					}
@@ -50,7 +52,7 @@ module.exports = (configuration) => {
 					req.soajs.controller.redirectedRequest.pipe(res);
 				}
 			} catch (e) {
-				req.soajs.log.error(e);
+				req.soajs.log.error(e.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
 				if (!req.soajs.controller.monitorEndingReq) {
 					return req.soajs.controllerResponse(core.error.getError(135));
 				}

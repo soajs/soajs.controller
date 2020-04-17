@@ -76,7 +76,7 @@ let lib = {
 			lib.getLatestVersion(serviceName, function (err, obtainedVersion) {
 				if (err) {
 					//todo: need to find a better way to do this log
-					param.log.error(err);
+					param.log.error(err.message);
 					return cb(null);
 				}
 				
@@ -93,7 +93,7 @@ let lib = {
 				"driver": options.strategy
 			}, 'getServiceHost', options, (error, response) => {
 				if (error) {
-					param.log.error(error);
+					param.log.error(error.message);
 					return cb(null);
 				}
 				
@@ -112,7 +112,7 @@ let lib = {
 			"driver": options.strategy
 		}, 'listServices', options, (error, services) => {
 			if (error) {
-				param.log.error(error);
+				param.log.error(error.message);
 				return;
 			}
 			

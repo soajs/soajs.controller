@@ -255,7 +255,7 @@ let utils = {
 					return block.contains(ip);
 				} catch (err) {
 					obj.req.soajs.log.error('Geographic security configuration failed: ', addr);
-					obj.req.soajs.log.error(err);
+					obj.req.soajs.log.error(err.message);
 				}
 				return false;
 			}));
@@ -563,7 +563,7 @@ let utils = {
 			obj.req.soajs.uracDriver = new UracDriver({"soajs": obj.req.soajs, "oauth": obj.req.oauth});
 			obj.req.soajs.uracDriver.init((error) => {
 				if (error) {
-					obj.req.soajs.log.error(error);
+					obj.req.soajs.log.error(error.message);
 				}
 				let userServiceConf = obj.req.soajs.uracDriver.getConfig();
 				userServiceConf = userServiceConf || {};
@@ -593,7 +593,7 @@ let utils = {
 					if (!tenant) {
 						error = new Error("Tenant not found for:" + obj.req.oauth.bearerToken.clientId);
 					}
-					obj.req.soajs.log.error(error);
+					obj.req.soajs.log.error(error.message);
 					return cb(error);
 				}
 				
@@ -620,7 +620,7 @@ let utils = {
 					if (!registry) {
 						error = new Error("Registry not found for:" + obj.req.oauth.bearerToken.env);
 					}
-					obj.req.soajs.log.error(error);
+					obj.req.soajs.log.error(error.message);
 					return cb(error);
 				}
 				return cb(null, registry);
