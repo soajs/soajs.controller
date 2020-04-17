@@ -20,7 +20,7 @@ module.exports = (configuration) => {
 		if (key) {
 			configuration.provision.getExternalKeyData(key, req.soajs.registry.serviceConfig.key, function (err, keyObj) {
 				if (err) {
-					req.soajs.log.error(err);
+					req.soajs.log.error(err.message);
 					return next();
 				}
 				if (!keyObj) {
@@ -37,7 +37,7 @@ module.exports = (configuration) => {
 					configuration.provision.getPackageData(keyObj.application.package, function (err, packObj) {
 						if (err) {
 							req.soajs.log.error("Unable to fetch data about package [" + keyObj.application.package + "]");
-							req.soajs.log.error(err);
+							req.soajs.log.error(err.message);
 							return next();
 						}
 						if (!packObj) {

@@ -99,7 +99,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 					"env": regEnvironment
 				}, function (error) {
 					if (error) {
-						log.error(error);
+						log.error(error.message);
 					}
 				});
 			}
@@ -222,7 +222,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			}, function (err, reg) {
 				let response = maintenanceResponse(parsedUrl, param);
 				if (err) {
-					log.error(reqServiceName, err);
+					log.error(reqServiceName, err.message);
 				} else {
 					response.result = true;
 					response.data = {}; //soajsUtils.cloneObj(reg);

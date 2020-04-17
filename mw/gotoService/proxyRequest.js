@@ -59,7 +59,7 @@ module.exports = (configuration) => {
 				//proxy request
 				req.soajs.controller.redirectedRequest = request(requestConfig);
 				req.soajs.controller.redirectedRequest.on('error', function (error) {
-					req.soajs.log.error(error);
+					req.soajs.log.error(error.message);
 					return req.soajs.controllerResponse(core.error.getError(135));
 				});
 				
@@ -70,7 +70,7 @@ module.exports = (configuration) => {
 				}
 				
 			} catch (e) {
-				req.soajs.log.error(e);
+				req.soajs.log.error(e.message);
 				return req.soajs.controllerResponse(core.error.getError(135));
 			}
 		};
@@ -81,7 +81,7 @@ module.exports = (configuration) => {
 			//get remote env registry
 			core.registry.loadByEnv({"envCode": remoteENV}, function (err, reg) {
 				if (err) {
-					req.soajs.log.error(err);
+					req.soajs.log.error(err.message);
 					return req.soajs.controllerResponse(core.error.getError(207));
 				} else {
 					let config = req.soajs.registry.services.controller;

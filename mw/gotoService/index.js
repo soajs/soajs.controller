@@ -50,7 +50,7 @@ module.exports = (configuration) => {
 			//create proxy info object before calling extractbuildparams
 			let proxy = false;
 			if (serviceInfo[1] === 'proxy' && serviceInfo[2] === 'redirect') {
-				req.soajs.log.error(new Error("Route: [/proxy/redirect] is deprecated. You should use [/soajs/proxy]."));
+				req.soajs.log.error("Route: [/proxy/redirect] is deprecated. You should use [/soajs/proxy].");
 				proxy = true;
 			} else if (serviceInfo[1] === 'soajs' && serviceInfo[2] === 'proxy') {
 				proxy = true;
