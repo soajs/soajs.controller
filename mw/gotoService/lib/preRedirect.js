@@ -18,6 +18,7 @@ const request = require('request');
  */
 module.exports = (req, res, core, cb) => {
 	let restServiceParams = req.soajs.controller.serviceParams;
+	let restServiceParams_msg = '[' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']';
 	
 	let config = req.soajs.registry.services.controller;
 	if (!config) {
@@ -40,14 +41,13 @@ module.exports = (req, res, core, cb) => {
 		req.soajs.controller.monitorEndingReq = false;
 		
 		let isStream = false;
-		
 		let renewReqMonitor = function () {
 			if (!isStream) {
-				req.soajs.log.warn('Request is taking too much time ...');
+				req.soajs.log.warn(restServiceParams_msg + ' - Request is taking too much time ...');
 				req.soajs.controller.renewalCount++;
 				
 				if (req.soajs.controller.renewalCount < requestTOR) {
-					req.soajs.log.info('Trying to keep request alive by checking the service heartbeat ... ' + req.soajs.controller.renewalCount);
+					req.soajs.log.info(' - Trying to keep request alive by checking the service heartbeat ... ' + req.soajs.controller.renewalCount);
 					
 					let uri = 'http://' + host + ':' + (restServiceParams.registry.port + req.soajs.registry.serviceConfig.ports.maintenanceInc) + '/heartbeat';
 					
@@ -86,7 +86,7 @@ module.exports = (req, res, core, cb) => {
 							}
 						} else {
 							req.soajs.controller.monitorEndingReq = true;
-							req.soajs.log.error('Service heartbeat is not responding');
+							req.soajs.log.error(restServiceParams_msg + ' - Service heartbeat is not responding');
 							req.soajs.controller.redirectedRequest.abort();
 							return req.soajs.controllerResponse(core.error.getError(133));
 						}
@@ -98,7 +98,7 @@ module.exports = (req, res, core, cb) => {
 					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						req.soajs.controller.monitorEndingReq = true;
-						req.soajs.log.error('Request time exceeded the requestTimeoutRenewal:', requestTO + requestTO * requestTOR);
+						req.soajs.log.error(restServiceParams_msg + ' - Request time exceeded the requestTimeoutRenewal:', requestTO + requestTO * requestTOR);
 						return req.soajs.controllerResponse(core.error.getError(134));
 					}
 				}
@@ -149,11 +149,10 @@ module.exports = (req, res, core, cb) => {
 	else {
 		req.soajs.awareness.getHost(restServiceParams.name, restServiceParams.version, function (host) {
 			if (!host) {
-				req.soajs.log.error('Unable to find any healthy host for service [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
+				req.soajs.log.error('Unable to find any healthy host for service ' + restServiceParams_msg);
 				return req.soajs.controllerResponse(core.error.getError(133));
 			}
 			return nextStep(host, restServiceParams.registry.port);
 		});
 	}
-}
-;
+};
