@@ -143,6 +143,9 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							"type": infoObj.type,
 							"version": "" + infoObj.version
 						};
+						if (infoObj.portHost) {
+							regOptions.portHost = parseInt(infoObj.portHost);
+						}
 						
 						if (regOptions.type === "service") {
 							regOptions.swagger = infoObj.swagger;
@@ -182,8 +185,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							});
 					}
 				});
-			}
-			else {
+			} else {
 				res.writeHead(200, {'Content-Type': 'application/json'});
 				let response = maintenanceResponse(parsedUrl, param);
 				return res.end(JSON.stringify(response));
@@ -207,8 +209,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 				response.result = loaded;
 				return res.end(JSON.stringify(response));
 			});
-		}
-		else if (parsedUrl.pathname === '/getRegistry') {
+		} else if (parsedUrl.pathname === '/getRegistry') {
 			let reqEnv = parsedUrl.query.env;
 			let reqServiceName = parsedUrl.query.serviceName;
 			
