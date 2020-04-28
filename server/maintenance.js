@@ -268,7 +268,8 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 						if (reg.services[reqServiceName]) {
 							response.data.services[reqServiceName] = {
 								"group": reg.services[reqServiceName].group,
-								"port": reg.services[reqServiceName].port
+								"port": reg.services[reqServiceName].port,
+								"oport": reg.services[reqServiceName].oport
 							};
 							//response.data.services[reqServiceName] = soajsUtils.cloneObj(reg.services[reqServiceName]);
 							//delete response.data.services[reqServiceName].versions;
