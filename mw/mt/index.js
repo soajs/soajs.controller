@@ -42,6 +42,7 @@ module.exports = (configuration) => {
 		if (!proxy) {
 			let serviceInfo = req.soajs.controller.serviceParams.registry.versions[req.soajs.controller.serviceParams.version];
 			if (!serviceInfo) {
+				req.soajs.log.error("Problem accessing service [" + req.soajs.controller.serviceParams.name + "], API [" + req.soajs.controller.serviceParams.path + "] & version [" + req.soajs.controller.serviceParams.version + "]");
 				return next(133);
 			}
 			let oauth = true;

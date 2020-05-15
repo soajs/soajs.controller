@@ -8,6 +8,7 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const registryModule = require("./../../modules/registry");
 const lib = require("./../../lib");
 
 const coreLibs = require("soajs.core.libs");
@@ -615,7 +616,7 @@ let utils = {
 			}
 			
 			obj.req.soajs.log.debug("loading env registry from req.oauth.bearerToken.env");
-			obj.core.registry.loadByEnv({"envCode": obj.req.oauth.bearerToken.env}, function (error, registry) {
+			registryModule.loadByEnv({"envCode": obj.req.oauth.bearerToken.env}, function (error, registry) {
 				if (error || !registry) {
 					if (!registry) {
 						error = new Error("Registry not found for:" + obj.req.oauth.bearerToken.env);

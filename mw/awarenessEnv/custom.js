@@ -11,6 +11,8 @@
 const request = require('request');
 const async = require('async');
 
+const registryModule = require("./../../modules/registry");
+
 let gatewayServiceName = null;
 let regEnvironment = (process.env.SOAJS_ENV || "dev");
 regEnvironment = regEnvironment.toLowerCase();
@@ -21,8 +23,8 @@ let timeLoaded = 0;
 let registry = null;
 
 let fetchControllerHosts = function (core, log, next) {
-	registry = core.registry.get();
-	core.registry.loadOtherEnvControllerHosts(gatewayServiceName, function (error, hosts) {
+	registry = registryModule.get();
+	registryModule.loadOtherEnvControllerHosts(gatewayServiceName, function (error, hosts) {
 		if (error) {
 			log.warn("Failed to load controller hosts. reusing from previous load. Reason: " + error.message);
 		} else {
@@ -40,7 +42,7 @@ let fetchControllerHosts = function (core, log, next) {
 };
 
 let awareness_healthCheck = function (core, log) {
-	registry = core.registry.get();
+	registry = registryModule.get();
 	
 	let resume = () => {
 		if (controllerHosts && Array.isArray(controllerHosts) && controllerHosts.length > 0) {
@@ -148,13 +150,13 @@ function roundRobin() {
 
 function init(param) {
 	gatewayServiceName = param.serviceName;
-	registry = param.core.registry.get();
-	if (registry.serviceConfig.awareness.autoRelaodRegistry) {
+	registry = registryModule.get();
+	if (registry && registry.serviceConfig.awareness.autoRelaodRegistry) {
 		setTimeout(() => {
 			fetchControllerHosts(param.core, param.log);
 		}, registry.serviceConfig.awareness.autoRelaodRegistry);
 	}
-	if (registry.serviceConfig.awareness.healthCheckInterval) {
+	if (registry && registry.serviceConfig.awareness.healthCheckInterval) {
 		awareness_healthCheck(param.core, param.log);
 	}
 }

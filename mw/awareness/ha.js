@@ -13,8 +13,7 @@ const async = require('async');
 const drivers = require('soajs.core.drivers');
 const coreLibs = require("soajs.core.libs");
 
-const coreModules = require("soajs.core.modules");
-let core = coreModules.core;
+const registryModule = require("./../../modules/registry");
 
 let param = null;
 let timeout = null;
@@ -25,8 +24,8 @@ let awarenessCache = {};
 
 let lib = {
 	"constructDriverParam": function (serviceName) {
-		let info = core.registry.get().deployer.selected.split('.');
-		let deployerConfig = core.registry.get().deployer.container[info[1]][info[2]];
+		let info = registryModule.get().deployer.selected.split('.');
+		let deployerConfig = registryModule.get().deployer.container[info[1]][info[2]];
 		
 		let strategy = process.env.SOAJS_DEPLOY_HA;
 		if (strategy === 'swarm') {
@@ -38,7 +37,7 @@ let lib = {
 			"driver": info[1] + "." + info[2],
 			"deployerConfig": deployerConfig,
 			"soajs": {
-				"registry": core.registry.get()
+				"registry": registryModule.get()
 			},
 			"model": {},
 			"params": {
@@ -150,7 +149,7 @@ let lib = {
 				param.log.debug("Awareness cache rebuilt successfully");
 				param.log.debug(awarenessCache);
 				
-				let cacheTTL = core.registry.get().serviceConfig.awareness.cacheTTL;
+				let cacheTTL = registryModule.get().serviceConfig.awareness.cacheTTL;
 				if (cacheTTL) {
 					if (timeout) {
 						clearTimeout(timeout);
@@ -200,8 +199,8 @@ let ha = {
 				serviceName += "-v" + param.serviceVersion + "-service";
 			}
 			
-			let info = core.registry.get().deployer.selected.split('.');
-			let deployerConfig = core.registry.get().deployer.container[info[1]][info[2]];
+			let info = registryModule.get().deployer.selected.split('.');
+			let deployerConfig = registryModule.get().deployer.container[info[1]][info[2]];
 			let namespace = '';
 			if (deployerConfig && deployerConfig.namespace && deployerConfig.namespace.default) {
 				namespace = '.' + deployerConfig.namespace.default;

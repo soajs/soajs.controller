@@ -89,7 +89,7 @@ module.exports = function (grunt) {
 				}
 			},
 			files: {
-				src: ['index.js', '_index.js', 'config.js', 'Gruntfile.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js']
+				src: ['index.js', '_index.js', 'config.js', 'Gruntfile.js', 'lib/**/*.js', 'modules/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js']
 			},
 			gruntfile: {
 				src: 'Gruntfile.js'
@@ -100,11 +100,13 @@ module.exports = function (grunt) {
 			mochaTest: {
 				SOAJS_ENV: "dev",
 				SOAJS_TEST: true,
+				SOAJS_PROFILE: __dirname + "/profiles/single.js",
 				APP_DIR_FOR_CODE_COVERAGE: '../'
 			},
 			coverage: {
 				SOAJS_ENV: "dev",
 				SOAJS_TEST: true,
+				SOAJS_PROFILE: __dirname + "/profiles/single.js",
 				APP_DIR_FOR_CODE_COVERAGE: '../test/coverage/instrument/'
 			}
 		},
@@ -127,7 +129,7 @@ module.exports = function (grunt) {
 		},
 		
 		instrument: {
-			files: ['index.js', '_index.js', 'config.js', 'lib/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
+			files: ['index.js', '_index.js', 'config.js', 'lib/**/*.js', 'modules/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
 			options: {
 				lazy: false,
 				basePath: 'test/coverage/instrument/'
