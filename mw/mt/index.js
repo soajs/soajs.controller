@@ -153,6 +153,9 @@ module.exports = (configuration) => {
 									//if this is controller route: /key/permission/get, ignore async waterfall response
 									if (url_keyACL) {
 										if (!req.soajs.uracDriver) {
+											if (err && err.message){
+												req.soajs.log.error(err.message);
+											}
 											//doesn't work if you are not logged in
 											return next(158);
 										} else {

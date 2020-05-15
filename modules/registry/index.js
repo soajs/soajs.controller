@@ -205,7 +205,7 @@ let build = {
 								servicesObj[STRUCT[i].name].maintenance = {
 									"readiness": ver.maintenance.readiness,
 									"port": ver.maintenance.port
-								}
+								};
 							}
 						}
 						//TODO: remove the below after checking if these root values are nto needed anymore
@@ -247,7 +247,7 @@ let build = {
 								servicesObj[STRUCT[i].name].maintenance = {
 									"readiness": ver.maintenance.readiness,
 									"port": ver.maintenance.port
-								}
+								};
 							}
 						}
 					}

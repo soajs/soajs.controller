@@ -373,6 +373,18 @@ let custom = {
 						}
 					},
 					function (cb) {
+						//check for environment data
+						if (fs.existsSync(dataPath + "hosts/")) {
+							let config = {
+								"colName": "hosts",
+								"condAnchor": "name",
+								"objId": "_id"
+							};
+							return lib.basic(config, dataPath + "hosts/", mongoConnection, cb);
+						} else
+							return cb(null);
+					},
+					function (cb) {
 						//check for gitAccounts data
 						if (fs.existsSync(dataPath + "gitAccounts/")) {
 							let config = {
