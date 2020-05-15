@@ -61,12 +61,12 @@ module.exports = (configuration) => {
 				"oauth": oauth,
 				"interConnect": serviceInfo.interConnect || null
 			};
-			if (serviceInfo[regEnvironment]) {
-				if (serviceInfo[regEnvironment].hasOwnProperty("extKeyRequired")) {
-					serviceParam.extKeyRequired = serviceInfo[regEnvironment].extKeyRequired;
+			if (serviceInfo.customByEnv && serviceInfo.customByEnv[regEnvironment]) {
+				if (serviceInfo.customByEnv[regEnvironment].hasOwnProperty("extKeyRequired")) {
+					serviceParam.extKeyRequired = serviceInfo.customByEnv[regEnvironment].extKeyRequired;
 				}
-				if (serviceInfo[regEnvironment].hasOwnProperty("oauth")) {
-					serviceParam.oauth = serviceInfo[regEnvironment].oauth;
+				if (serviceInfo.customByEnv[regEnvironment].hasOwnProperty("oauth")) {
+					serviceParam.oauth = serviceInfo.customByEnv[regEnvironment].oauth;
 				}
 			}
 		} else {
