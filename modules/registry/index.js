@@ -184,7 +184,6 @@ let build = {
 				}
 				if (STRUCT[i].versions) {
 					servicesObj[STRUCT[i].name].versions = {};
-					
 					for (let j = 0; j < STRUCT[i].versions.length; j++) {
 						let ver = STRUCT[i].versions[j];
 						servicesObj[STRUCT[i].name].versions[ver.version] = {
@@ -200,6 +199,16 @@ let build = {
 							"interConnect": ver.interConnect || null,
 							"maintenance": ver.maintenance || null
 						};
+						//NOTE: set heartbeat on root object
+						if (!servicesObj[STRUCT[i].name].maintenance && ver.maintenance) {
+							if (ver.maintenance.readiness && ver.maintenance.port) {
+								servicesObj[STRUCT[i].name].maintenance = {
+									"readiness": ver.maintenance.readiness,
+									"port": ver.maintenance.port
+								}
+							}
+						}
+						//TODO: remove the below after checking if these root values are nto needed anymore
 						if (!servicesObj[STRUCT[i].name].version) {
 							servicesObj[STRUCT[i].name].version = ver.version;
 							servicesObj[STRUCT[i].name].extKeyRequired = servicesObj[STRUCT[i].name].versions[ver.version].extKeyRequired || false;
@@ -232,6 +241,15 @@ let build = {
 						servicesObj[STRUCT[i].name].versions[ver.version] = {
 							"maintenance": ver.maintenance || null
 						};
+						//NOTE: set heartbeat on root object
+						if (!servicesObj[STRUCT[i].name].maintenance && ver.maintenance) {
+							if (ver.maintenance.readiness && ver.maintenance.port) {
+								servicesObj[STRUCT[i].name].maintenance = {
+									"readiness": ver.maintenance.readiness,
+									"port": ver.maintenance.port
+								}
+							}
+						}
 					}
 				}
 			}
