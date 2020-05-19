@@ -148,7 +148,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 						}
 						
 						if (regOptions.type === "service") {
-							regOptions.swagger = infoObj.swagger;
+							//regOptions.swagger = infoObj.swagger;
 							regOptions.oauth = infoObj.oauth;
 							regOptions.urac = infoObj.urac;
 							regOptions.urac_Profile = infoObj.urac_Profile;
