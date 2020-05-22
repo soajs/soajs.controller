@@ -349,7 +349,7 @@ function buildRegistry(param, registry, registryDBInfo, callback) {
 	registry.services = {
 		"controller": {
 			"name": registryDBInfo.ENV_schema.services.controller.name || "controller",
-			"group": registryDBInfo.ENV_schema.services.controller.group || "SOAJS Core Service",
+			"group": registryDBInfo.ENV_schema.services.controller.group || "SOAJS-Core-Service",
 			"version": registryDBInfo.ENV_schema.services.controller.version || "1",
 			"maxPoolSize": registryDBInfo.ENV_schema.services.controller.maxPoolSize,
 			"authorization": registryDBInfo.ENV_schema.services.controller.authorization,
@@ -373,15 +373,18 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 			'type': 'service',
 			'name': registry.services.controller.name,
 			'configuration': {
-				'port': registry.services.controller.port
+				'port': registry.services.controller.port,
+				'group': registry.services.controller.group
 			},
 			'versions': [
 				{
-					"version": registry.services.controller.version,
-					"maintenance": param.maintenance
+					"version": registry.services.controller.version
 				}
 			]
 		};
+		if (param.maintenance) {
+			newServiceObj.versions[0].maintenance = param.maintenance;
+		}
 		build.registerNewService(registry.coreDB.provision, newServiceObj, 'marketplace', function (error) {
 			if (error) {
 				return callback(new Error('Unable to register new service ' + param.name + ' : ' + error.message));
@@ -739,12 +742,15 @@ let registryModule = {
 	},
 	"loadByEnv": (param, cb) => {
 		let options = {
-			"reload": true,
+			"reload": false,
 			"envCode": param.envCode.toLowerCase(),
 			"setBy": "loadByEnv"
 		};
 		if (!param.hasOwnProperty("donotBbuildSpecificRegistry")) {
 			options.donotBbuildSpecificRegistry = true;
+		}
+		if (options.envCode === regEnvironment && registry_struct[options.envCode]) {
+			return cb(null, registry_struct[options.envCode])
 		}
 		return getRegistry(param, options, (err, reg) => {
 			if (err) {
@@ -787,7 +793,10 @@ let registryModule = {
 			for (let envCode in registry_struct) {
 				if (registry_struct.hasOwnProperty(envCode)) {
 					if (envCode !== regEnvironment && registry_struct[envCode]) {
-						envArray.push({"options": {"reload": true, "envCode": envCode}, "param": param});
+						envArray.push({
+							"options": {"reload": true, "envCode": envCode, "setBy": "reload"},
+							"param": param
+						});
 					}
 				}
 			}
