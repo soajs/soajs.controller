@@ -366,9 +366,28 @@ function buildRegistry(param, registry, registryDBInfo, callback) {
 }
 
 function buildSpecificRegistry(param, options, registry, registryDBInfo, callback) {
-	//NOTE: check if gateway is calling or a service or mdaemon calling /getRegistry
 	//IF: gateway
 	if (param.name === registry.services.controller.name) {
+		
+		build.allServices(registryDBInfo.services_schema, registry.services, registry.services.controller.name);
+		if (!process.env.SOAJS_DEPLOY_HA) {
+			build.servicesHosts(registryDBInfo.ENV_hosts, registry.services);
+		}
+		
+		build.allDaemons(registryDBInfo.daemons_schema, registry.daemons, registry.services.controller.name);
+		if (!process.env.SOAJS_DEPLOY_HA) {
+			build.servicesHosts(registryDBInfo.ENV_hosts, registry.daemons);
+		}
+		
+		if (!process.env.SOAJS_DEPLOY_HA) {
+			build.controllerHosts(registryDBInfo.ENV_hosts, registry.services.controller);
+		}
+		
+		if (process.env.SOAJS_DEPLOY_HA || options.reload || options.setBy === "loadByEnv") {
+			return callback(null, registry);
+		}
+		
+		// Only register gateway item if not reload and not HA and not loadByEnv
 		let newServiceObj = {
 			'type': 'service',
 			'name': registry.services.controller.name,
@@ -389,24 +408,7 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 			if (error) {
 				return callback(new Error('Unable to register new service ' + param.name + ' : ' + error.message));
 			}
-			
-			build.allServices(registryDBInfo.services_schema, registry.services, registry.services.controller.name);
-			if (!process.env.SOAJS_DEPLOY_HA) {
-				build.servicesHosts(registryDBInfo.ENV_hosts, registry.services);
-			}
-			
-			build.allDaemons(registryDBInfo.daemons_schema, registry.daemons, registry.services.controller.name);
-			if (!process.env.SOAJS_DEPLOY_HA) {
-				build.servicesHosts(registryDBInfo.ENV_hosts, registry.daemons);
-			}
-			
-			if (!process.env.SOAJS_DEPLOY_HA) {
-				build.controllerHosts(registryDBInfo.ENV_hosts, registry.services.controller);
-			}
-			
-			if (process.env.SOAJS_DEPLOY_HA || options.reload || options.setBy === "loadByEnv") {
-				return callback(null, registry);
-			} else if (param.ip) {
+			if (param.ip) {
 				if (registry.serviceConfig.awareness.autoRegisterService) {
 					if (!registry.services.controller.hosts) {
 						registry.services.controller.hosts = {};
@@ -427,7 +429,6 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 		});
 	} else {
 		//NOTE: not gateway
-		
 		return callback(null, registry);
 	}
 }
