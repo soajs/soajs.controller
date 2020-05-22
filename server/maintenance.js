@@ -290,7 +290,11 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 					"serviceIp": serviceIp,
 					"doNotRebuildCache": true
 				})(req, res, () => {
-					req.soajs.awareness.getHost(reg.services.controller.name, function (controllerHostInThisEnvironment) {
+					let gatewayName = param.serviceName;
+					if (reg && reg.services && reg.services.controller && reg.services.controller.name) {
+						gatewayName = reg.services.controller.name;
+					}
+					req.soajs.awareness.getHost(gatewayName, function (controllerHostInThisEnvironment) {
 						if (reg && reg.serviceConfig && reg.serviceConfig.ports && reg.serviceConfig.ports.controller) {
 							response.data.awareness = {
 								"host": controllerHostInThisEnvironment,
