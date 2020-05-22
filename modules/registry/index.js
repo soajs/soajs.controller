@@ -750,7 +750,7 @@ let registryModule = {
 			options.donotBbuildSpecificRegistry = true;
 		}
 		if (options.envCode === regEnvironment && registry_struct[options.envCode]) {
-			return cb(null, registry_struct[options.envCode])
+			return cb(null, registry_struct[options.envCode]);
 		}
 		return getRegistry(param, options, (err, reg) => {
 			if (err) {
