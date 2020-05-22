@@ -404,7 +404,7 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 				build.controllerHosts(registryDBInfo.ENV_hosts, registry.services.controller);
 			}
 			
-			if (process.env.SOAJS_DEPLOY_HA || options.reload) {
+			if (process.env.SOAJS_DEPLOY_HA || options.reload || options.setBy === "loadByEnv") {
 				return callback(null, registry);
 			} else if (param.ip) {
 				if (registry.serviceConfig.awareness.autoRegisterService) {
