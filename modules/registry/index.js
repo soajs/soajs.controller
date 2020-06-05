@@ -349,7 +349,7 @@ function buildRegistry(param, registry, registryDBInfo, callback) {
 	registry.services = {
 		"controller": {
 			"name": registryDBInfo.ENV_schema.services.controller.name || "controller",
-			"group": registryDBInfo.ENV_schema.services.controller.group || "SOAJS-Core-Service",
+			"group": registryDBInfo.ENV_schema.services.controller.group || "Gateway",
 			"version": registryDBInfo.ENV_schema.services.controller.version || "1",
 			"maxPoolSize": registryDBInfo.ENV_schema.services.controller.maxPoolSize,
 			"authorization": registryDBInfo.ENV_schema.services.controller.authorization,
@@ -390,6 +390,7 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 		// Only register gateway item if not reload and not HA and not loadByEnv
 		let newServiceObj = {
 			'type': 'service',
+			'subType': 'soajs',
 			'name': registry.services.controller.name,
 			'configuration': {
 				'port': registry.services.controller.port,

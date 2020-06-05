@@ -141,7 +141,9 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							"port": parseInt(infoObj.port),
 							"ip": infoObj.ip,
 							"type": infoObj.type,
-							"version": "" + infoObj.version
+							"version": "" + infoObj.version,
+							'subType': infoObj.subType || null,
+							'description': infoObj.description || null
 						};
 						if (infoObj.portHost) {
 							regOptions.portHost = parseInt(infoObj.portHost);

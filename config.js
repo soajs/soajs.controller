@@ -16,7 +16,7 @@ let config = {
 	},
 	"serviceVersion": "1",
 	"serviceName": "controller",
-	"serviceGroup": "SOAJS-Core-Service",
+	"serviceGroup": "Gateway",
 	"servicePort": 4000,
 	"maintenance": {
 		"readiness": "/heartbeat",
