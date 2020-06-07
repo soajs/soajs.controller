@@ -10,17 +10,15 @@ describe("Testing awarenessEnv HA", () => {
 	let provisionStub;
 	
 	let ha;
-	let coreModules;
-	let core;
+	let registryModule;
 	
 	before((done) => {
 		ha = helper.requireModule('./mw/awarenessEnv/ha.js');
+		registryModule = helper.requireModule('./modules/registry/index.js');
 		let localConfig = helper.requireModule('./config.js');
 		ha.init({"serviceName": localConfig.serviceName});
-		coreModules = require("soajs.core.modules");
-		core = coreModules.core;
 		
-		provisionStub = sinon.stub(core.registry, 'get').callsFake(() => {
+		provisionStub = sinon.stub(registryModule, 'get').callsFake(() => {
 			return {
 				deployer: {
 					selected: "test0.test1.test2",

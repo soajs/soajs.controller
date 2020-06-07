@@ -8,6 +8,7 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const registryModule = require("./../../modules/registry");
 const request = require('request');
 
 module.exports = (configuration) => {
@@ -63,7 +64,7 @@ module.exports = (configuration) => {
 					return req.soajs.controllerResponse(core.error.getError(135));
 				});
 				
-				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
 					req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
 				} else {
 					req.soajs.controller.redirectedRequest.pipe(res);
@@ -79,7 +80,7 @@ module.exports = (configuration) => {
 		}
 		else {
 			//get remote env registry
-			core.registry.loadByEnv({"envCode": remoteENV}, function (err, reg) {
+			registryModule.loadByEnv({"envCode": remoteENV}, function (err, reg) {
 				if (err) {
 					req.soajs.log.error(err.message);
 					return req.soajs.controllerResponse(core.error.getError(207));

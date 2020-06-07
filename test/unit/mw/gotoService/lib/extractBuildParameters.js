@@ -49,7 +49,7 @@ describe("Unit test for: mw - gotoService lib extractBuildParameters", () => {
         });
     });
     it("Install & Use the MW Lib - with endpoint", (done) => {
-        req.soajs.registry.services.urac.srcType = "endpoint";
+        req.soajs.registry.services.urac.type = "endpoint";
         req.soajs.registry.services.urac.hosts = null;
         mwLib(req, "urac", "urac/", null, null, "/urac/addUser?name=tony", null, (error, parameters) => {
             assert.ok(parameters.registry);
@@ -57,7 +57,7 @@ describe("Unit test for: mw - gotoService lib extractBuildParameters", () => {
         });
     });
     it("Install & Use the MW Lib - with endpoint and no registry", (done) => {
-        req.soajs.registry.services.urac.srcType = "endpoint";
+        req.soajs.registry.services.urac.type = "endpoint";
         req.soajs.registry.endpoints = null;
         req.soajs.registry.services.urac.hosts = null;
         mwLib(req, "urac", "urac/", null, null, "/urac/addUser?name=tony", null, (error, parameters) => {
@@ -65,7 +65,7 @@ describe("Unit test for: mw - gotoService lib extractBuildParameters", () => {
         });
     });
     it("Install & Use the MW Lib - with anything and no registry", (done) => {
-        req.soajs.registry.services.urac.srcType = "anything";
+        req.soajs.registry.services.urac.type = "anything";
         req.soajs.registry.services.urac.hosts = null;
         mwLib(req, "urac", "urac/", null, null, "/urac/addUser?name=tony", null, (error, parameters) => {
             done();

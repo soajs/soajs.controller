@@ -8,6 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const registryModule = require("./../../modules/registry");
+
 const request = require('request');
 const async = require('async');
 
@@ -21,7 +23,7 @@ let awarenessHosts = {
 };
 
 let awareness_healthCheck = function (core, log) {
-	registry = core.registry.get();
+	registry = registryModule.get();
 	if (awarenessHosts.registryLoadedTime !== registry.timeLoaded) {
 		awarenessHosts = {
 			"registryLoadedTime": registry.timeLoaded,
@@ -200,7 +202,6 @@ let roundRobin = function (s, v, env, cb) {
 		cb = s;
 		s = gatewayServiceName;
 	}
-	
 	if (s && registry.services[s] && registry.services[s].hosts && registry.services[s].hosts.latest && serviceAwarenessObj[s] && serviceAwarenessObj[s].healthy) {
 		if (!v) {
 			v = registry.services[s].hosts.latest;
@@ -234,7 +235,7 @@ let roundRobin = function (s, v, env, cb) {
 
 function init(param) {
 	gatewayServiceName = param.serviceName;
-	registry = param.core.registry.get();
+	registry = registryModule.get();
 	if (registry && registry.serviceConfig && registry.serviceConfig.awareness && registry.serviceConfig.awareness.healthCheckInterval) {
 		awareness_healthCheck(param.core, param.log);
 	}

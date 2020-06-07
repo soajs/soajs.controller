@@ -8,6 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const registryModule = require("./../modules/registry");
+
 const connect = require("connect");
 const http = require('http');
 
@@ -54,14 +56,12 @@ function Controller(config) {
 
 Controller.prototype.init = function (callback) {
 	let _self = this;
-	
 	lib.ip(autoRegHost, (service) => {
-		core.registry.load({
-			"serviceName": _self.soajs.param.init.serviceName,
-			"serviceGroup": _self.soajs.param.init.serviceGroup,
-			"serviceVersion": _self.soajs.param.init.serviceVersion,
-			"apiList": null,
-			"serviceIp": service.ip,
+		registryModule.load({
+			"name": _self.soajs.param.init.serviceName,
+			"group": _self.soajs.param.init.serviceGroup,
+			"version": _self.soajs.param.init.serviceVersion,
+			"ip": service.ip,
 			"maintenance": _self.soajs.param.init.maintenance
 		}, (reg) => {
 			let registry = reg;
@@ -212,7 +212,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 		});
 		
 		let getAwarenessInfo = (terminate, cb) => {
-			let tmp = core.registry.get();
+			let tmp = registryModule.get();
 			if (tmp && (tmp.services || tmp.daemons)) {
 				let awarenessStatData = {
 					"ts": Date.now(),
@@ -237,7 +237,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 					}
 					delete awarenessStatData.data.daemons;
 				}
-				core.registry.addUpdateEnvControllers({
+				registryModule.addUpdateEnvControllers({
 					"ip": _self.serviceIp,
 					"ts": awarenessStatData.ts,
 					"data": awarenessStatData.data,
@@ -252,11 +252,11 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 			} else {
 				log.info(_self.soajs.param.init.serviceName + " service started on port: " + registry.services.controller.port);
 				if (!process.env.SOAJS_DEPLOY_HA) {
-					core.registry.registerHost({
-						"serviceName": _self.soajs.param.init.serviceName,
-						"serviceVersion": _self.soajs.param.init.serviceVersion,
-						"servicePort": registry.services.controller.port,
-						"serviceIp": service.ip,
+					registryModule.registerHost({
+						"name": _self.soajs.param.init.serviceName,
+						"version": _self.soajs.param.init.serviceVersion,
+						"port": registry.services.controller.port,
+						"ip": service.ip,
 						"serviceHATask": service.HATask
 					}, registry, (registered) => {
 						if (registered) {

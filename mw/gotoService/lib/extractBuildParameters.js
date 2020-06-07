@@ -49,7 +49,7 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 			req.soajs.registry.services &&
 			req.soajs.registry.services[service] &&
 			req.soajs.registry.services[service].port &&
-			(process.env.SOAJS_DEPLOY_HA || req.soajs.registry.services[service].hosts || req.soajs.registry.services[service].srcType === "endpoint")
+			(process.env.SOAJS_DEPLOY_HA || req.soajs.registry.services[service].hosts || req.soajs.registry.services[service].type === "endpoint")
 		) {
 			let nextStep = (version) => {
 				let extKeyRequired = false;
@@ -119,7 +119,7 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 				else if (req.soajs.registry.services[service].hosts) {
 					version = req.soajs.registry.services[service].hosts.latest;
 					return nextStep(version);
-				} else if (req.soajs.registry.services[service].srcType === "endpoint") {
+				} else if (req.soajs.registry.services[service].type === "endpoint") {
 					//TODO: we should support what version is available aka deployed
 					if (req.soajs.registry.endpoints && req.soajs.registry.endpoints.deployed && req.soajs.registry.endpoints.deployed[service]) {
 						if (Array.isArray(req.soajs.registry.endpoints.deployed[service])) {

@@ -122,7 +122,8 @@ describe("Unit test for: server - controller maintenance", function () {
 				requestOptions.qs = req_qs;
 				requestOptions.body = req_body;
 				
-				request(requestOptions, (error, response) => {
+				request(requestOptions, (error, response, body) => {
+					assert.ok(body);
 					done();
 				});
 			});
@@ -136,8 +137,8 @@ describe("Unit test for: server - controller maintenance", function () {
 			'timeout': 1000 * 3600,
 			'jar': false
 		};
-		request(requestOptions, (error, response) => {
-			assert.ok(response.body);
+		request(requestOptions, (error, response, body) => {
+			assert.ok(body);
 			done();
 		});
 	});
@@ -149,8 +150,8 @@ describe("Unit test for: server - controller maintenance", function () {
 			'timeout': 1000 * 3600,
 			'jar': false
 		};
-		request(requestOptions, (error, response) => {
-			assert.ok(response.body);
+		request(requestOptions, (error, response, body) => {
+			assert.ok(body);
 			done();
 		});
 	});
@@ -162,8 +163,8 @@ describe("Unit test for: server - controller maintenance", function () {
 			'timeout': 1000 * 3600,
 			'jar': false
 		};
-		request(requestOptions, (error, response) => {
-			assert.ok(response.body);
+		request(requestOptions, (error, response, body) => {
+			assert.ok(body);
 			done();
 		});
 	});
@@ -175,8 +176,8 @@ describe("Unit test for: server - controller maintenance", function () {
 			'timeout': 1000 * 3600,
 			'jar': false
 		};
-		request(requestOptions, (error, response) => {
-			assert.ok(response.body);
+		request(requestOptions, (error, response, body) => {
+			assert.ok(body);
 			done();
 		});
 	});
