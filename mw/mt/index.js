@@ -42,6 +42,7 @@ module.exports = (configuration) => {
 		if (!proxy) {
 			let serviceInfo = req.soajs.controller.serviceParams.registry.versions[req.soajs.controller.serviceParams.version];
 			if (!serviceInfo) {
+				req.soajs.log.error("Problem accessing service [" + req.soajs.controller.serviceParams.name + "], API [" + req.soajs.controller.serviceParams.path + "] & version [" + req.soajs.controller.serviceParams.version + "]");
 				return next(133);
 			}
 			let oauth = true;
@@ -60,12 +61,12 @@ module.exports = (configuration) => {
 				"oauth": oauth,
 				"interConnect": serviceInfo.interConnect || null
 			};
-			if (serviceInfo[regEnvironment]) {
-				if (serviceInfo[regEnvironment].hasOwnProperty("extKeyRequired")) {
-					serviceParam.extKeyRequired = serviceInfo[regEnvironment].extKeyRequired;
+			if (serviceInfo.customByEnv && serviceInfo.customByEnv[regEnvironment]) {
+				if (serviceInfo.customByEnv[regEnvironment].hasOwnProperty("extKeyRequired")) {
+					serviceParam.extKeyRequired = serviceInfo.customByEnv[regEnvironment].extKeyRequired;
 				}
-				if (serviceInfo[regEnvironment].hasOwnProperty("oauth")) {
-					serviceParam.oauth = serviceInfo[regEnvironment].oauth;
+				if (serviceInfo.customByEnv[regEnvironment].hasOwnProperty("oauth")) {
+					serviceParam.oauth = serviceInfo.customByEnv[regEnvironment].oauth;
 				}
 			}
 		} else {
@@ -152,6 +153,9 @@ module.exports = (configuration) => {
 									//if this is controller route: /key/permission/get, ignore async waterfall response
 									if (url_keyACL) {
 										if (!req.soajs.uracDriver) {
+											if (err && err.message) {
+												req.soajs.log.error(err.message);
+											}
 											//doesn't work if you are not logged in
 											return next(158);
 										} else {
@@ -276,7 +280,7 @@ module.exports = (configuration) => {
 											};
 										}
 										
-										if (process.env.SOAJS_DEPLOY_HA && serviceParam.interConnect && Array.isArray(serviceParam.interConnect) && serviceParam.interConnect.length > 0) {
+										if (serviceParam.interConnect && Array.isArray(serviceParam.interConnect) && serviceParam.interConnect.length > 0) {
 											if (!injectObj.awareness.interConnect) {
 												injectObj.awareness.interConnect = [];
 											}
@@ -299,7 +303,11 @@ module.exports = (configuration) => {
 														if (host) {
 															item.host = host;
 															item.port = req.soajs.registry.services[item.name].port;
-															item.latest = req.soajs.awareness.getLatestVersionFromCache(item.name);
+															if (process.env.SOAJS_DEPLOY_HA) {
+																item.latest = req.soajs.awareness.getLatestVersionFromCache(item.name);
+															} else {
+																item.latest = req.soajs.registry.services[item.name].hosts.latest;
+															}
 															injectObj.awareness.interConnect.push(item);
 														} else {
 															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "]");

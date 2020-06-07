@@ -8,6 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const registryModule = require("./../modules/registry");
+
 const httpProxy = require('http-proxy');
 const http = require('http');
 const url = require('url');
@@ -29,12 +31,11 @@ let maintenanceResponse = (parsedUrl, param, route) => {
 	};
 };
 let reloadRegistry = (parsedUrl, core, log, param, serviceIp, cb) => {
-	core.registry.reload({
-		"serviceName": param.serviceName,
-		"serviceGroup": param.serviceGroup,
-		"serviceVersion": param.serviceVersion,
-		"apiList": null,
-		"serviceIp": serviceIp
+	registryModule.reload({
+		"name": param.serviceName,
+		"group": param.serviceGroup,
+		"version": param.serviceVersion,
+		"ip": serviceIp
 	}, function (err, reg) {
 		let response = maintenanceResponse(parsedUrl, param);
 		if (err) {
@@ -75,7 +76,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			});
 		} else if (parsedUrl.pathname === '/awarenessStat') {
 			res.writeHead(200, {'Content-Type': 'application/json'});
-			let tmp = core.registry.get();
+			let tmp = registryModule.get();
 			let response = maintenanceResponse(parsedUrl, param);
 			if (tmp && (tmp.services || tmp.daemons)) {
 				response.result = true;
@@ -92,7 +93,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 					"serviceIp": serviceIp
 				});
 			} else if (parsedUrl.query && parsedUrl.query.update) {
-				core.registry.addUpdateEnvControllers({
+				registryModule.addUpdateEnvControllers({
 					"ip": serviceIp,
 					"ts": response.ts,
 					"data": soajsUtils.cloneObj(response.data),
@@ -128,9 +129,8 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 						if ('POST' === req.method && body) {
 							infoObj = body;
 						}
-						
 						if (!soajsLib.version.validate(infoObj.version)) {
-							log.warn("Failed to register service for [" + infoObj.name + "] version should be of format [1.1]");
+							log.warn("Failed to register service for [" + infoObj.name + "@" + infoObj.version + "] version should be of format [1.1]");
 							res.writeHead(200, {'Content-Type': 'application/json'});
 							return res.end(JSON.stringify(response));
 						}
@@ -141,14 +141,16 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							"port": parseInt(infoObj.port),
 							"ip": infoObj.ip,
 							"type": infoObj.type,
-							"version": "" + infoObj.version
+							"version": "" + infoObj.version,
+							'subType': infoObj.subType || null,
+							'description': infoObj.description || null
 						};
 						if (infoObj.portHost) {
 							regOptions.portHost = parseInt(infoObj.portHost);
 						}
 						
 						if (regOptions.type === "service") {
-							regOptions.swagger = infoObj.swagger;
+							//regOptions.swagger = infoObj.swagger;
 							regOptions.oauth = infoObj.oauth;
 							regOptions.urac = infoObj.urac;
 							regOptions.urac_Profile = infoObj.urac_Profile;
@@ -172,7 +174,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 						if (body && body.maintenance) {
 							regOptions.maintenance = body.maintenance;
 						}
-						core.registry.register(
+						registryModule.register(
 							regOptions,
 							function (err, data) {
 								if (!err) {
@@ -212,13 +214,14 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 		} else if (parsedUrl.pathname === '/getRegistry') {
 			let reqEnv = parsedUrl.query.env;
 			let reqServiceName = parsedUrl.query.serviceName;
+			let reqServiceType = parsedUrl.query.type || "service";
 			
 			if (!reqEnv) {
 				reqEnv = regEnvironment;
 			}
-			core.registry.loadByEnv({
+			registryModule.loadByEnv({
 				"envCode": reqEnv,
-				"serviceName": param.serviceName,
+				"name": param.serviceName,
 				"donotBbuildSpecificRegistry": false
 			}, function (err, reg) {
 				let response = maintenanceResponse(parsedUrl, param);
@@ -261,7 +264,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 						response.data.resources = reg.resources;
 					}
 					response.data.services = {};
-					if (reg.services) {
+					if (reg.services && reqServiceType === "service") {
 						if (reg.services.controller) {
 							response.data.services.controller = reg.services.controller;
 						}
@@ -269,6 +272,13 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							response.data.services[reqServiceName] = {
 								"group": reg.services[reqServiceName].group,
 								"port": reg.services[reqServiceName].port
+							};
+						}
+					} else if (reg.daemons && reqServiceType === "mdaemon") {
+						if (reg.daemons[reqServiceName]) {
+							response.data.daemons[reqServiceName] = {
+								"group": reg.daemons[reqServiceName].group,
+								"port": reg.daemons[reqServiceName].port
 							};
 						}
 					}
@@ -282,7 +292,11 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 					"serviceIp": serviceIp,
 					"doNotRebuildCache": true
 				})(req, res, () => {
-					req.soajs.awareness.getHost(reg.services.controller.name, function (controllerHostInThisEnvironment) {
+					let gatewayName = param.serviceName;
+					if (reg && reg.services && reg.services.controller && reg.services.controller.name) {
+						gatewayName = reg.services.controller.name;
+					}
+					req.soajs.awareness.getHost(gatewayName, function (controllerHostInThisEnvironment) {
 						if (reg && reg.serviceConfig && reg.serviceConfig.ports && reg.serviceConfig.ports.controller) {
 							response.data.awareness = {
 								"host": controllerHostInThisEnvironment,

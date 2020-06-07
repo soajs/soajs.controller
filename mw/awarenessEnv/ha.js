@@ -8,9 +8,9 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const registryModule = require("./../../modules/registry");
+
 let param = null;
-const coreModules = require("soajs.core.modules");
-let core = coreModules.core;
 
 let regEnvironment = (process.env.SOAJS_ENV || "dev");
 regEnvironment = regEnvironment.toLowerCase();
@@ -46,8 +46,8 @@ let ha = {
 			serviceName += "-v" + param.serviceVersion + "-service";
 		}
 		
-		let info = core.registry.get().deployer.selected.split('.');
-		let deployerConfig = core.registry.get().deployer.container[info[1]][info[2]];
+		let info = registryModule.get().deployer.selected.split('.');
+		let deployerConfig = registryModule.get().deployer.container[info[1]][info[2]];
 		let namespace = '';
 		if (deployerConfig && deployerConfig.namespace && deployerConfig.namespace.default) {
 			namespace = '.' + deployerConfig.namespace.default;

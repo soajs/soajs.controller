@@ -804,4 +804,11 @@ describe("Unit test for: mw - mt lib", () => {
 			done();
 		});
 	});
+	it("testing mergeACLArray empty array", (done) => {
+		let acl = [];
+		lib.mergeACLArray(acl, (err, result) => {
+			assert.deepEqual(result, {}); // mw next function is called
+			done();
+		});
+	});
 });

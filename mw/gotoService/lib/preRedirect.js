@@ -123,7 +123,7 @@ module.exports = (req, res, core, cb) => {
 		});
 	};
 	
-	if (restServiceParams.registry.srcType && restServiceParams.registry.srcType === "endpoint") {
+	if (restServiceParams.registry && restServiceParams.registry.type === "endpoint") {
 		let host = restServiceParams.registry.src.url;
 		if (restServiceParams.version && restServiceParams.registry.src.urls) {
 			for (let i = 0; i < restServiceParams.registry.src.urls.length; i++) {
