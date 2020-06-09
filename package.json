@@ -30,8 +30,8 @@
     "request": "2.88.2",
     "useragent": "2.3.0",
     "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "5.0.2",
-    "soajs.urac.driver": "3.0.3"
+    "soajs.core.modules": "5.0.3",
+    "soajs.urac.driver": "3.0.4"
   },
   "devDependencies": {
     "express": "4.17.1",
