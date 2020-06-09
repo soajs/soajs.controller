@@ -8,11 +8,9 @@
  * found in the LICENSE file at the root of this repository
  */
 
-/**
- *
- * @param param
- * @returns {Function}
- */
+
+const infra = require("../../modules/driver/index.js");
+
 module.exports = {
 	getMw: function (param) {
 		let driver;
@@ -23,6 +21,8 @@ module.exports = {
 			}
 			else {
 				driver = require("./ha.js");
+				infra.init();
+				param.infra = infra;
 				if (!param.doNotRebuildCache) {
 					driver.init(param);
 				}
@@ -31,12 +31,9 @@ module.exports = {
 		return function (req, res, next) {
 			if (param.awareness) {
 				req.soajs.awareness = {
-					"getHost": driver.getServiceHost
+					"getHost": driver.getServiceHost,
+					"getLatestVersion": driver.getLatestVersion
 				};
-				
-				if (process.env.SOAJS_DEPLOY_HA) {
-					req.soajs.awareness.getLatestVersionFromCache = driver.getLatestVersionFromCache;
-				}
 			}
 			next();
 		};

@@ -303,16 +303,19 @@ module.exports = (configuration) => {
 														if (host) {
 															item.host = host;
 															item.port = req.soajs.registry.services[item.name].port;
-															if (process.env.SOAJS_DEPLOY_HA) {
-																item.latest = req.soajs.awareness.getLatestVersionFromCache(item.name);
-															} else {
-																item.latest = req.soajs.registry.services[item.name].hosts.latest;
-															}
-															injectObj.awareness.interConnect.push(item);
+															req.soajs.awareness.getLatestVersion(item.name, (latest) => {
+																if (latest) {
+																	item.latest = latest;
+																	injectObj.awareness.interConnect.push(item);
+																} else {
+																	req.soajs.log.debug(serviceName + " interConnect failed to fetch latestVersion for [" + item.name + "]");
+																}
+																return callback();
+															});
 														} else {
 															req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "]");
+															return callback();
 														}
-														return callback();
 													});
 												},
 												(err) => {
