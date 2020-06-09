@@ -89,7 +89,7 @@ module.exports = function (grunt) {
 				}
 			},
 			files: {
-				src: ['index.js', '_index.js', 'config.js', 'Gruntfile.js', 'lib/**/*.js', 'modules/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js']
+				src: ['index.js', '_index.js', 'config.js', 'Gruntfile.js', 'lib/**/*.js', 'modules/driver/kubernetes/*.js', 'modules/driver/kubernetes/bl/*.js', 'modules/driver/kubernetes/model/*.js', 'modules/registry/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js']
 			},
 			gruntfile: {
 				src: 'Gruntfile.js'
@@ -126,12 +126,24 @@ module.exports = function (grunt) {
 			main: {
 				files: [
 					{expand: true, src: ['package.json'], dest: 'test/coverage/instrument/', filter: 'isFile'},
+					{
+						cwd: 'modules/driver/kubernetes/model/swagger/',
+						src: '**/*',
+						dest: 'test/coverage/instrument/modules/driver/kubernetes/model/swagger/',
+						expand: true
+					},
+					{
+						cwd: 'modules/driver/kubernetes/model/clients/',  // set working folder / root to copy
+						src: '**/*',
+						dest: 'test/coverage/instrument/modules/driver/kubernetes/model/clients/',    // destination folder
+						expand: true           // required when using cwd
+					}
 				]
 			}
 		},
 		
 		instrument: {
-			files: ['index.js', '_index.js', 'config.js', 'lib/**/*.js', 'modules/**/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
+			files: ['index.js', '_index.js', 'config.js', 'lib/**/*.js', 'modules/driver/kubernetes/*.js', 'modules/driver/kubernetes/bl/*.js', 'modules/driver/kubernetes/model/*.js', 'modules/registry/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
 			options: {
 				lazy: false,
 				basePath: 'test/coverage/instrument/'

@@ -9,7 +9,6 @@
  */
 
 const coreLibs = require("soajs.core.libs");
-const drivers = require('soajs.core.drivers');
 
 module.exports = (req, service, service_nv, version, proxyInfo, url, core, callback) => {
 	
@@ -75,51 +74,10 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 				serviceInfo.path = path;
 				return callback(null, serviceInfo);
 			};
-			//NOTE: since keyACL is getting th version from ACL, we do not need to get version at this point anymore
+			
+			//NOTE: since keyACL is getting the version from ACL, we do not need to get version at this point anymore
 			if (!version) {
-				if (process.env.SOAJS_DEPLOY_HA) {
-					let latestCachedVersion = req.soajs.awareness.getLatestVersionFromCache(service);
-					if (latestCachedVersion) {
-						version = latestCachedVersion;
-						nextStep(version);
-					}
-					else {
-						let info = req.soajs.registry.deployer.selected.split('.');
-						let deployerConfig = req.soajs.registry.deployer.container[info[1]][info[2]];
-						
-						let strategy = process.env.SOAJS_DEPLOY_HA;
-						if (strategy === 'swarm') {
-							strategy = 'docker';
-						}
-						let options = {
-							"strategy": strategy,
-							"driver": info[1] + "." + info[2],
-							"deployerConfig": deployerConfig,
-							"soajs": {
-								"registry": req.soajs.registry
-							},
-							"model": {},
-							"params": {
-								"serviceName": service,
-								"env": process.env.SOAJS_ENV
-							}
-						};
-						drivers.execute({
-							"type": "container",
-							"driver": options.strategy
-						}, 'getLatestVersion', options, (error, latestVersion) => {
-							if (error) {
-								return callback(error);
-							}
-							version = latestVersion;
-							nextStep(version);
-						});
-					}
-				}
-				else if (req.soajs.registry.services[service].hosts) {
-					version = req.soajs.registry.services[service].hosts.latest;
-					return nextStep(version);
-				} else if (req.soajs.registry.services[service].type === "endpoint") {
+				if (req.soajs.registry.services[service].type === "endpoint") {
 					//TODO: we should support what version is available aka deployed
 					if (req.soajs.registry.endpoints && req.soajs.registry.endpoints.deployed && req.soajs.registry.endpoints.deployed[service]) {
 						if (Array.isArray(req.soajs.registry.endpoints.deployed[service])) {
@@ -132,14 +90,18 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 					}
 					return callback(null, null);
 				} else {
-					return callback(null, null);
+					req.soajs.awareness.getLatestVersion(service, (latest) => {
+						if (latest) {
+							return nextStep(latest);
+						} else {
+							return callback(null, null);
+						}
+					});
 				}
-			}
-			else {
+			} else {
 				return nextStep(version);
 			}
-		}
-		else {
+		} else {
 			return callback(null, null);
 		}
 	}

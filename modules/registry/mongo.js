@@ -220,6 +220,12 @@ let model = {
 					// check for version and update
 					let options = {};
 					let s = {'$set': {}};
+					if (serviceObj.subType) {
+						s.$set.subType = serviceObj.subType;
+					}
+					if (serviceObj.description) {
+						s.$set.description = serviceObj.description;
+					}
 					for (let p in serviceObj.configuration) {
 						if (serviceObj.configuration.hasOwnProperty(p)) {
 							s.$set["configuration." + p] = serviceObj.configuration[p];

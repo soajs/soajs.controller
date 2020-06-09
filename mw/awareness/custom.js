@@ -241,7 +241,16 @@ function init(param) {
 	}
 }
 
+function getLatestVersion(name, cb) {
+	if (registry && registry.services && registry.services[name] && registry.services[name].hosts) {
+		return cb(registry.services[name].hosts.latest);
+	} else {
+		return cb(null);
+	}
+}
+
 module.exports = {
 	"init": init,
-	"getServiceHost": roundRobin
+	"getServiceHost": roundRobin,
+	"getLatestVersion": getLatestVersion
 };

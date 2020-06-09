@@ -8,11 +8,7 @@
  * found in the LICENSE file at the root of this repository
  */
 
-/**
- *
- * @param param
- * @returns {Function}
- */
+
 module.exports = {
 	getMw: function (param) {
 		let driver = null;
