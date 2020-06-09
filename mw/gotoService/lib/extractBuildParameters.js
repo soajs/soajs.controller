@@ -74,7 +74,6 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 				serviceInfo.path = path;
 				return callback(null, serviceInfo);
 			};
-			
 			//NOTE: since keyACL is getting the version from ACL, we do not need to get version at this point anymore
 			if (!version) {
 				if (req.soajs.registry.services[service].type === "endpoint") {
@@ -88,7 +87,11 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 							return nextStep(ver);
 						}
 					}
-					return callback(null, null);
+					if (req.soajs.registry.services[service].version) {
+						return nextStep(req.soajs.registry.services[service].version);
+					} else {
+						return callback(null, null);
+					}
 				} else {
 					req.soajs.awareness.getLatestVersion(service, (latest) => {
 						if (latest) {

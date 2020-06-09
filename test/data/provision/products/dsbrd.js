@@ -164,6 +164,11 @@ let prod = {
 					"1": {
 						"access": true
 					}
+				},
+				"pt":{
+					"1": {
+						"access": true
+					}
 				}
 			}
 		}
@@ -255,6 +260,11 @@ let prod = {
 						}
 					],
 					"payment": [
+						{
+							"version": "1"
+						}
+					],
+					"pt": [
 						{
 							"version": "1"
 						}
