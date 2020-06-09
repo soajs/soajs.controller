@@ -209,6 +209,7 @@ let build = {
 							}
 						}
 						//TODO: remove the below after checking if these root values are nto needed anymore
+						// version at the root level is bing use in buildextrapram when type is endpoint to get the latest
 						if (!servicesObj[STRUCT[i].name].version) {
 							servicesObj[STRUCT[i].name].version = ver.version;
 							servicesObj[STRUCT[i].name].extKeyRequired = servicesObj[STRUCT[i].name].versions[ver.version].extKeyRequired || false;
@@ -390,9 +391,9 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 		// Only register gateway item if not reload and not HA and not loadByEnv
 		let newServiceObj = {
 			'type': 'service',
-			'subType': 'soajs',
 			'name': registry.services.controller.name,
 			'configuration': {
+				'subType': 'soajs',
 				'port': registry.services.controller.port,
 				'group': registry.services.controller.group
 			},
@@ -635,10 +636,10 @@ let registryModule = {
 					//adding daemon service for the first time to services collection
 					let newDaemonServiceObj = {
 						'type': param.type,
-						'subType': param.subType,
 						'description': param.description,
 						'name': param.name,
 						'configuration': {
+							'subType': param.subType,
 							'group': param.group,
 							'port': param.port
 						},
@@ -680,10 +681,10 @@ let registryModule = {
 					//adding service for the first time to services collection
 					let newServiceObj = {
 						'type': param.type,
-						'subType': param.subType,
 						'description': param.description,
 						'name': param.name,
 						'configuration': {
+							'subType': param.subType,
 							'group': param.group,
 							'port': param.port,
 							'requestTimeout': param.requestTimeout,
