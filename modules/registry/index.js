@@ -209,6 +209,7 @@ let build = {
 							}
 						}
 						//TODO: remove the below after checking if these root values are nto needed anymore
+						// version at the root level is bing use in buildextrapram when type is endpoint to get the latest
 						if (!servicesObj[STRUCT[i].name].version) {
 							servicesObj[STRUCT[i].name].version = ver.version;
 							servicesObj[STRUCT[i].name].extKeyRequired = servicesObj[STRUCT[i].name].versions[ver.version].extKeyRequired || false;
