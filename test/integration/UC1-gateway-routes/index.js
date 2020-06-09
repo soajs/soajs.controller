@@ -301,7 +301,7 @@ describe("Integration for Usecase 1", function () {
 		};
 		requester('get', options, (error, body) => {
 			assert.ok(body);
-			assert.equal(body.data.type, "endpoint");
+			assert.strictEqual(body.data.type, "endpoint");
 			done();
 		});
 	});

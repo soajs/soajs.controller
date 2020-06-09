@@ -9,8 +9,6 @@
  */
 
 const async = require('async');
-
-const drivers = require('soajs.core.drivers');
 const coreLibs = require("soajs.core.libs");
 
 const registryModule = require("./../../modules/registry");
@@ -23,40 +21,6 @@ regEnvironment = regEnvironment.toLowerCase();
 let awarenessCache = {};
 
 let lib = {
-	"constructDriverParam": function (serviceName) {
-		let info = registryModule.get().deployer.selected.split('.');
-		let deployerConfig = registryModule.get().deployer.container[info[1]][info[2]];
-		
-		let strategy = process.env.SOAJS_DEPLOY_HA;
-		if (strategy === 'swarm') {
-			strategy = 'docker';
-		}
-		
-		let options = {
-			"strategy": strategy,
-			"driver": info[1] + "." + info[2],
-			"deployerConfig": deployerConfig,
-			"soajs": {
-				"registry": registryModule.get()
-			},
-			"model": {},
-			"params": {
-				"env": regEnvironment
-			}
-		};
-		
-		if (serviceName) {
-			options.params.serviceName = serviceName;
-		}
-		
-		return options;
-	},
-	
-	"getLatestVersion": function (serviceName, cb) {
-		let options = lib.constructDriverParam(serviceName);
-		drivers.execute({"type": "container", "driver": options.strategy}, 'getLatestVersion', options, cb);
-	},
-	
 	"getHostFromCache": function (serviceName, version) {
 		if (awarenessCache[serviceName] &&
 			awarenessCache[serviceName][version] &&
@@ -69,16 +33,17 @@ let lib = {
 	},
 	
 	"getHostFromAPI": function (serviceName, version, cb) {
-		let options = lib.constructDriverParam(serviceName);
 		if (!version) {
-			//if no version was supplied, find the latest version of the service
-			lib.getLatestVersion(serviceName, function (err, obtainedVersion) {
-				if (err) {
-					//todo: need to find a better way to do this log
-					param.log.error(err.message);
+			let options = null;
+			let input = {
+				"configuration": {"env": regEnvironment},
+				"itemName": serviceName
+			};
+			param.infra.kubernetes.get.item_latestVersion(param, input, options, (error, obtainedVersion) => {
+				if (error) {
+					param.log.error(error.message);
 					return cb(null);
 				}
-				
 				getHost(obtainedVersion);
 			});
 		} else {
@@ -86,64 +51,66 @@ let lib = {
 		}
 		
 		function getHost(version) {
-			options.params.version = version;
-			drivers.execute({
-				"type": "container",
-				"driver": options.strategy
-			}, 'getServiceHost', options, (error, response) => {
+			param.log.debug('Getting host for ' + serviceName + ' - ' + version + ' ....');
+			let options = null;
+			let input = {
+				"configuration": {"env": regEnvironment},
+				"item": {"name": serviceName, "version": version, "env": regEnvironment}
+			};
+			param.infra.kubernetes.get.host(param, input, options, (error, host) => {
 				if (error) {
 					param.log.error(error.message);
 					return cb(null);
 				}
-				
-				//lib.setHostInCache(serviceName, version, response);
-				param.log.debug(' .... got ' + serviceName + ' - ' + version + ' - ' + response + ' from cluster API');
-				return cb(response);
+				if (!awarenessCache[serviceName]) {
+					awarenessCache[serviceName] = {};
+				}
+				if (!awarenessCache[serviceName][version]) {
+					awarenessCache[serviceName][version] = {};
+				}
+				awarenessCache[serviceName][version].host = host;
+				return cb(host);
 			});
 		}
 	},
 	
 	"rebuildAwarenessCache": function () {
 		let myCache = {};
-		let options = lib.constructDriverParam();
-		drivers.execute({
-			"type": "container",
-			"driver": options.strategy
-		}, 'listServices', options, (error, services) => {
+		let options = null;
+		let input = {
+			"configuration": {"env": regEnvironment}
+		};
+		param.infra.kubernetes.get.all(param, input, options, (error, services) => {
 			if (error) {
 				param.log.error(error.message);
 				return;
 			}
-			
 			async.each(services, function (oneService, callback) {
 				let version, serviceName;
-				if (oneService.labels['soajs.service.type'] !== "service" && oneService.labels['soajs.service.type'] !== "daemon") {
+				if (oneService.metadata.labels['soajs.service.type'] !== "service" && oneService.metadata.labels['soajs.service.type'] !== "mdaemon") {
 					return callback();
 				}
-				if (oneService.labels && oneService.labels['soajs.service.version']) {
-					version = oneService.labels['soajs.service.version'];
+				if (oneService.metadata.labels && oneService.metadata.labels['soajs.service.version']) {
+					version = oneService.metadata.labels['soajs.service.version'];
 				}
 				
-				if (oneService.labels && oneService.labels['soajs.service.name']) {
-					serviceName = oneService.labels['soajs.service.name'];
+				if (oneService.metadata.labels && oneService.metadata.labels['soajs.service.name']) {
+					serviceName = oneService.metadata.labels['soajs.service.name'];
 				}
-				
-				param.log.debug('Building awareness for ' + serviceName + ' - ' + version + ' ....');
 				
 				if (!serviceName) {
 					return callback();
 				}
-				//if no version is found, lib.getHostFromAPI() will get it from cluster api
-				lib.getHostFromAPI(serviceName, version, function (hostname) {
+				if (oneService.spec.clusterIP) {
 					if (!myCache[serviceName]) {
 						myCache[serviceName] = {};
 					}
 					if (!myCache[serviceName][version]) {
 						myCache[serviceName][version] = {};
 					}
-					myCache[serviceName][version].host = hostname;
-					return callback();
-				});
+					myCache[serviceName][version].host = oneService.spec.clusterIP;
+				}
+				return callback();
 			}, function () {
 				awarenessCache = myCache;
 				param.log.debug("Awareness cache rebuilt successfully");
@@ -169,10 +136,8 @@ let ha = {
 	},
 	
 	"getServiceHost": function () {
-		let serviceName, version, env, cb;
-		serviceName = param.serviceName;
-		cb = arguments[arguments.length - 1];
-		
+		let env = regEnvironment;
+		let serviceName = param.serviceName, version = null, cb = arguments[arguments.length - 1];
 		switch (arguments.length) {
 			//controller, cb
 			case 2:
@@ -192,13 +157,10 @@ let ha = {
 				break;
 		}
 		
-		env = regEnvironment;
-		
 		if (serviceName === param.serviceName) {
 			if (process.env.SOAJS_DEPLOY_HA === 'kubernetes') {
 				serviceName += "-v" + param.serviceVersion + "-service";
 			}
-			
 			let info = registryModule.get().deployer.selected.split('.');
 			let deployerConfig = registryModule.get().deployer.container[info[1]][info[2]];
 			let namespace = '';
@@ -208,36 +170,34 @@ let ha = {
 					namespace += '-' + env + '-' + param.serviceName + '-v' + param.serviceVersion;
 				}
 			}
-			
 			return cb(env + "-" + serviceName + namespace);
 		} else {
 			let hostname = lib.getHostFromCache(serviceName, version);
 			if (hostname) {
 				return cb(hostname);
 			} else {
-				param.log.debug('Getting host for ' + serviceName + ' - ' + version + ' ....');
 				lib.getHostFromAPI(serviceName, version, cb);
 			}
 		}
 	},
 	
-	"getLatestVersionFromCache": function (serviceName) {
-		if (!awarenessCache[serviceName]) {
-			return null;
+	"getLatestVersion": function (name, cb) {
+		if (!awarenessCache[name]) {
+			return cb(null);
 		}
 		
-		let serviceVersions = Object.keys(awarenessCache[serviceName]);
+		let serviceVersions = Object.keys(awarenessCache[name]);
 		if (serviceVersions.length === 0) {
-			return null;
+			return cb(null);
 		}
 		let latestVersion = null;
 		for (let i = 0; i < serviceVersions.length; i++) {
 			latestVersion = coreLibs.version.getLatest(latestVersion, serviceVersions[i]);
 		}
 		if (latestVersion) {
-			return latestVersion;
+			return cb(latestVersion);
 		} else {
-			return null;
+			return cb(null);
 		}
 	}
 };
