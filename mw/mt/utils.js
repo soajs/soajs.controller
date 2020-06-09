@@ -178,6 +178,20 @@ let utils = {
 		if (uracACL) {
 			obj.finalAcl = uracACL[obj.req.soajs.controller.serviceParams.name];
 			if (obj.finalAcl) {
+				
+				if (!obj.req.soajs.controller.serviceParams.versionRequested) {
+					// get latest from ACL
+					let version = null;
+					for (let v in obj.finalAcl) {
+						if (obj.finalAcl.hasOwnProperty(v)) {
+							version = coreLibs.version.getLatest(version, v);
+						}
+					}
+					if (version) {
+						obj.req.soajs.controller.serviceParams.version = version;
+					}
+				}
+				
 				let san_v = coreLibs.version.sanitize(obj.req.soajs.controller.serviceParams.version);
 				obj.finalAcl = obj.finalAcl[san_v] || obj.finalAcl;
 				

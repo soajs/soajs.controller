@@ -390,9 +390,9 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 		// Only register gateway item if not reload and not HA and not loadByEnv
 		let newServiceObj = {
 			'type': 'service',
-			'subType': 'soajs',
 			'name': registry.services.controller.name,
 			'configuration': {
+				'subType': 'soajs',
 				'port': registry.services.controller.port,
 				'group': registry.services.controller.group
 			},
@@ -635,10 +635,10 @@ let registryModule = {
 					//adding daemon service for the first time to services collection
 					let newDaemonServiceObj = {
 						'type': param.type,
-						'subType': param.subType,
 						'description': param.description,
 						'name': param.name,
 						'configuration': {
+							'subType': param.subType,
 							'group': param.group,
 							'port': param.port
 						},
@@ -680,10 +680,10 @@ let registryModule = {
 					//adding service for the first time to services collection
 					let newServiceObj = {
 						'type': param.type,
-						'subType': param.subType,
 						'description': param.description,
 						'name': param.name,
 						'configuration': {
+							'subType': param.subType,
 							'group': param.group,
 							'port': param.port,
 							'requestTimeout': param.requestTimeout,
