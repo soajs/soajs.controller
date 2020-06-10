@@ -199,6 +199,21 @@ let ha = {
 		} else {
 			return cb(null);
 		}
+	},
+	
+	"getLatestVersionFromCluster": function (name, cb) {
+		let options = null;
+		let input = {
+			"configuration": {"env": regEnvironment},
+			"itemName": name
+		};
+		param.infra.kubernetes.get.item_latestVersion(param, input, options, (error, obtainedVersion) => {
+			if (error) {
+				param.log.error(error.message);
+				return cb(null);
+			}
+			return cb(obtainedVersion);
+		});
 	}
 };
 

@@ -97,7 +97,17 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 						if (latest) {
 							return nextStep(latest);
 						} else {
-							return callback(null, null);
+							if (req.soajs.awareness.getLatestVersionFromCluster) {
+								req.soajs.awareness.getLatestVersionFromCluster(service, (latest) => {
+									if (latest) {
+										return nextStep(latest);
+									} else {
+										return callback(null, null);
+									}
+								});
+							} else {
+								return callback(null, null);
+							}
 						}
 					});
 				}

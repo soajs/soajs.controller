@@ -34,6 +34,9 @@ module.exports = {
 					"getHost": driver.getServiceHost,
 					"getLatestVersion": driver.getLatestVersion
 				};
+				if (process.env.SOAJS_DEPLOY_HA) {
+					req.soajs.awareness.getLatestVersionFromCluster = driver.getLatestVersionFromCluster;
+				}
 			}
 			next();
 		};
