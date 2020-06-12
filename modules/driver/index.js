@@ -33,7 +33,6 @@ function init() {
 	temp.driver = driver;
 	temp.handleError = BL.kubernetes.handleError;
 	temp.handleConnect = BL.kubernetes.handleConnect;
-	temp.handleConfiguration = BL.kubernetes.handleConfiguration;
 	BL.kubernetes.get = temp;
 	
 }

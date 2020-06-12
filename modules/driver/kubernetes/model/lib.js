@@ -33,12 +33,12 @@ let lib = {
 					if (depSeleted && depSeleted.includes("kubernetes")) {
 						let regConf = get(["deployer"].concat(depSeleted.split(".")), registry);
 						if (regConf) {
-							let protocol = regConf.apiProtocol || "https://";
-							let port = regConf.apiPort ? ":" + regConf.apiPort : "";
+							let protocol = regConf.configuration.protocol || "https";
+							let port = regConf.configuration.port ? ":" + regConf.configuration.port : "";
 							let config = {
-								"namespace": regConf.namespace.default,
-								"token": regConf.auth.token,
-								"url": protocol + regConf.nodes + port
+								"namespace": regConf.namespace,
+								"token": regConf.configuration.token,
+								"url": protocol + "://" +regConf.configuration.url + port
 							};
 							return cb(null, config);
 						}
@@ -47,14 +47,6 @@ let lib = {
 				return cb(new Error("Unable to find healthy configuration in registry"));
 			});
 		} else {
-			if (configuration.namespace && configuration.token && configuration.url) {
-				let config = {
-					"namespace": configuration.namespace,
-					"token": configuration.token,
-					"url": configuration.url
-				};
-				return cb(null, config);
-			}
 			return cb(new Error("Configuration requires namespace, token, and url"));
 		}
 	},

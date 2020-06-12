@@ -30,6 +30,76 @@ let maintenanceResponse = (parsedUrl, param, route) => {
 		}
 	};
 };
+
+let cloneAndFilterRegistry = (reg, reqServiceName, reqServiceType) => {
+	let filteredRegistry = {};
+	if (reg) {
+		if (reg.timeLoaded) {
+			filteredRegistry.timeLoaded = reg.timeLoaded;
+		}
+		if (reg.name) {
+			filteredRegistry.name = reg.name;
+		}
+		if (reg.environment) {
+			filteredRegistry.environment = reg.environment;
+		}
+		if (reg.coreDB) {
+			filteredRegistry.coreDB = reg.coreDB;
+		}
+		if (reg.tenantMetaDB) {
+			filteredRegistry.tenantMetaDB = reg.tenantMetaDB;
+		}
+		if (reg.serviceConfig) {
+			filteredRegistry.serviceConfig = soajsUtils.cloneObj(reg.serviceConfig);
+			delete filteredRegistry.serviceConfig.cors;
+			if (reqServiceName !== "oauth") {
+				delete filteredRegistry.serviceConfig.oauth;
+			}
+		}
+		if (reg.deployer) {
+			filteredRegistry.deployer = soajsUtils.cloneObj(reg.deployer);
+			if (filteredRegistry.deployer.container) {
+				if (filteredRegistry.deployer.container.kubernetes) {
+					delete filteredRegistry.deployer.container.kubernetes.configuration;
+				}
+			}
+		}
+		if (reg.custom) {
+			filteredRegistry.custom = reg.custom;
+		}
+		if (reg.resources) {
+			filteredRegistry.resources = reg.resources;
+		}
+		
+		filteredRegistry.services = {};
+		if (reg.services.controller) {
+			filteredRegistry.services.controller = reg.services.controller;
+		}
+		if (reg.services && reqServiceType === "service") {
+			if (reqServiceName && reg.services[reqServiceName]) {
+				filteredRegistry.services[reqServiceName] = {
+					"group": reg.services[reqServiceName].group,
+					"port": reg.services[reqServiceName].port
+				};
+			}
+		} else if (reg.daemons && reqServiceType === "mdaemon") {
+			if (reqServiceName && reg.daemons[reqServiceName]) {
+				filteredRegistry.daemons[reqServiceName] = {
+					"group": reg.daemons[reqServiceName].group,
+					"port": reg.daemons[reqServiceName].port
+				};
+			}
+		} else {
+			if (reg.services) {
+				filteredRegistry.services = reg.services;
+			}
+			if (reg.daemons) {
+				filteredRegistry.daemons = reg.daemons;
+			}
+		}
+	}
+	return filteredRegistry;
+};
 let reloadRegistry = (parsedUrl, core, log, param, serviceIp, cb) => {
 	registryModule.reload({
 		"name": param.serviceName,
@@ -42,7 +112,7 @@ let reloadRegistry = (parsedUrl, core, log, param, serviceIp, cb) => {
 			log.warn("Failed to load registry. reusing from previous load. Reason: " + err.message);
 		} else {
 			response.result = true;
-			response.data = reg;
+			response.data = cloneAndFilterRegistry(reg);
 		}
 		return cb(response);
 	});
@@ -232,56 +302,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 					response.data = {}; //soajsUtils.cloneObj(reg);
 				}
 				if (reg) {
-					if (reg.timeLoaded) {
-						response.data.timeLoaded = reg.timeLoaded;
-					}
-					if (reg.name) {
-						response.data.name = reg.name;
-					}
-					if (reg.environment) {
-						response.data.environment = reg.environment;
-					}
-					if (reg.coreDB) {
-						response.data.coreDB = reg.coreDB;
-					}
-					if (reg.tenantMetaDB) {
-						response.data.tenantMetaDB = reg.tenantMetaDB;
-					}
-					if (reg.serviceConfig) {
-						response.data.serviceConfig = soajsUtils.cloneObj(reg.serviceConfig);
-						delete response.data.serviceConfig.cors;
-						if (reqServiceName !== "oauth") {
-							delete response.data.serviceConfig.oauth;
-						}
-					}
-					if (reg.deployer) {
-						response.data.deployer = reg.deployer;
-					}
-					if (reg.custom) {
-						response.data.custom = reg.custom;
-					}
-					if (reg.resources) {
-						response.data.resources = reg.resources;
-					}
-					response.data.services = {};
-					if (reg.services && reqServiceType === "service") {
-						if (reg.services.controller) {
-							response.data.services.controller = reg.services.controller;
-						}
-						if (reg.services[reqServiceName]) {
-							response.data.services[reqServiceName] = {
-								"group": reg.services[reqServiceName].group,
-								"port": reg.services[reqServiceName].port
-							};
-						}
-					} else if (reg.daemons && reqServiceType === "mdaemon") {
-						if (reg.daemons[reqServiceName]) {
-							response.data.daemons[reqServiceName] = {
-								"group": reg.daemons[reqServiceName].group,
-								"port": reg.daemons[reqServiceName].port
-							};
-						}
-					}
+					response.data = cloneAndFilterRegistry(reg, reqServiceName, reqServiceType);
 				}
 				awareness_mw.getMw({
 					"awareness": param.awareness,
