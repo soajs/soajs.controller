@@ -15,7 +15,6 @@ let bl = {
 	"localConfig": null,
 	"handleError": null,
 	"handleConnect": null,
-	"handleConfiguration": null,
 	"driver": null,
 	
 	"all": (soajs, inputmaskData, options, cb) => {

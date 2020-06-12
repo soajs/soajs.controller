@@ -11,6 +11,7 @@
 const soajsLib = require("soajs.core.libs");
 const soajsUtils = soajsLib.utils;
 
+const async = require("async");
 const core = require('soajs.core.modules');
 const Mongo = core.mongo;
 const fs = require('fs');
@@ -21,6 +22,8 @@ const resourcesCollectionName = 'resources';
 const customCollectionName = 'custom_registry';
 const marketplaceCollectionName = 'marketplace';
 const controllersCollectionName = 'controllers';
+
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
 function buildResources(destination, resources, envCode) {
 	if (resources && Array.isArray(resources) && resources.length > 0) {
@@ -54,19 +57,14 @@ let model = {
 			model.mongo = new Mongo(dbConfiguration);
 		}
 	},
-	"loadData": (dbConfiguration, envCode, param, callback) => {
+	"loadData": (dbConfiguration, envCode, param, cb) => {
 		model.init(dbConfiguration);
 		model.mongo.findOne(environmentCollectionName, {'code': envCode.toUpperCase()}, (error, envRecord) => {
 			if (error) {
-				return callback(error);
+				return cb(error);
 			}
 			let obj = {};
-			if (envRecord && JSON.stringify(envRecord) !== '{}') {
-				obj.ENV_schema = envRecord;
-			} else {
-				obj.ENV_schema = {};
-			}
-			//build resources plugged for this environment
+			obj.ENV_schema = envRecord || {};
 			let criteria = {};
 			if ("DASHBOARD" === envCode.toUpperCase()) {
 				criteria = {
@@ -86,20 +84,57 @@ let model = {
 						}]
 				};
 			}
-			model.mongo.find(resourcesCollectionName, criteria, null, (error, resourcesRecords) => {
-				obj.ENV_schema.resources = {};
-				if (resourcesRecords) {
-					buildResources(obj.ENV_schema.resources, resourcesRecords, envCode);
-				}
-				//build custom registry
-				model.mongo.find(customCollectionName, criteria, null, (error, customRecords) => {
-					if (!obj.ENV_schema.custom) {
-						obj.ENV_schema.custom = {};
+			async.parallel({
+				infra: function (callback) {
+					// Check if kubernetes and get its infra configuration
+					let depType = get(["deployer", "type"], envRecord);
+					let regConf = null;
+					if (depType === "container") {
+						let depSeleted = get(["deployer", "selected"], envRecord);
+						regConf = get(["deployer"].concat(depSeleted.split(".")), envRecord);
 					}
-					if (customRecords) {
-						buildCustomRegistry(obj.ENV_schema.custom, customRecords, envCode);
+					if (regConf) {
+						let id = regConf.id;
+						try {
+							id = model.mongo.ObjectId(id);
+						} catch (e) {
+							return callback(e);
+						}
+						model.mongo.findOne("infra", {_id: id}, null, (error, infra) => {
+							if (error) {
+								return callback(error);
+							} else {
+								regConf.configuration = infra.configuration;
+								return callback(null, true);
+							}
+						});
+					} else {
+						return callback(null, null);
 					}
-					//FIX
+				},
+				resources: function (callback) {
+					//build resources plugged for this environment
+					model.mongo.find(resourcesCollectionName, criteria, null, (error, resourcesRecords) => {
+						obj.ENV_schema.resources = {};
+						if (resourcesRecords) {
+							buildResources(obj.ENV_schema.resources, resourcesRecords, envCode);
+						}
+						return callback(null, true);
+					});
+				},
+				custom: function (callback) {
+					//build custom registry
+					model.mongo.find(customCollectionName, criteria, null, (error, customRecords) => {
+						if (!obj.ENV_schema.custom) {
+							obj.ENV_schema.custom = {};
+						}
+						if (customRecords) {
+							buildCustomRegistry(obj.ENV_schema.custom, customRecords, envCode);
+						}
+						return callback(null, true);
+					});
+				},
+				marketplace_service: function (callback) {
 					model.mongo.find(marketplaceCollectionName, {"$or": [{'type': 'service'}, {'type': 'endpoint'}]}, null, (error, servicesRecords) => {
 						if (error) {
 							return callback(error);
@@ -107,30 +142,40 @@ let model = {
 						if (servicesRecords && Array.isArray(servicesRecords) && servicesRecords.length > 0) {
 							obj.services_schema = servicesRecords;
 						}
-						//FIX
-						model.mongo.find(marketplaceCollectionName, {'type': 'mdaemon'}, null, (error, daemonsRecords) => {
+						return callback(null, true);
+					});
+				},
+				marketplace_mdaemon: function (callback) {
+					model.mongo.find(marketplaceCollectionName, {'type': 'mdaemon'}, null, (error, daemonsRecords) => {
+						if (error) {
+							return callback(error);
+						}
+						if (daemonsRecords && Array.isArray(daemonsRecords) && daemonsRecords.length > 0) {
+							obj.daemons_schema = daemonsRecords;
+						}
+						return callback(null, true);
+					});
+				},
+				host: function (callback) {
+					if (process.env.SOAJS_DEPLOY_HA) {
+						return callback(null, true);
+					} else {
+						model.mongo.find(hostCollectionName, {'env': envCode}, null, (error, hostsRecords) => {
 							if (error) {
 								return callback(error);
 							}
-							if (servicesRecords && Array.isArray(daemonsRecords) && daemonsRecords.length > 0) {
-								obj.daemons_schema = daemonsRecords;
+							if (hostsRecords && Array.isArray(hostsRecords) && hostsRecords.length > 0) {
+								obj.ENV_hosts = hostsRecords;
 							}
-							if (process.env.SOAJS_DEPLOY_HA) {
-								return callback(null, obj);
-							} else {
-								model.mongo.find(hostCollectionName, {'env': envCode}, null, (error, hostsRecords) => {
-									if (error) {
-										return callback(error);
-									}
-									if (hostsRecords && Array.isArray(hostsRecords) && hostsRecords.length > 0) {
-										obj.ENV_hosts = hostsRecords;
-									}
-									return callback(null, obj);
-								});
-							}
+							return callback(null, true);
 						});
-					});
-				});
+					}
+				}
+			}, function (error) {
+				if (error) {
+					return cb(error);
+				}
+				return cb(null, obj);
 			});
 		});
 	},
