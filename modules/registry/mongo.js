@@ -95,6 +95,9 @@ let model = {
 					}
 					if (regConf) {
 						let id = regConf.id;
+						if (!id) {
+							return callback(null, null);
+						}
 						try {
 							id = model.mongo.ObjectId(id);
 						} catch (e) {
@@ -103,6 +106,8 @@ let model = {
 						model.mongo.findOne("infra", {_id: id}, null, (error, infra) => {
 							if (error) {
 								return callback(error);
+							} else if (!infra) {
+								return callback(null, null);
 							} else {
 								regConf.configuration = infra.configuration;
 								return callback(null, true);
