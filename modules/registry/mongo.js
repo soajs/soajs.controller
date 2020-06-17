@@ -109,26 +109,37 @@ let model = {
 								if (regConf.namespace) {
 									regConf.namespace = regConf.namespace.default;
 								}
+								//NOTE: old deployer schema, clean it up
+								let depSeleted = get(["deployer", "selected"], envRecord);
+								let pathArr = depSeleted.split(".");
+								let lastNode = pathArr[pathArr.length - 1];
+								pathArr.pop();
+								let path = get(["deployer"].concat(pathArr), envRecord);
+								path[lastNode] = {
+									"namespace": regConf.namespace,
+									"configuration": regConf.configuration
+								};
 								return callback(null, true);
 							} else {
 								return callback(null, null);
 							}
-						}
-						try {
-							id = model.mongo.ObjectId(id);
-						} catch (e) {
-							return callback(e);
-						}
-						model.mongo.findOne("infra", {_id: id}, null, (error, infra) => {
-							if (error) {
-								return callback(error);
-							} else if (!infra) {
-								return callback(null, null);
-							} else {
-								regConf.configuration = infra.configuration;
-								return callback(null, true);
+						} else {
+							try {
+								id = model.mongo.ObjectId(id);
+							} catch (e) {
+								return callback(e);
 							}
-						});
+							model.mongo.findOne("infra", {_id: id}, null, (error, infra) => {
+								if (error) {
+									return callback(error);
+								} else if (!infra) {
+									return callback(null, null);
+								} else {
+									regConf.configuration = infra.configuration;
+									return callback(null, true);
+								}
+							});
+						}
 					} else {
 						return callback(null, null);
 					}
