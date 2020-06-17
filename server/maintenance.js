@@ -59,8 +59,8 @@ let cloneAndFilterRegistry = (reg, reqServiceName, reqServiceType) => {
 		if (reg.deployer) {
 			filteredRegistry.deployer = soajsUtils.cloneObj(reg.deployer);
 			if (filteredRegistry.deployer.container) {
-				if (filteredRegistry.deployer.container.kubernetes) {
-					delete filteredRegistry.deployer.container.kubernetes.configuration;
+				if (filteredRegistry.deployer.container.kubernetes && filteredRegistry.deployer.container.kubernetes.configuration) {
+					delete filteredRegistry.deployer.container.kubernetes.configuration.token;
 				}
 			}
 		}

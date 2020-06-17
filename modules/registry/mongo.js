@@ -96,7 +96,23 @@ let model = {
 					if (regConf) {
 						let id = regConf.id;
 						if (!id) {
-							return callback(null, null);
+							if (regConf.nodes) {
+								regConf.configuration = {
+									"token": null,
+									"url": regConf.nodes,
+									"protocol": regConf.apiProtocol || null,
+									"port": regConf.apiPort
+								};
+								if (regConf.auth && regConf.auth.token) {
+									regConf.configuration.token = regConf.auth.token
+								}
+								if (regConf.namespace) {
+									regConf.namespace = regConf.namespace.default;
+								}
+								return callback(null, true);
+							} else {
+								return callback(null, null);
+							}
 						}
 						try {
 							id = model.mongo.ObjectId(id);
