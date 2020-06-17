@@ -104,7 +104,7 @@ let model = {
 									"port": regConf.apiPort
 								};
 								if (regConf.auth && regConf.auth.token) {
-									regConf.configuration.token = regConf.auth.token
+									regConf.configuration.token = regConf.auth.token;
 								}
 								if (regConf.namespace) {
 									regConf.namespace = regConf.namespace.default;
