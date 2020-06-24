@@ -32,7 +32,8 @@ function buildResources(destination, resources, envCode) {
 				if (!destination[resources[i].type]) {
 					destination[resources[i].type] = {};
 				}
-				if (resources[i].created === envCode.toUpperCase() || !resources[i].sharedEnvs || (resources[i].sharedEnvs && resources[i].sharedEnvs[envCode.toUpperCase()])) {
+				//if (resources[i].created === envCode.toUpperCase() || !resources[i].sharedEnvs || (resources[i].sharedEnvs && resources[i].sharedEnvs[envCode.toUpperCase()])) {
+				if (resources[i].created === envCode.toUpperCase() || (resources[i].sharedEnvs && resources[i].sharedEnvs[envCode.toUpperCase()])) {
 					destination[resources[i].type][resources[i].name] = resources[i];
 				}
 			}
@@ -43,7 +44,8 @@ function buildResources(destination, resources, envCode) {
 function buildCustomRegistry(destination, custom, envCode) {
 	if (custom && Array.isArray(custom) && custom.length > 0) {
 		for (let i = 0; i < custom.length; i++) {
-			if (custom[i].created === envCode.toUpperCase() || !custom[i].sharedEnvs || (custom[i].sharedEnvs && custom[i].sharedEnvs[envCode.toUpperCase()])) {
+			//if (custom[i].created === envCode.toUpperCase() || !custom[i].sharedEnvs || (custom[i].sharedEnvs && custom[i].sharedEnvs[envCode.toUpperCase()])) {
+			if (custom[i].created === envCode.toUpperCase() || (custom[i].sharedEnvs && custom[i].sharedEnvs[envCode.toUpperCase()])) {
 				destination[custom[i].name] = custom[i];
 			}
 		}
@@ -95,19 +97,51 @@ let model = {
 					}
 					if (regConf) {
 						let id = regConf.id;
-						try {
-							id = model.mongo.ObjectId(id);
-						} catch (e) {
-							return callback(e);
-						}
-						model.mongo.findOne("infra", {_id: id}, null, (error, infra) => {
-							if (error) {
-								return callback(error);
-							} else {
-								regConf.configuration = infra.configuration;
+						if (!id) {
+							if (regConf.nodes) {
+								regConf.configuration = {
+									"token": null,
+									"url": regConf.nodes,
+									"protocol": regConf.apiProtocol || null,
+									"port": regConf.apiPort
+								};
+								if (regConf.auth && regConf.auth.token) {
+									regConf.configuration.token = regConf.auth.token;
+								}
+								if (regConf.namespace) {
+									regConf.namespace = regConf.namespace.default;
+								}
+								//NOTE: old deployer schema, clean it up
+								let depSeleted = get(["deployer", "selected"], envRecord);
+								let pathArr = depSeleted.split(".");
+								let lastNode = pathArr[pathArr.length - 1];
+								pathArr.pop();
+								let path = get(["deployer"].concat(pathArr), envRecord);
+								path[lastNode] = {
+									"namespace": regConf.namespace,
+									"configuration": regConf.configuration
+								};
 								return callback(null, true);
+							} else {
+								return callback(null, null);
 							}
-						});
+						} else {
+							try {
+								id = model.mongo.ObjectId(id);
+							} catch (e) {
+								return callback(e);
+							}
+							model.mongo.findOne("infra", {_id: id}, null, (error, infra) => {
+								if (error) {
+									return callback(error);
+								} else if (!infra) {
+									return callback(null, null);
+								} else {
+									regConf.configuration = infra.configuration;
+									return callback(null, true);
+								}
+							});
+						}
 					} else {
 						return callback(null, null);
 					}

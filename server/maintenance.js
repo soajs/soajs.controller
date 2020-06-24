@@ -8,6 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
 const registryModule = require("./../modules/registry");
 
 const httpProxy = require('http-proxy');
@@ -58,10 +60,15 @@ let cloneAndFilterRegistry = (reg, reqServiceName, reqServiceType) => {
 		}
 		if (reg.deployer) {
 			filteredRegistry.deployer = soajsUtils.cloneObj(reg.deployer);
-			if (filteredRegistry.deployer.container) {
-				if (filteredRegistry.deployer.container.kubernetes) {
-					delete filteredRegistry.deployer.container.kubernetes.configuration;
-				}
+			
+			let depType = get(["type"], filteredRegistry.deployer);
+			let regConf = null;
+			if (depType === "container") {
+				let depSeleted = get(["selected"], filteredRegistry.deployer);
+				regConf = get([].concat(depSeleted.split(".")), filteredRegistry.deployer);
+			}
+			if (regConf && regConf.configuration && regConf.configuration.token) {
+				delete regConf.configuration.token;
 			}
 		}
 		if (reg.custom) {
