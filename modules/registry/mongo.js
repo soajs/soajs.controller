@@ -32,7 +32,8 @@ function buildResources(destination, resources, envCode) {
 				if (!destination[resources[i].type]) {
 					destination[resources[i].type] = {};
 				}
-				if (resources[i].created === envCode.toUpperCase() || !resources[i].sharedEnvs || (resources[i].sharedEnvs && resources[i].sharedEnvs[envCode.toUpperCase()])) {
+				//if (resources[i].created === envCode.toUpperCase() || !resources[i].sharedEnvs || (resources[i].sharedEnvs && resources[i].sharedEnvs[envCode.toUpperCase()])) {
+				if (resources[i].created === envCode.toUpperCase() || (resources[i].sharedEnvs && resources[i].sharedEnvs[envCode.toUpperCase()])) {
 					destination[resources[i].type][resources[i].name] = resources[i];
 				}
 			}
@@ -43,7 +44,8 @@ function buildResources(destination, resources, envCode) {
 function buildCustomRegistry(destination, custom, envCode) {
 	if (custom && Array.isArray(custom) && custom.length > 0) {
 		for (let i = 0; i < custom.length; i++) {
-			if (custom[i].created === envCode.toUpperCase() || !custom[i].sharedEnvs || (custom[i].sharedEnvs && custom[i].sharedEnvs[envCode.toUpperCase()])) {
+			//if (custom[i].created === envCode.toUpperCase() || !custom[i].sharedEnvs || (custom[i].sharedEnvs && custom[i].sharedEnvs[envCode.toUpperCase()])) {
+			if (custom[i].created === envCode.toUpperCase() || (custom[i].sharedEnvs && custom[i].sharedEnvs[envCode.toUpperCase()])) {
 				destination[custom[i].name] = custom[i];
 			}
 		}
