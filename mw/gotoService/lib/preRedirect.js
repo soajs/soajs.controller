@@ -8,6 +8,9 @@
  * found in the LICENSE file at the root of this repository
  */
 
+
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
 const request = require('request');
 
 /**
@@ -87,7 +90,9 @@ module.exports = (req, res, core, cb) => {
 						} else {
 							req.soajs.controller.monitorEndingReq = true;
 							req.soajs.log.error(restServiceParams_msg + ' - Service heartbeat is not responding');
-							req.soajs.controller.redirectedRequest.abort();
+							if (req.soajs.controller.redirectedRequest) {
+								req.soajs.controller.redirectedRequest.abort();
+							}
 							return req.soajs.controllerResponse(core.error.getError(133));
 						}
 					});
@@ -104,12 +109,8 @@ module.exports = (req, res, core, cb) => {
 				}
 			}
 		};
-		if (req.soajs.registry &&
-			req.soajs.registry.custom &&
-			req.soajs.registry.custom.gateway &&
-			req.soajs.registry.custom.gateway.value &&
-			req.soajs.registry.custom.gateway.value.gotoService &&
-			req.soajs.registry.custom.gateway.value.gotoService.renewReqMonitorOff) {
+		let renewReqMonitorOff = get(["registry", "custom", "gateway", "value", "gotoService", "renewReqMonitorOff"], req.soajs);
+		if (renewReqMonitorOff) {
 			req.soajs.log.debug("renewReqMonitor: is OFF");
 		} else {
 			res.setTimeout(timeToRenew, renewReqMonitor);

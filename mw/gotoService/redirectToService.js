@@ -8,6 +8,8 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
 const request = require('request');
 
 module.exports = (configuration) => {
@@ -46,8 +48,148 @@ module.exports = (configuration) => {
 					
 				});
 				
+				let log_monitor = (doc) => {
+					let soaanalytics = "soaanalytics";
+					let port = "4050";
+					let api = "/monitor/item";
+					req.soajs.awareness.getHost(soaanalytics, function (host) {
+						if (!host) {
+							req.soajs.log.error('Unable to find any healthy host for service ' + soaanalytics);
+						} else {
+							let uri = 'http://' + host + ':' + port + api;
+							let requestOptions = {
+								'uri': uri,
+								"body": doc,
+								'headers': req.headers,
+								"json": true
+							};
+							request.post(requestOptions, (error, response, body) => {
+								if (error) {
+									req.soajs.log.error('Unable register monitor: ' + error.message);
+								}
+								if (body && !body.result) {
+									req.soajs.log.error(body);
+								}
+							});
+						}
+					});
+				};
+				
+				let monitor = get(["registry", "custom", "gateway", "value", "gotoService", "monitor"], req.soajs);
+				let monitoObj = {
+					"time": {}
+				};
+				let monitor_service_blacklist = false;
+				if (monitor && monitor.blacklist) {
+					if (Array.isArray(monitor.blacklist) && monitor.blacklist.length > 0) {
+						if (monitor.blacklist.includes(req.soajs.controller.serviceParams.name)) {
+							monitor_service_blacklist = true;
+						}
+					}
+				}
+				if (monitor && !monitor_service_blacklist) {
+					monitoObj.name = req.soajs.controller.serviceParams.name;
+					monitoObj.version = req.soajs.controller.serviceParams.version;
+					monitoObj.api = req.soajs.controller.serviceParams.parsedUrl.pathname;
+					monitoObj.method = req.method;
+					monitoObj.time.req_start = new Date().getTime();
+				}
+				if (monitor && !monitor_service_blacklist && monitor.req_info) {
+					monitoObj.port = req.soajs.controller.serviceParams.registry.port;
+					monitoObj.url = req.soajs.controller.serviceParams.url;
+					monitoObj.host = req.host;
+				}
+				if (monitor && !monitor_service_blacklist && monitor.req_header) {
+					monitoObj.headers = req.headers;
+				}
+				if (monitor && !monitor_service_blacklist && monitor.req_query) {
+					monitoObj.query = req.query;
+				}
+				
 				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
-					req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
+					if (monitor && !monitor_service_blacklist && monitor.req_body) {
+						let isStream = false;
+						req.on("data", (chunk) => {
+							req.soajs.controller.redirectedRequest.write(chunk);
+							if (!isStream) {
+								let resContentType = res.getHeader('content-type');
+								if (resContentType) {
+									isStream = resContentType.match(/stream/i);
+								}
+							}
+							if (!isStream) {
+								if (!monitoObj.body) {
+									monitoObj.time.req_body_start = new Date().getTime();
+									monitoObj.body = chunk;
+								}
+								monitoObj.body += chunk;
+							} else {
+								monitoObj.body = "stream";
+							}
+						});
+						req.on("end", () => {
+							if (!isStream) {
+								let resContentType = res.getHeader('content-type');
+								if (resContentType) {
+									isStream = resContentType.match(/stream/i);
+								}
+							}
+							if (!isStream) {
+								req.soajs.controller.redirectedRequest.end();
+								monitoObj.time.req_body_end = new Date().getTime();
+							}
+						});
+					} else {
+						req.pipe(req.soajs.controller.redirectedRequest);
+					}
+				}
+				
+				if (monitor && !monitor_service_blacklist && monitor.req_response) {
+					let isStream = false;
+					req.soajs.controller.redirectedRequest.on("response", (response) => {
+						if (!res.headersSent) {
+							res.writeHeader(response.statusCode, response.headers);
+						}
+						monitoObj.time.res_start = new Date().getTime();
+					});
+					req.soajs.controller.redirectedRequest.on("data", (chunk) => {
+						res.write(chunk);
+						if (!isStream) {
+							let resContentType = res.getHeader('content-type');
+							if (resContentType) {
+								isStream = resContentType.match(/stream/i);
+							}
+						}
+						if (!isStream) {
+							if (!monitoObj.response) {
+								monitoObj.response = chunk;
+							}
+							monitoObj.response += chunk;
+						} else {
+							monitoObj.response = "stream";
+						}
+					});
+					req.soajs.controller.redirectedRequest.on("end", () => {
+						if (!isStream) {
+							let resContentType = res.getHeader('content-type');
+							if (resContentType) {
+								isStream = resContentType.match(/stream/i);
+							}
+						}
+						if (!isStream) {
+							res.end();
+							monitoObj.time.res_end = new Date().getTime();
+							log_monitor(monitoObj);
+						}
+					});
+					req.soajs.controller.redirectedRequest.on("error", () => {
+						monitoObj.time.res_end = new Date().getTime();
+						log_monitor(monitoObj);
+					});
+					req.soajs.controller.redirectedRequest.on("abort", () => {
+						monitoObj.time.res_end = new Date().getTime();
+						log_monitor(monitoObj);
+					});
 				} else {
 					req.soajs.controller.redirectedRequest.pipe(res);
 				}
