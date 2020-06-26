@@ -56,13 +56,21 @@ module.exports = (configuration) => {
 						if (!host) {
 							req.soajs.log.error('Unable to find any healthy host for service ' + soaanalytics);
 						} else {
+							if (doc && doc.body) {
+								doc.body = doc.body.toString();
+							}
+							if (doc && doc.response) {
+								doc.response = doc.response.toString();
+							}
 							let uri = 'http://' + host + ':' + port + api;
 							let requestOptions = {
 								'uri': uri,
 								"body": doc,
-								'headers': req.headers,
 								"json": true
 							};
+							if (req.headers && req.headers.soajsinjectobj) {
+								requestOptions.headers = {"soajsinjectobj": req.headers.soajsinjectobj};
+							}
 							request.post(requestOptions, (error, response, body) => {
 								if (error) {
 									req.soajs.log.error('Unable register monitor: ' + error.message);
@@ -121,8 +129,9 @@ module.exports = (configuration) => {
 								if (!monitoObj.body) {
 									monitoObj.time.req_body_start = new Date().getTime();
 									monitoObj.body = chunk;
+								} else {
+									monitoObj.body += chunk;
 								}
-								monitoObj.body += chunk;
 							} else {
 								monitoObj.body = "stream";
 							}
@@ -163,8 +172,9 @@ module.exports = (configuration) => {
 						if (!isStream) {
 							if (!monitoObj.response) {
 								monitoObj.response = chunk;
+							} else {
+								monitoObj.response += chunk;
 							}
-							monitoObj.response += chunk;
 						} else {
 							monitoObj.response = "stream";
 						}
