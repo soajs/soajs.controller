@@ -20,6 +20,18 @@ const merge = require('merge');
 
 const UracDriver = require("./urac.js");
 
+let sensitiveEnvCodes = ["dashboard"];
+if (process.env.SOAJS_SENSITIVE_ENVS) {
+	let temp_sensitiveEnvCodes = null;
+	try {
+		temp_sensitiveEnvCodes = JSON.parse(process.env.SOAJS_SENSITIVE_ENVS);
+	} catch (e) {
+		temp_sensitiveEnvCodes = null;
+	}
+	if (Array.isArray(temp_sensitiveEnvCodes) && temp_sensitiveEnvCodes > 0) {
+		sensitiveEnvCodes = temp_sensitiveEnvCodes;
+	}
+}
 
 const {pathToRegexp} = require("path-to-regexp");
 
@@ -644,7 +656,8 @@ let utils = {
 		
 		//NOTE: we go here only if the possibility of roaming is true
 		if (obj.req && obj.req.oauth && obj.req.oauth.bearerToken) {
-			if (obj.req.oauth.bearerToken.env === "dashboard" && obj.req.oauth.bearerToken.env !== obj.regEnvironment) {
+			//if (obj.req.oauth.bearerToken.env === "dashboard" && obj.req.oauth.bearerToken.env !== obj.regEnvironment) {
+			if (sensitiveEnvCodes.includes(obj.req.oauth.bearerToken.env.toLowerCase()) && obj.req.oauth.bearerToken.env !== obj.regEnvironment) {
 				async.parallel({"tenant": getTenantInfo, "registry": getEnvRegistry}, function (error, response) {
 					if (error) {
 						return cb(170);

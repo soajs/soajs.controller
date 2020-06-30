@@ -13,6 +13,7 @@ const Request = require('kubernetes-client/backends/request');
 const swagger = require('./swagger/swagger.json');
 
 const _service = require("./service.js");
+const _node = require("./node.js");
 
 let driver = {
 	"connect": (config, cb) => {
@@ -47,6 +48,7 @@ let driver = {
 			"service": _service.getOne,
 		},
 		"serviceIps": _service.getIps,
+		"nodes": _node.get
 	}
 };
 

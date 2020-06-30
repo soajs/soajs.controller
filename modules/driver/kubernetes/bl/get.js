@@ -94,6 +94,7 @@ let bl = {
 			});
 		});
 	},
+	
 	"host": (soajs, inputmaskData, options, cb) => {
 		if (!inputmaskData || !inputmaskData.item || !inputmaskData.item.name || !inputmaskData.item.version || !inputmaskData.item.env) {
 			return cb(bl.handleError(soajs, 400, null));
@@ -113,6 +114,33 @@ let bl = {
 					return cb(bl.handleError(soajs, 702, error));
 				}
 				return cb(null, response.ip);
+			});
+		});
+	},
+	
+	"nodes": (soajs, inputmaskData, options, cb) => {
+		bl.handleConnect(soajs, inputmaskData.configuration, (error, client) => {
+			if (error) {
+				return cb(bl.handleError(soajs, 702, error));
+			}
+			bl.driver.get.nodes(client, {}, (error, response) => {
+				if (error) {
+					return cb(bl.handleError(soajs, 702, error));
+				}
+				if (response && response.items && Array.isArray(response.items) && response.items.length > 0) {
+					let simplified_items = [];
+					for (let i = 0; i < response.items.length; i++) {
+						let item = {
+							"name": response.items[i].name,
+							"capacity": response.items[i].status.capacity,
+							"addresses": response.items[i].status.addresses
+						};
+						simplified_items.push(item);
+					}
+					return cb(null, simplified_items);
+				} else {
+					return cb(bl.handleError(soajs, 501, null));
+				}
 			});
 		});
 	}

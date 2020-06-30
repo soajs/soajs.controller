@@ -15,7 +15,7 @@ let bl = {
 	"driver": null,
 	
 	"handleError": (soajs, errCode, err) => {
-		if (err) {
+		if (err && soajs && soajs.log) {
 			soajs.log.error(err.message);
 		}
 		return ({

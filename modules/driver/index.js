@@ -13,14 +13,15 @@ let BL = {
 };
 
 const localConfig = {
-	400: "Business logic required data are missing",
-	501: "Item not found!",
-	505: "Unable to get latest version!",
-	702: "Driver error: "
+	"errors": {
+		400: "Business logic required data are missing",
+		501: "Item not found!",
+		505: "Unable to get latest version!",
+		702: "Driver error: "
+	}
 };
 
 function init() {
-	
 	// Load all Kubernetes BL
 	const driver = require("./kubernetes/model/index.js");
 	let temp = require("./kubernetes/index.js");

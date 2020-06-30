@@ -8,6 +8,10 @@
  * found in the LICENSE file at the root of this repository
  */
 
+
+const infraModule = require("../driver/index.js");
+infraModule.init();
+
 const soajsLib = require("soajs.core.libs");
 const soajsUtils = soajsLib.utils;
 
@@ -67,25 +71,16 @@ let model = {
 			}
 			let obj = {};
 			obj.ENV_schema = envRecord || {};
-			let criteria = {};
-			if ("DASHBOARD" === envCode.toUpperCase()) {
-				criteria = {
-					'created': envCode.toUpperCase(),
-					'plugged': true
-				};
-			} else {
-				criteria = {
-					$or: [
-						{
-							'created': envCode.toUpperCase(),
-							'plugged': true
-						}, {
-							// 'created': "DASHBOARD",
-							'plugged': true,
-							'shared': true
-						}]
-				};
-			}
+			let criteria = {
+				$or: [
+					{
+						'created': envCode.toUpperCase(),
+						'plugged': true
+					}, {
+						'plugged': true,
+						'shared': true
+					}]
+			};
 			async.parallel({
 				infra: function (callback) {
 					// Check if kubernetes and get its infra configuration
@@ -96,32 +91,53 @@ let model = {
 						regConf = get(["deployer"].concat(depSeleted.split(".")), envRecord);
 					}
 					if (regConf) {
+						
+						let get_nodes = (config) => {
+							if (config && config.configuration.token && config.configuration.url) {
+								let protocol = config.configuration.protocol || "https";
+								let port = config.configuration.port ? ":" + config.configuration.port : "";
+								let configuration = {
+									"namespace": config.namespace,
+									"token": config.configuration.token,
+									"url": protocol + "://" + regConf.configuration.url + port
+								};
+								infraModule.kubernetes.get.nodes(null, {"configuration": configuration}, null, (error, items) => {
+									if (items) {
+										//NOTE: config at this points is ie: envRecord.deployer.container.kubernetes
+										config.nodes = items;
+									}
+									return callback(null, true);
+								});
+							} else {
+								return callback(null, true);
+							}
+						};
+						
 						let id = regConf.id;
 						if (!id) {
 							if (regConf.nodes) {
-								regConf.configuration = {
+								//NOTE: transform old deployer schema to new schema
+								let temp = {
+									configuration: {},
+									namespace: ""
+								};
+								temp.configuration = {
 									"token": null,
 									"url": regConf.nodes,
 									"protocol": regConf.apiProtocol || null,
 									"port": regConf.apiPort
 								};
 								if (regConf.auth && regConf.auth.token) {
-									regConf.configuration.token = regConf.auth.token;
+									temp.configuration.token = regConf.auth.token;
 								}
-								if (regConf.namespace) {
-									regConf.namespace = regConf.namespace.default;
+								if (regConf.namespace && regConf.namespace.default) {
+									temp.namespace = regConf.namespace.default;
 								}
-								//NOTE: old deployer schema, clean it up
-								let depSeleted = get(["deployer", "selected"], envRecord);
-								let pathArr = depSeleted.split(".");
-								let lastNode = pathArr[pathArr.length - 1];
-								pathArr.pop();
-								let path = get(["deployer"].concat(pathArr), envRecord);
-								path[lastNode] = {
-									"namespace": regConf.namespace,
-									"configuration": regConf.configuration
-								};
-								return callback(null, true);
+								//NOTE for now we hardcoded kubernetes
+								envRecord.deployer.container.kubernetes = temp;
+								envRecord.deployer.selected = "container.kubernetes";
+								
+								get_nodes(envRecord.deployer.container.kubernetes);
 							} else {
 								return callback(null, null);
 							}
@@ -138,7 +154,7 @@ let model = {
 									return callback(null, null);
 								} else {
 									regConf.configuration = infra.configuration;
-									return callback(null, true);
+									get_nodes(regConf);
 								}
 							});
 						}

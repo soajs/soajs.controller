@@ -10,6 +10,7 @@
 
 let config = {
 	"type": 'service',
+	"description": "soajs multitenant gateway with automated microservices awareness and interconnect mesh",
 	"prerequisites": {
 		"cpu": '',
 		"memory": ''
