@@ -26,6 +26,19 @@ if (process.env.SOAJS_SOLO && process.env.SOAJS_SOLO === "true") {
 }
 const model = require("./" + modelName + ".js");
 
+let sensitiveEnvCodes = ["dashboard"];
+if (process.env.SOAJS_SENSITIVE_ENVS) {
+	let temp_sensitiveEnvCodes = null;
+	try {
+		temp_sensitiveEnvCodes = JSON.parse(process.env.SOAJS_SENSITIVE_ENVS);
+	} catch (e) {
+		temp_sensitiveEnvCodes = null;
+	}
+	if (Array.isArray(temp_sensitiveEnvCodes) && temp_sensitiveEnvCodes > 0) {
+		sensitiveEnvCodes = temp_sensitiveEnvCodes;
+	}
+}
+
 let build = {
 	"metaAndCoreDB": (STRUCT, envCode, timeLoaded) => {
 		let metaAndCoreDB = {"metaDB": {}, "coreDB": {}};
@@ -263,7 +276,8 @@ let build = {
 				if (STRUCT[i].env === regEnvironment) {
 					if (servicesObj[STRUCT[i].name]) {
 						
-						if (STRUCT[i].env.toUpperCase() !== 'DASHBOARD' && STRUCT[i].port && !isNaN(STRUCT[i].port)) {
+						//if (STRUCT[i].env.toUpperCase() !== "DASHBOARD" && STRUCT[i].port && !isNaN(STRUCT[i].port)) {
+						if (!sensitiveEnvCodes.includes(STRUCT[i].env.toLowerCase()) && STRUCT[i].port && !isNaN(STRUCT[i].port)) {
 							servicesObj[STRUCT[i].name].oport = servicesObj[STRUCT[i].name].port;
 							servicesObj[STRUCT[i].name].port = STRUCT[i].port;
 						}

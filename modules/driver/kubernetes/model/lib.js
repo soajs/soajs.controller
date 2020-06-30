@@ -20,7 +20,9 @@ let lib = {
 			//get env registry, this must loadByEnv
 			registryModule.loadByEnv({envCode: configuration.env}, (err, envRecord) => {
 				if (err) {
-					soajs.log.error(err.message);
+					if (soajs && soajs.log) {
+						soajs.log.error(err.message);
+					}
 					return cb(new Error("loadByEnv error. Unable to find healthy configuration in registry"));
 				}
 				if (!envRecord) {
@@ -49,7 +51,16 @@ let lib = {
 				}
 			});
 		} else {
-			return cb(new Error("Configuration requires namespace, token, and url"));
+			if (configuration.namespace && configuration.token && configuration.url) {
+				let config = {
+					"namespace": configuration.namespace,
+					"token": configuration.token,
+					"url": configuration.url
+				};
+				return cb(null, config);
+			} else {
+				return cb(new Error("Configuration requires namespace, token, and url"));
+			}
 		}
 	},
 	"cleanLabel": (label) => {

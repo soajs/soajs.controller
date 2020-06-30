@@ -9,13 +9,19 @@
 'use strict';
 
 const service = require('./clients/service.js');
+const node = require('./clients/node.js');
 
 const wrapper = {
 	
 	/**
 	 * Service Wrapper
 	 */
-	service: service
+	service: service,
+	
+	/**
+	 * Node Wrapper
+	 */
+	node: node
 };
 
 module.exports = wrapper;
