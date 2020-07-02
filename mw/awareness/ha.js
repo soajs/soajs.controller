@@ -124,7 +124,7 @@ let lib = {
 		lib.getInfraToken(regEnvironment, (error, configuration) => {
 			if (error) {
 				param.log.error(error.message);
-				return cb(null);
+				return;
 			}
 			let myCache = {};
 			let options = null;
