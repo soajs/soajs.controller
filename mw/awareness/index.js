@@ -9,7 +9,7 @@
  */
 
 
-const infra = require("../../modules/driver/index.js");
+const infraModule = require("../../modules/driver/index.js");
 
 module.exports = {
 	getMw: function (param) {
@@ -21,8 +21,8 @@ module.exports = {
 			}
 			else {
 				driver = require("./ha.js");
-				infra.init();
-				param.infra = infra;
+				infraModule.init();
+				param.infraModule = infraModule;
 				if (!param.doNotRebuildCache) {
 					driver.init(param);
 				}
