@@ -95,6 +95,14 @@ module.exports = (configuration) => {
 						}
 					}
 				}
+				if (monitor && monitor.whitelist) {
+					if (Array.isArray(monitor.whitelist) && monitor.whitelist.length > 0) {
+						monitor_service_blacklist = true;
+						if (monitor.whitelist.includes(req.soajs.controller.serviceParams.name)) {
+							monitor_service_blacklist = false;
+						}
+					}
+				}
 				if (monitor && !monitor_service_blacklist) {
 					monitoObj.name = req.soajs.controller.serviceParams.name;
 					monitoObj.version = req.soajs.controller.serviceParams.version;
