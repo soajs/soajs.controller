@@ -408,7 +408,7 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 			'name': registry.services.controller.name,
 			'configuration': {
 				'subType': 'soajs',
-				'port': registry.services.controller.port,
+				'port': param.oPort,
 				'group': registry.services.controller.group
 			},
 			'versions': [

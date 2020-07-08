@@ -15,7 +15,9 @@ describe("Integration for Usecase 2", function () {
 	let c = new Controller({
 		"serviceName": localConfig.serviceName,
 		"serviceVersion": localConfig.serviceVersion,
-		"serviceGroup": localConfig.serviceGroup
+		"serviceGroup": localConfig.serviceGroup,
+		"servicePort": localConfig.servicePort,
+		"maintenance": localConfig.maintenance
 	});
 	let registry = null;
 	let log = null;

@@ -15,6 +15,7 @@ let c = new Controller({
 	"serviceName": localConfig.serviceName,
 	"serviceVersion": localConfig.serviceVersion,
 	"serviceGroup": localConfig.serviceGroup,
+	"servicePort": localConfig.servicePort,
 	"maintenance": localConfig.maintenance
 });
 

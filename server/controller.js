@@ -61,6 +61,7 @@ Controller.prototype.init = function (callback) {
 			"name": _self.soajs.param.init.serviceName,
 			"group": _self.soajs.param.init.serviceGroup,
 			"version": _self.soajs.param.init.serviceVersion,
+			"oPort": _self.soajs.param.init.servicePort,
 			"ip": service.ip,
 			"maintenance": _self.soajs.param.init.maintenance
 		}, (reg) => {

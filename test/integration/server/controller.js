@@ -10,7 +10,9 @@ describe("Unit test for: server - controller", function () {
 		let c = new Controller({
 			"serviceName": localConfig.serviceName,
 			"serviceVersion": localConfig.serviceVersion,
-			"serviceGroup": localConfig.serviceGroup
+			"serviceGroup": localConfig.serviceGroup,
+			"servicePort": localConfig.servicePort,
+			"maintenance": localConfig.maintenance
 		});
 		c.init((registry, log, service, server, serverMaintenance) => {
 			c.start(registry, log, service, server, serverMaintenance, () => {
