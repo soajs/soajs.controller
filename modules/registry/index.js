@@ -445,6 +445,7 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 		});
 	} else {
 		//NOTE: not gateway
+		/*
 		if (!process.env.SOAJS_DEPLOY_HA) {
 			build.allServices(registryDBInfo.services_schema, registry.services, registry.services.controller.name);
 			build.servicesHosts(registryDBInfo.ENV_hosts, registry.services);
@@ -452,6 +453,7 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 			build.servicesHosts(registryDBInfo.ENV_hosts, registry.daemons);
 			build.controllerHosts(registryDBInfo.ENV_hosts, registry.services.controller);
 		}
+		*/
 		return callback(null, registry);
 	}
 }
