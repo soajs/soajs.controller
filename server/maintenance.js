@@ -42,6 +42,21 @@ let cloneAndFilterRegistry = (reg, reqServiceName, reqServiceType) => {
 		if (reg.name) {
 			filteredRegistry.name = reg.name;
 		}
+		if (reg.domain) {
+			filteredRegistry.domain = reg.domain;
+		}
+		if (reg.sitePrefix) {
+			filteredRegistry.sitePrefix = reg.sitePrefix;
+		}
+		if (reg.apiPrefix) {
+			filteredRegistry.apiPrefix = reg.apiPrefix;
+		}
+		if (reg.protocol) {
+			filteredRegistry.protocol = reg.protocol;
+		}
+		if (reg.port) {
+			filteredRegistry.port = reg.port;
+		}
 		if (reg.environment) {
 			filteredRegistry.environment = reg.environment;
 		}
