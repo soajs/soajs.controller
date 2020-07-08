@@ -80,7 +80,11 @@ let lib = {
 				};
 				param.infraModule.kubernetes.get.item_latestVersion(param, input, options, (error, obtainedVersion) => {
 					if (error) {
-						param.log.error(error.message);
+						if (error.message) {
+							param.log.error(error.message);
+						} else {
+							param.log.error(error);
+						}
 						return cb(null);
 					}
 					getHost(obtainedVersion);
@@ -104,7 +108,11 @@ let lib = {
 				};
 				param.infraModule.kubernetes.get.host(param, input, options, (error, host) => {
 					if (error) {
-						param.log.error(error.message);
+						if (error.message) {
+							param.log.error(error.message);
+						} else {
+							param.log.error(error);
+						}
 						return cb(null);
 					}
 					if (!awarenessCache[serviceName]) {
@@ -133,7 +141,11 @@ let lib = {
 			};
 			param.infraModule.kubernetes.get.all(param, input, options, (error, services) => {
 				if (error) {
-					param.log.error(error.message);
+					if (error.message) {
+						param.log.error(error.message);
+					} else {
+						param.log.error(error);
+					}
 					return;
 				}
 				async.each(services, function (oneService, callback) {
@@ -266,7 +278,11 @@ let ha = {
 			};
 			param.infraModule.kubernetes.get.item_latestVersion(param, input, options, (error, obtainedVersion) => {
 				if (error) {
-					param.log.error(error.message);
+					if (error.message) {
+						param.log.error(error.message);
+					} else {
+						param.log.error(error);
+					}
 					return cb(null);
 				}
 				return cb(obtainedVersion);
