@@ -273,34 +273,33 @@ let build = {
 	"servicesHosts": (STRUCT, servicesObj) => {
 		if (STRUCT && Array.isArray(STRUCT) && STRUCT.length > 0) {
 			for (let i = 0; i < STRUCT.length; i++) {
-				if (STRUCT[i].env === regEnvironment) {
-					if (servicesObj[STRUCT[i].name]) {
-						
-						//if (STRUCT[i].env.toUpperCase() !== "DASHBOARD" && STRUCT[i].port && !isNaN(STRUCT[i].port)) {
-						if (!sensitiveEnvCodes.includes(STRUCT[i].env.toLowerCase()) && STRUCT[i].port && !isNaN(STRUCT[i].port)) {
-							servicesObj[STRUCT[i].name].oport = servicesObj[STRUCT[i].name].port;
-							servicesObj[STRUCT[i].name].port = STRUCT[i].port;
-						}
-						
-						if (!STRUCT[i].version) {
-							STRUCT[i].version = "1";
-						}
-						if (!servicesObj[STRUCT[i].name].hosts) {
-							servicesObj[STRUCT[i].name].hosts = {};
-							servicesObj[STRUCT[i].name].hosts.latest = STRUCT[i].version;
-							servicesObj[STRUCT[i].name].hosts[STRUCT[i].version] = [];
-						}
-						if (!servicesObj[STRUCT[i].name].hosts[STRUCT[i].version]) {
-							servicesObj[STRUCT[i].name].hosts[STRUCT[i].version] = [];
-						}
-						if (soajsLib.version.isLatest(STRUCT[i].version, servicesObj[STRUCT[i].name].hosts.latest)) {
-							servicesObj[STRUCT[i].name].hosts.latest = STRUCT[i].version;
-						}
-						if (servicesObj[STRUCT[i].name].hosts[STRUCT[i].version].indexOf(STRUCT[i].ip) === -1) {
-							servicesObj[STRUCT[i].name].hosts[STRUCT[i].version].push(STRUCT[i].ip);
-						}
+				//if (STRUCT[i].env === regEnvironment) {
+				if (servicesObj[STRUCT[i].name] && STRUCT[i].name !== "controller") {
+					//if (STRUCT[i].env.toUpperCase() !== "DASHBOARD" && STRUCT[i].port && !isNaN(STRUCT[i].port)) {
+					if (!sensitiveEnvCodes.includes(STRUCT[i].env.toLowerCase()) && STRUCT[i].port && !isNaN(STRUCT[i].port)) {
+						servicesObj[STRUCT[i].name].oport = servicesObj[STRUCT[i].name].port;
+						servicesObj[STRUCT[i].name].port = STRUCT[i].port;
+					}
+					
+					if (!STRUCT[i].version) {
+						STRUCT[i].version = "1";
+					}
+					if (!servicesObj[STRUCT[i].name].hosts) {
+						servicesObj[STRUCT[i].name].hosts = {};
+						servicesObj[STRUCT[i].name].hosts.latest = STRUCT[i].version;
+						servicesObj[STRUCT[i].name].hosts[STRUCT[i].version] = [];
+					}
+					if (!servicesObj[STRUCT[i].name].hosts[STRUCT[i].version]) {
+						servicesObj[STRUCT[i].name].hosts[STRUCT[i].version] = [];
+					}
+					if (soajsLib.version.isLatest(STRUCT[i].version, servicesObj[STRUCT[i].name].hosts.latest)) {
+						servicesObj[STRUCT[i].name].hosts.latest = STRUCT[i].version;
+					}
+					if (servicesObj[STRUCT[i].name].hosts[STRUCT[i].version].indexOf(STRUCT[i].ip) === -1) {
+						servicesObj[STRUCT[i].name].hosts[STRUCT[i].version].push(STRUCT[i].ip);
 					}
 				}
+				//}
 			}
 		}
 	},
@@ -308,7 +307,8 @@ let build = {
 	"controllerHosts": (STRUCT, controllerObj) => {
 		if (STRUCT && Array.isArray(STRUCT) && STRUCT.length > 0) {
 			for (let i = 0; i < STRUCT.length; i++) {
-				if (STRUCT[i].name === controllerObj.name && STRUCT[i].env === regEnvironment) {
+				//if (STRUCT[i].name === controllerObj.name && STRUCT[i].env === regEnvironment) {
+				if (STRUCT[i].name === controllerObj.name) {
 					if (!STRUCT[i].version) {
 						STRUCT[i].version = controllerObj.version;
 					}
@@ -408,7 +408,7 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 			'name': registry.services.controller.name,
 			'configuration': {
 				'subType': 'soajs',
-				'port': registry.services.controller.port,
+				'port': param.oPort,
 				'group': registry.services.controller.group
 			},
 			'versions': [
@@ -445,6 +445,15 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 		});
 	} else {
 		//NOTE: not gateway
+		/*
+		if (!process.env.SOAJS_DEPLOY_HA) {
+			build.allServices(registryDBInfo.services_schema, registry.services, registry.services.controller.name);
+			build.servicesHosts(registryDBInfo.ENV_hosts, registry.services);
+			build.allDaemons(registryDBInfo.daemons_schema, registry.daemons, registry.services.controller.name);
+			build.servicesHosts(registryDBInfo.ENV_hosts, registry.daemons);
+			build.controllerHosts(registryDBInfo.ENV_hosts, registry.services.controller);
+		}
+		*/
 		return callback(null, registry);
 	}
 }

@@ -11,7 +11,9 @@ describe("Unit test for: server - controller maintenance", function () {
 	let c = new Controller({
 		"serviceName": localConfig.serviceName,
 		"serviceGroup": localConfig.serviceGroup,
-		"serviceVersion": localConfig.serviceVersion
+		"serviceVersion": localConfig.serviceVersion,
+		"servicePort": localConfig.servicePort,
+		"maintenance": localConfig.maintenance
 	});
 	let registry = null;
 	let log = null;

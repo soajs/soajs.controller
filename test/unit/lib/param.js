@@ -12,6 +12,7 @@ describe("Unit test for: lib - param", function () {
 			"serviceName": localConfig.serviceName,
 			"serviceVersion": localConfig.serviceVersion,
 			"serviceGroup": localConfig.serviceGroup,
+			"servicePort": localConfig.servicePort,
 			"maintenance": localConfig.maintenance,
 			"serviceHATask": null
 		}
@@ -21,6 +22,7 @@ describe("Unit test for: lib - param", function () {
 			"serviceName": localConfig.serviceName,
 			"serviceVersion": localConfig.serviceVersion,
 			"serviceGroup": localConfig.serviceGroup,
+			"servicePort": localConfig.servicePort,
 			"maintenance": localConfig.maintenance
 		});
 		assert.deepStrictEqual(response, what2expect, "lib.param vanilla test failed what2expect");
