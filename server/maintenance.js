@@ -305,7 +305,8 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			});
 		} else if (parsedUrl.pathname === '/getRegistry') {
 			let reqEnv = parsedUrl.query.env;
-			let reqServiceName = parsedUrl.query.serviceName;
+			// soajs sends it as name and the MW send it as serviceName
+			let reqServiceName = parsedUrl.query.name || parsedUrl.query.serviceName;
 			let reqServiceType = parsedUrl.query.type || "service";
 			
 			if (!reqEnv) {
