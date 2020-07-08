@@ -75,7 +75,7 @@ let lib = {
 				}
 				let options = null;
 				let input = {
-					"configuration": {"configuration": configuration},
+					"configuration": configuration,
 					"itemName": serviceName
 				};
 				param.infraModule.kubernetes.get.item_latestVersion(param, input, options, (error, obtainedVersion) => {
@@ -103,7 +103,7 @@ let lib = {
 				param.log.debug('Getting host for ' + serviceName + ' - ' + version + ' ....');
 				let options = null;
 				let input = {
-					"configuration": {"configuration": configuration},
+					"configuration": configuration,
 					"item": {"name": serviceName, "version": version, "env": regEnvironment}
 				};
 				param.infraModule.kubernetes.get.host(param, input, options, (error, host) => {
@@ -137,7 +137,7 @@ let lib = {
 			let myCache = {};
 			let options = null;
 			let input = {
-				"configuration": {"configuration": configuration},
+				"configuration": configuration,
 			};
 			param.infraModule.kubernetes.get.all(param, input, options, (error, services) => {
 				if (error) {
@@ -273,7 +273,7 @@ let ha = {
 			}
 			let options = null;
 			let input = {
-				"configuration": {"configuration": configuration},
+				"configuration": configuration,
 				"itemName": name
 			};
 			param.infraModule.kubernetes.get.item_latestVersion(param, input, options, (error, obtainedVersion) => {
