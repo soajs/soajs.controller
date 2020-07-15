@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs API gateway",
-  "version": "4.0.19",
+  "version": "4.0.20",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -20,7 +20,7 @@
   "dependencies": {
     "async": "3.2.0",
     "connect": "3.7.0",
-    "http-proxy": "1.18.0",
+    "http-proxy": "1.18.1",
     "jsonwebtoken": "8.5.1",
     "kubernetes-client": "9.0.0",
     "merge": "1.2.1",
