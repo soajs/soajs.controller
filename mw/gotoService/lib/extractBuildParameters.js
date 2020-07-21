@@ -22,10 +22,8 @@ module.exports = (req, service, service_nv, version, proxyInfo, url, core, callb
 			"url": requestedRoute,
 			"extKeyRequired": false
 		};
-		let serviceName = requestedRoute.split("/")[1] || null;
-		if (!serviceName) {
-			return callback(new Error("Unable to fetch serviceName from proxy call. proxyRoute param might be missing or wrong"));
-		}
+		let serviceName = requestedRoute.split("/")[1] || '';
+		
 		if (req.soajs.registry.services[serviceName]) {
 			proxyInfo = {
 				"registry": req.soajs.registry.services[serviceName],
