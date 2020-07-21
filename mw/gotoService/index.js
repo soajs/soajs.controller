@@ -65,7 +65,11 @@ module.exports = (configuration) => {
 			
 			extractBuildParameters(req, service_n, service_nv, service_v, proxyInfo, parsedUrl.path, core, function (error, parameters) {
 				if (error) {
-					req.soajs.log.fatal(error);
+					if (error.message) {
+						req.soajs.log.fatal(error.message);
+					} else {
+						req.soajs.log.fatal(error);
+					}
 					req.soajs.log.debug(req.headers);
 					return req.soajs.controllerResponse(core.error.getError(130));
 				}

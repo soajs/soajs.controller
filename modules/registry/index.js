@@ -445,15 +445,6 @@ function buildSpecificRegistry(param, options, registry, registryDBInfo, callbac
 		});
 	} else {
 		//NOTE: not gateway
-		/*
-		if (!process.env.SOAJS_DEPLOY_HA) {
-			build.allServices(registryDBInfo.services_schema, registry.services, registry.services.controller.name);
-			build.servicesHosts(registryDBInfo.ENV_hosts, registry.services);
-			build.allDaemons(registryDBInfo.daemons_schema, registry.daemons, registry.services.controller.name);
-			build.servicesHosts(registryDBInfo.ENV_hosts, registry.daemons);
-			build.controllerHosts(registryDBInfo.ENV_hosts, registry.services.controller);
-		}
-		*/
 		return callback(null, registry);
 	}
 }
@@ -768,7 +759,7 @@ let registryModule = {
 	},
 	"loadByEnv": (param, cb) => {
 		let options = {
-			"reload": false,
+			"reload": param.reload || false,
 			"envCode": param.envCode.toLowerCase(),
 			"setBy": "loadByEnv"
 		};

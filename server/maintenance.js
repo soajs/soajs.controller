@@ -308,11 +308,13 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			// soajs sends it as name and the MW send it as serviceName
 			let reqServiceName = parsedUrl.query.name || parsedUrl.query.serviceName;
 			let reqServiceType = parsedUrl.query.type || "service";
+			let setBy = parsedUrl.query.setBy || null;
 			
 			if (!reqEnv) {
 				reqEnv = regEnvironment;
 			}
 			registryModule.loadByEnv({
+				"reload": (setBy === "loadByEnv"),
 				"envCode": reqEnv,
 				"name": param.serviceName,
 				"donotBbuildSpecificRegistry": false
