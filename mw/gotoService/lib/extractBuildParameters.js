@@ -13,22 +13,17 @@ const coreLibs = require("soajs.core.libs");
 module.exports = (req, service, service_nv, version, proxyInfo, url, core, callback) => {
 	
 	if (proxyInfo) {
-		let requestedRoute;
+		let requestedRoute = "";
 		//check if requested route is provided as query param
 		if (proxyInfo.query && proxyInfo.query.proxyRoute) {
 			requestedRoute = decodeURIComponent(proxyInfo.query.proxyRoute);
 		}
-		/*
-		//possible requested route is provided as path param
-		if (!requestedRoute && proxyInfo.pathname.replace(/^\/proxy/, '') !== '') {
-			requestedRoute = proxyInfo.pathname.replace(/^\/proxy/, '');
-		}
-		*/
 		proxyInfo = {
 			"url": requestedRoute,
 			"extKeyRequired": false
 		};
-		let serviceName = requestedRoute.split("/")[1];
+		let serviceName = requestedRoute.split("/")[1] || '';
+		
 		if (req.soajs.registry.services[serviceName]) {
 			proxyInfo = {
 				"registry": req.soajs.registry.services[serviceName],
