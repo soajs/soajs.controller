@@ -35,7 +35,7 @@ Enabling CORS allows different domains to communicate with SOAJS via its gateway
 
 ---
 
-More information on the Controller is available on the website section [Controller](http://www.soajs.org/#/documentation/controller)
+More information on the Controller is available on the website section [Controller](https://soajsorg.atlassian.net/wiki/x/loAwb)
 
 
 ### License

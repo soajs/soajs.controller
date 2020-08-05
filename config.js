@@ -27,6 +27,16 @@ let config = {
 			{"label": "Reload Registry", "path": "/reloadRegistry", "icon": "fas fa-undo"},
 			{"label": "Reload Awareness", "path": "/awarenessStat", "icon": "fas fa-wifi"}
 		]
+	},
+	"tags": ["gateway", "awareness", "interconnect", "multitennant"],
+	"attributes": {
+		"multitennant": ["authentication", "authorization"],
+		"registry": ["throttling", "custom", "database"]
+	},
+	"program": ["soajs"],
+	"documentation": {
+		"readme": "/README.md",
+		"release": "/RELEASE.md"
 	}
 };
 
