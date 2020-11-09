@@ -56,24 +56,27 @@ module.exports = (configuration) => {
 			
 			req.soajs.log.debug(requestConfig);
 			
-			//try {
-			//proxy request
-			req.soajs.controller.redirectedRequest = request(requestConfig);
-			req.soajs.controller.redirectedRequest.on('error', function (error) {
-				req.soajs.log.error(error.message);
+			try {
+				//proxy request
+				req.soajs.controller.redirectedRequest = request(requestConfig);
+				req.soajs.controller.redirectedRequest.on('error', function (error) {
+					req.soajs.log.error(error.message);
+					return req.soajs.controllerResponse(core.error.getError(135));
+				});
+				
+				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
+					req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
+				} else {
+					req.soajs.controller.redirectedRequest.pipe(res);
+				}
+				
+			} catch (e) {
+				req.soajs.log.error(e.message);
+				if (req.soajs.controller.redirectedRequest) {
+					req.soajs.controller.redirectedRequest.abort();
+				}
 				return req.soajs.controllerResponse(core.error.getError(135));
-			});
-			
-			if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
-				req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
-			} else {
-				req.soajs.controller.redirectedRequest.pipe(res);
 			}
-			
-			// } catch (e) {
-			// 	req.soajs.log.error(e.message);
-			// 	return req.soajs.controllerResponse(core.error.getError(135));
-			// }
 		};
 		if (!remoteENV) {
 			triggerProxy(requestedRoute, 30);
