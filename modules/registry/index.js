@@ -686,7 +686,7 @@ let registryModule = {
 					}
 					build.registerNewService(registry_struct[regEnvironment].coreDB.provision, newDaemonServiceObj, 'marketplace', (error) => {
 						if (error) {
-							let err = new Error('Unable to register new daemon service ' + param.serviceName + ' : ' + error.message);
+							let err = new Error('Unable to register new daemon service ' + param.name + ' : ' + error.message);
 							return cb(err);
 						}
 						return cb(null, registry_struct[regEnvironment][what][param.name]);
@@ -744,7 +744,7 @@ let registryModule = {
 					
 					build.registerNewService(registry_struct[regEnvironment].coreDB.provision, newServiceObj, 'marketplace', (error) => {
 						if (error) {
-							let err = new Error('Unable to register new service ' + param.serviceName + ' : ' + error.message);
+							let err = new Error('Unable to register new service ' + param.name + ' : ' + error.message);
 							return cb(err);
 						}
 						return cb(null, registry_struct[regEnvironment][what][param.name]);

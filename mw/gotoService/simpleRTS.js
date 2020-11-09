@@ -54,7 +54,10 @@ module.exports = (configuration) => {
 				req.pipe(req.soajs.controller.redirectedRequest, {end: true});
 				req.resume();
 			} catch (e) {
-				req.soajs.log.error(e.message);
+				req.soajs.log.error(e.message + " @catch.");
+				if (req.soajs.controller.redirectedRequest) {
+					req.soajs.controller.redirectedRequest.abort();
+				}
 				if (!req.soajs.controller.monitorEndingReq) {
 					return req.soajs.controllerResponse(core.error.getError(135));
 				}

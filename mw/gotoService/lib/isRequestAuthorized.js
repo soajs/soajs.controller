@@ -25,12 +25,12 @@ module.exports = (req, core, requestOptions) => {
 	
 	let soajsauth = (req.headers && req.headers.soajsauth);
 	if (!soajsauth) {
-		try {
+		//try {
 			let parsedUrl = req.soajs.controller.serviceParams.parsedUrl;
 			soajsauth = parsedUrl && parsedUrl.query && parsedUrl.query.soajsauth;
-		} catch (e) {
-			return false;
-		}
+		// } catch (e) {
+		// 	return false;
+		// }
 	}
 	if (soajsauth) {
 		let ccc = core.security.authorization.setCookie(soajsauth, req.soajs.registry.serviceConfig.session.secret, req.soajs.registry.serviceConfig.session.name);

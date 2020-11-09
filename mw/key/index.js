@@ -21,7 +21,7 @@ module.exports = (configuration) => {
 			configuration.provision.getExternalKeyData(key, req.soajs.registry.serviceConfig.key, function (err, keyObj) {
 				if (err) {
 					req.soajs.log.error(err.message + " [" + key + "]");
-					return next();
+					//return next();
 				}
 				if (!keyObj) {
 					return next(148);

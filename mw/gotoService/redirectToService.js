@@ -39,15 +39,6 @@ module.exports = (configuration) => {
 			
 			let restServiceParams = req.soajs.controller.serviceParams;
 			try {
-				req.soajs.controller.redirectedRequest = request(requestOptions);
-				req.soajs.controller.redirectedRequest.on('error', function (err) {
-					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
-					if (!req.soajs.controller.monitorEndingReq) {
-						return req.soajs.controllerResponse(core.error.getError(135));
-					}
-					
-				});
-				
 				let log_monitor = (doc) => {
 					let soamonitor = "soamonitor";
 					let port = get(["registry", "services", "soamonitor", "port"], req.soajs);
@@ -86,7 +77,6 @@ module.exports = (configuration) => {
 						}
 					});
 				};
-				
 				let monitor = get(["registry", "custom", "gateway", "value", "gotoService", "monitor"], req.soajs);
 				let monitoObj = {
 					"time": {}
@@ -126,6 +116,21 @@ module.exports = (configuration) => {
 					monitoObj.query = req.query;
 				}
 				
+				// Trigger request
+				req.soajs.controller.redirectedRequest = request(requestOptions);
+				
+				// Handle error event for both with monitor and without monitor
+				req.soajs.controller.redirectedRequest.on('error', function (err) {
+					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
+					if (!req.soajs.controller.monitorEndingReq) {
+						req.soajs.controllerResponse(core.error.getError(135));
+					}
+					if (monitor && !monitor_service_blacklist && monitor.req_response) {
+						monitoObj.time.res_end = new Date().getTime();
+						log_monitor(monitoObj);
+					}
+				});
+				//Handle body
 				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
 					if (monitor && !monitor_service_blacklist && monitor.req_body) {
 						let isStream = false;
@@ -164,7 +169,7 @@ module.exports = (configuration) => {
 						req.pipe(req.soajs.controller.redirectedRequest);
 					}
 				}
-				
+				// Handle response
 				if (monitor && !monitor_service_blacklist && monitor.req_response) {
 					let isStream = false;
 					req.soajs.controller.redirectedRequest.on("response", (response) => {
@@ -204,10 +209,6 @@ module.exports = (configuration) => {
 							log_monitor(monitoObj);
 						}
 					});
-					req.soajs.controller.redirectedRequest.on("error", () => {
-						monitoObj.time.res_end = new Date().getTime();
-						log_monitor(monitoObj);
-					});
 					req.soajs.controller.redirectedRequest.on("abort", () => {
 						monitoObj.time.res_end = new Date().getTime();
 						log_monitor(monitoObj);
@@ -215,8 +216,12 @@ module.exports = (configuration) => {
 				} else {
 					req.soajs.controller.redirectedRequest.pipe(res);
 				}
+				
 			} catch (e) {
-				req.soajs.log.error(e.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
+				req.soajs.log.error(e.message + ' @catch with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
+				if (req.soajs.controller.redirectedRequest) {
+					req.soajs.controller.redirectedRequest.abort();
+				}
 				if (!req.soajs.controller.monitorEndingReq) {
 					return req.soajs.controllerResponse(core.error.getError(135));
 				}
