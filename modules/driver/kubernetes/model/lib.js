@@ -17,7 +17,8 @@ let lib = {
 			let config = {
 				"namespace": configuration.namespace,
 				"token": configuration.token,
-				"url": configuration.url
+				"url": configuration.url,
+				"ca": configuration.ca || null
 			};
 			return cb(null, config);
 		} else {

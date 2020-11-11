@@ -99,7 +99,8 @@ let model = {
 								let configuration = {
 									"namespace": config.namespace,
 									"token": config.configuration.token,
-									"url": protocol + "://" + config.configuration.url + port
+									"url": protocol + "://" + config.configuration.url + port,
+									"ca": config.ca || null
 								};
 								infraModule.kubernetes.get.nodes(null, {"configuration": configuration}, null, (error, items) => {
 									if (items) {
