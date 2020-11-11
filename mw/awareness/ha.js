@@ -46,7 +46,8 @@ let lib = {
 				let config = {
 					"namespace": regConf.namespace,
 					"token": regConf.configuration.token,
-					"url": protocol + "://" + regConf.configuration.url + port
+					"url": protocol + "://" + regConf.configuration.url + port,
+					"ca": regConf.ca || null
 				};
 				return cb(null, config);
 			} else {
