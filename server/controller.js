@@ -173,14 +173,14 @@ Controller.prototype.init = function (callback) {
 						req.on("error", (error) => {
 							req.soajs.log.error("Error @ controller:", error);
 							if (req.soajs.controller.redirectedRequest) {
-								req.soajs.controller.redirectedRequest.abort();
+								req.soajs.controller.redirectedRequest.destroy();
 							}
 						});
 						
 						req.on("close", () => {
 							if (req.soajs.controller.redirectedRequest) {
 								req.soajs.log.info("Request closed:", req.url);
-								req.soajs.controller.redirectedRequest.abort();
+								req.soajs.controller.redirectedRequest.destroy();
 							}
 						});
 					});

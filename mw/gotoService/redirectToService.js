@@ -120,7 +120,7 @@ module.exports = (configuration) => {
 				req.soajs.controller.redirectedRequest = request(requestOptions);
 				
 				// Handle error event for both with monitor and without monitor
-				req.soajs.controller.redirectedRequest.on('error', function (err) {
+				req.soajs.controller.redirectedRequest.on('error', (err) => {
 					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
 					if (!req.soajs.controller.monitorEndingReq) {
 						req.soajs.controllerResponse(core.error.getError(135));
@@ -210,6 +210,9 @@ module.exports = (configuration) => {
 						}
 					});
 					req.soajs.controller.redirectedRequest.on("abort", () => {
+						if (!req.soajs.controller.monitorEndingReq) {
+							req.soajs.controllerResponse(core.error.getError(135));
+						}
 						monitoObj.time.res_end = new Date().getTime();
 						log_monitor(monitoObj);
 					});
@@ -220,7 +223,7 @@ module.exports = (configuration) => {
 			} catch (e) {
 				req.soajs.log.error(e.message + ' @catch with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
 				if (req.soajs.controller.redirectedRequest) {
-					req.soajs.controller.redirectedRequest.abort();
+					req.soajs.controller.redirectedRequest.destroy();
 				}
 				if (!req.soajs.controller.monitorEndingReq) {
 					return req.soajs.controllerResponse(core.error.getError(135));
