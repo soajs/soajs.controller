@@ -91,7 +91,7 @@ module.exports = (req, res, core, cb) => {
 							req.soajs.controller.monitorEndingReq = true;
 							req.soajs.log.error(restServiceParams_msg + ' - Service heartbeat is not responding');
 							if (req.soajs.controller.redirectedRequest) {
-								req.soajs.controller.redirectedRequest.abort();
+								req.soajs.controller.redirectedRequest.destroy();
 							}
 							return req.soajs.controllerResponse(core.error.getError(133));
 						}
@@ -99,7 +99,7 @@ module.exports = (req, res, core, cb) => {
 				} else {
 					if (req.soajs.controller.redirectedRequest) {
 						req.soajs.log.info("Request aborted: " + req.soajs.controller.renewalCount + " ", req.url);
-						req.soajs.controller.redirectedRequest.abort();
+						req.soajs.controller.redirectedRequest.destroy();
 					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						req.soajs.controller.monitorEndingReq = true;

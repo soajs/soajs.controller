@@ -73,7 +73,7 @@ module.exports = (configuration) => {
 			} catch (e) {
 				req.soajs.log.error(e.message);
 				if (req.soajs.controller.redirectedRequest) {
-					req.soajs.controller.redirectedRequest.abort();
+					req.soajs.controller.redirectedRequest.destroy();
 				}
 				return req.soajs.controllerResponse(core.error.getError(135));
 			}
