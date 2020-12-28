@@ -47,6 +47,8 @@ module.exports = (configuration) => {
 				});
 				req.soajs.controller.redirectedRequest.on('error', function (err) {
 					req.soajs.log.error(err.message);
+					req.soajs.controller.redirectedRequest.destroy();
+					req.soajs.controller.redirectedRequest = null;
 					if (!req.soajs.controller.monitorEndingReq) {
 						return req.soajs.controllerResponse(core.error.getError(135));
 					}
@@ -57,6 +59,7 @@ module.exports = (configuration) => {
 				req.soajs.log.error(e.message + " @catch.");
 				if (req.soajs.controller.redirectedRequest) {
 					req.soajs.controller.redirectedRequest.destroy();
+					req.soajs.controller.redirectedRequest = null;
 				}
 				if (!req.soajs.controller.monitorEndingReq) {
 					return req.soajs.controllerResponse(core.error.getError(135));

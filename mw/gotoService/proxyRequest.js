@@ -61,6 +61,8 @@ module.exports = (configuration) => {
 				req.soajs.controller.redirectedRequest = request(requestConfig);
 				req.soajs.controller.redirectedRequest.on('error', function (error) {
 					req.soajs.log.error(error.message);
+					req.soajs.controller.redirectedRequest.destroy();
+					req.soajs.controller.redirectedRequest = null;
 					return req.soajs.controllerResponse(core.error.getError(135));
 				});
 				
@@ -74,6 +76,7 @@ module.exports = (configuration) => {
 				req.soajs.log.error(e.message);
 				if (req.soajs.controller.redirectedRequest) {
 					req.soajs.controller.redirectedRequest.destroy();
+					req.soajs.controller.redirectedRequest = null;
 				}
 				return req.soajs.controllerResponse(core.error.getError(135));
 			}

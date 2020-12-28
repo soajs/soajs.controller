@@ -174,6 +174,7 @@ Controller.prototype.init = function (callback) {
 							req.soajs.log.error("Error @ controller:", error);
 							if (req.soajs.controller.redirectedRequest) {
 								req.soajs.controller.redirectedRequest.destroy();
+								req.soajs.controller.redirectedRequest = null;
 							}
 						});
 						
@@ -181,6 +182,7 @@ Controller.prototype.init = function (callback) {
 							if (req.soajs.controller.redirectedRequest) {
 								req.soajs.log.info("Request closed:", req.url);
 								req.soajs.controller.redirectedRequest.destroy();
+								req.soajs.controller.redirectedRequest = null;
 							}
 						});
 					});
