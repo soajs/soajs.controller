@@ -122,8 +122,10 @@ module.exports = (configuration) => {
 				// Handle error event for both with monitor and without monitor
 				req.soajs.controller.redirectedRequest.on('error', (err) => {
 					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
-					req.soajs.controller.redirectedRequest.destroy();
-					req.soajs.controller.redirectedRequest = null;
+					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.controller.redirectedRequest.destroy();
+						req.soajs.controller.redirectedRequest = null;
+					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						req.soajs.controllerResponse(core.error.getError(135));
 					}
