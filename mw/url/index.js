@@ -46,7 +46,7 @@ module.exports = () => {
 			if (req.headers.access_token) {
 				req.query.access_token = req.headers.access_token;
 			} else if (req.headers.Authorization) {
-				let token = request.headers.Authorization;
+				let token = req.headers.Authorization;
 				let matches = token.match(/Bearer\s(\S+)/);
 				if (matches && matches[1]) {
 					req.query.access_token = matches[1];
