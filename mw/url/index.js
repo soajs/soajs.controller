@@ -42,8 +42,17 @@ module.exports = () => {
 		if (!req.headers.key) {
 			req.headers.key = key;
 		}
-		if (!req.query.access_token && req.headers.access_token) {
-			req.query.access_token = req.headers.access_token;
+		if (!req.query.access_token) {
+			if (req.headers.access_token) {
+				req.query.access_token = req.headers.access_token;
+			} else if (req.headers.Authorization) {
+				let token = request.headers.Authorization;
+				let matches = token.match(/Bearer\s(\S+)/);
+				if (matches && matches[1]) {
+					req.query.access_token = matches[1];
+					delete req.headers.Authorization;
+				}
+			}
 		}
 		return next();
 	};
