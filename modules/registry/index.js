@@ -791,6 +791,7 @@ let registryModule = {
 			"setBy": "load"
 		};
 		return getRegistry(param, options, (err, reg) => {
+			console.log(reg)
 			if (err) {
 				throw new Error('Unable to load Registry Db Info: ' + err.message);
 			} else {
