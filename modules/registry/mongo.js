@@ -68,17 +68,12 @@ let model = {
 		
 		model.mongo.find(environmentCollectionName, {}, null, (error, envRecord) => {
 			console.log("=========================== A")
+			console.log(dbConfiguration)
 			console.log(error)
 			console.log(envRecord)
 			console.log("=========================== A")
 		});
 		model.mongo.findOne(environmentCollectionName, {'code': envCode.toUpperCase()}, null, (error, envRecord) => {
-			console.log("=========================== C")
-			console.log({'code': envCode.toUpperCase()})
-			console.log(dbConfiguration)
-			console.log(error)
-			console.log(envRecord)
-			console.log("=========================== C")
 			if (error) {
 				return cb(error);
 			}
