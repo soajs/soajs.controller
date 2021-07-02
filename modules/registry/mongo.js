@@ -67,6 +67,7 @@ let model = {
 		model.init(dbConfiguration);
 		model.mongo.findOne(environmentCollectionName, {'code': envCode.toUpperCase()}, (error, envRecord) => {
 			console.log("=========================== C")
+			console.log({'code': envCode.toUpperCase()})
 			console.log(dbConfiguration)
 			console.log(error)
 			console.log(envRecord)
