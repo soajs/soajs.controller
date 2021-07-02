@@ -460,7 +460,6 @@ function getRegistry(param, options, cb) {
 					if (!RegistryFromDB) {
 						return cb(new Error("Unable to find any registry data!"));
 					}
-					console.log(RegistryFromDB)
 					registry.setBy = options.setBy;
 					buildRegistry(param, registry, RegistryFromDB, (error, registry) => {
 						if (error) {
