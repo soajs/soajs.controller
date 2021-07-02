@@ -65,14 +65,6 @@ let model = {
 	},
 	"loadData": (dbConfiguration, envCode, param, cb) => {
 		model.init(dbConfiguration);
-		
-		model.mongo.find(environmentCollectionName, {}, null, (error, envRecord) => {
-			console.log("=========================== A")
-			console.log(dbConfiguration)
-			console.log(error)
-			console.log(envRecord)
-			console.log("=========================== A")
-		});
 		model.mongo.findOne(environmentCollectionName, {'code': envCode.toUpperCase()}, null, (error, envRecord) => {
 			if (error) {
 				return cb(error);
