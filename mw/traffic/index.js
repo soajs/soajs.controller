@@ -120,11 +120,15 @@ module.exports = function () {
 			let serviceName = req.soajs.controller.serviceParams.name;
 			let strategy = (req.soajs.controller.serviceParams.isAPIPublic ? "publicAPIStrategy" : "privateAPIStrategy");
 			let throttlingStrategy = req.soajs.registry.serviceConfig.throttling[strategy];
-			//var throttling = null;
 			
-			if (req.soajs.servicesConfig && req.soajs.servicesConfig[serviceName] && req.soajs.servicesConfig[serviceName].SOAJS && req.soajs.servicesConfig[serviceName].SOAJS.THROTTLING) {
-				if (req.soajs.servicesConfig[serviceName].SOAJS.THROTTLING.hasOwnProperty(strategy)) {
-					throttlingStrategy = req.soajs.servicesConfig[serviceName].SOAJS.THROTTLING[strategy];
+			if (req.soajs.servicesConfig && req.soajs.servicesConfig.gateway && req.soajs.servicesConfig.gateway.throttling) {
+				if (req.soajs.servicesConfig.gateway.throttling.hasOwnProperty(strategy)) {
+					throttlingStrategy = req.soajs.servicesConfig.gateway.throttling[strategy];
+				}
+				if (req.soajs.servicesConfig.gateway.throttling[serviceName]) {
+					if (req.soajs.servicesConfig.gateway.throttling[serviceName].hasOwnProperty(strategy)) {
+						throttlingStrategy = req.soajs.servicesConfig.gateway.throttling[strategy];
+					}
 				}
 			}
 			if (!throttlingStrategy) {
