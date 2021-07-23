@@ -188,6 +188,7 @@ module.exports = (configuration) => {
 									let injectObj = {
 										"tenant": {
 											"id": keyObj.tenant.id,
+											"name": keyObj.tenant.name,
 											"code": keyObj.tenant.code,
 											"locked": keyObj.tenant.locked,
 											"roaming": data.req.soajs.tenant.roaming,
