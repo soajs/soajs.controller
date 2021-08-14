@@ -37,7 +37,9 @@ module.exports = () => {
 			req.query = {};
 		}
 		req.soajs.controller.serviceParams = libParseURL(req.url, parsedUrl);
-		
+		if (!req.soajs.controller.serviceParams.service_n || req.soajs.controller.serviceParams.service_n === '') {
+			return next(136);
+		}
 		let key = req.headers.key || parsedUrl.query.key;
 		if (!req.headers.key) {
 			req.headers.key = key;

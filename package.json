@@ -31,7 +31,7 @@
     "request": "2.88.2",
     "useragent": "2.3.0",
     "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "5.0.17",
+    "soajs.core.modules": "5.0.18",
     "soajs.urac.driver": "3.0.19"
   },
   "devDependencies": {
