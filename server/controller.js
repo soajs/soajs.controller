@@ -127,7 +127,7 @@ Controller.prototype.init = function (callback) {
 					
 					app.use(enhancer_mw());
 					
-					app.use(url_mw());
+					app.use(url_mw({"core": core}));
 					
 					app.use(key_mw({"provision": provision, "regEnvironment": regEnvironment}));
 					

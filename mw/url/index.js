@@ -18,7 +18,9 @@ let libParseURL = require('../../lib/parseURL');
  *
  * @returns {Function}
  */
-module.exports = () => {
+module.exports = (configuration) => {
+	let core = configuration.core;
+	
 	return (req, res, next) => {
 		if (!req.soajs) {
 			throw new TypeError('soajs mw is not started');
@@ -38,7 +40,7 @@ module.exports = () => {
 		}
 		req.soajs.controller.serviceParams = libParseURL(req.url, parsedUrl);
 		if (!req.soajs.controller.serviceParams.service_n || req.soajs.controller.serviceParams.service_n === '') {
-			return next(136);
+			return req.soajs.controllerResponse(core.error.getError(136));
 		}
 		let key = req.headers.key || parsedUrl.query.key;
 		if (!req.headers.key) {
