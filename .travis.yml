@@ -56,6 +56,8 @@ jobs:
     - docker tag soajsorg/gateway:latest soajsorg/gateway:${MAJOR_VERSION}.x
 
     - docker push soajsorg/gateway
+    - docker push soajsorg/gateway:${PACKAGE_VERSION}
+    - docker push soajsorg/gateway:${MAJOR_VERSION}.x
     deploy:
       on:
         all_branches: true
