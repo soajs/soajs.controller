@@ -42,7 +42,7 @@ module.exports = (configuration) => {
 		if (!req.soajs.controller.serviceParams.service_n || req.soajs.controller.serviceParams.service_n === '') {
 			return req.soajs.controllerResponse(core.error.getError(136));
 		}
-		let key = req.headers.key || parsedUrl.query.key;
+		let key = req.headers.key || req.query.key;
 		if (!req.headers.key) {
 			req.headers.key = key;
 		}

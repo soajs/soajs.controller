@@ -25,7 +25,7 @@ module.exports = (configuration) => {
 	 */
 	return (req, res) => {
 		preRedirect(req, res, core, function (obj) {
-			req.pause();
+			// req.pause();
 			
 			let requestOptions = url.parse(obj.uri);
 			requestOptions.headers = req.headers;
@@ -46,17 +46,19 @@ module.exports = (configuration) => {
 					serverResponse.resume();
 				});
 				req.soajs.controller.redirectedRequest.on('error', function (err) {
-					req.soajs.log.error(err.message);
-					req.soajs.controller.redirectedRequest.destroy();
-					req.soajs.controller.redirectedRequest = null;
+					req.soajs.log.error(err.code, err.message);
+					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.controller.redirectedRequest.destroy();
+						req.soajs.controller.redirectedRequest = null;
+					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						return req.soajs.controllerResponse(core.error.getError(135));
 					}
 				});
 				req.pipe(req.soajs.controller.redirectedRequest, {end: true});
-				req.resume();
+				// req.resume();
 			} catch (e) {
-				req.soajs.log.error(e.message + " @catch.");
+				req.soajs.log.error(e.message + " @catch");
 				if (req.soajs.controller.redirectedRequest) {
 					req.soajs.controller.redirectedRequest.destroy();
 					req.soajs.controller.redirectedRequest = null;

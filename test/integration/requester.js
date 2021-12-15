@@ -4,7 +4,7 @@ let request = require("request");
 
 function requester(method, params, cb) {
 	let requestOptions = {
-		timeout: 30000,
+		// timeout: 30000,
 		'uri': params.uri,
 		'json': params.body || true
 	};
