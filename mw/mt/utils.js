@@ -591,7 +591,7 @@ let utils = {
 			obj.req.soajs.uracDriver.init((error) => {
 				if (error) {
 					obj.req.soajs.log.error(error.message);
-					return cb (143);
+					// return cb (143);
 				}
 				let userServiceConf = obj.req.soajs.uracDriver.getConfig();
 				userServiceConf = userServiceConf || {};
