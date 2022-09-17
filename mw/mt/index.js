@@ -159,6 +159,9 @@ module.exports = (configuration) => {
 										//doesn't work if you are not logged in
 										return next(158);
 									} else {
+										if (err) {
+											return next(170);
+										}
 										req.soajs.log.debug("Detected return get key permission request, bypassing MT ACL checks...");
 										return next();
 									}
