@@ -78,6 +78,7 @@ module.exports = (req, res, core, cb) => {
 						if (resContentType) {
 							resContentType = res.getHeader('Content-Type');
 						}
+						req.soajs.log.debug('Content-Type: ', resContentType);
 						//let isStream = false;
 						if (resContentType) {
 							isStream = resContentType.match(/stream/i);
