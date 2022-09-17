@@ -75,6 +75,9 @@ module.exports = (req, res, core, cb) => {
 						'headers': req.headers
 					}, function (error, response) {
 						let resContentType = res.getHeader('content-type');
+						if (resContentType) {
+							resContentType = res.getHeader('Content-Type');
+						}
 						//let isStream = false;
 						if (resContentType) {
 							isStream = resContentType.match(/stream/i);
