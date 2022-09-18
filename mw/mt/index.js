@@ -159,13 +159,14 @@ module.exports = (configuration) => {
 										//doesn't work if you are not logged in
 										return next(158);
 									} else {
-										// if (err) {
-										// 	if (typeof err === "number") {
-										// 		return next(err);
-										// 	}
-										// }
-										req.soajs.log.debug("Detected return get key permission request, bypassing MT ACL checks...");
-										return next();
+										if (err) {
+											if (typeof err === "number") {
+												return next(err);
+											}
+										} else {
+											req.soajs.log.debug("Detected return get key permission request, bypassing MT ACL checks...");
+											return next();
+										}
 									}
 								}
 								
