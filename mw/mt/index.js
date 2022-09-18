@@ -143,11 +143,12 @@ module.exports = (configuration) => {
 							}
 							
 							serviceCheckArray.push(utils.uracCheck);
-							serviceCheckArray.push(utils.aclUrackCheck);
-							
-							serviceCheckArray.push(utils.serviceCheck);
-							serviceCheckArray.push(utils.apiCheck);
-							
+							if (!url_keyACL) {
+								serviceCheckArray.push(utils.aclUrackCheck);
+								
+								serviceCheckArray.push(utils.serviceCheck);
+								serviceCheckArray.push(utils.apiCheck);
+							}
 							async.waterfall(serviceCheckArray, (err, data) => {
 								
 								//if this is controller route: /key/permission/get, ignore async waterfall response
