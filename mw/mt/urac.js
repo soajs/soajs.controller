@@ -65,6 +65,7 @@ Urac.prototype.init = function (cb) {
 	}
 	else if (_self.id) {
 		uracDriver.getRecord(_self.soajs, {id: _self.id.toString(), username: _self.username}, function (err, record) {
+			console.log(record)
 			if (record) {
 				_self.userRecord = record;
 				_self.resolveACL(() => {
@@ -87,8 +88,6 @@ Urac.prototype.init = function (cb) {
 Urac.prototype.resolveACL = function (cb) {
 	let _self = this;
 	if (_self.userRecord) {
-		console.log(_self.userRecord)
-		console.log(_self.userRecord.groupsConfig)
 		let productCode = _self.soajs.tenant.application.product;
 		if (_self.userRecord.groupsConfig && _self.userRecord.groupsConfig.allowedPackages) {
 			if (_self.userRecord.groupsConfig.allowedPackages[productCode]) {
