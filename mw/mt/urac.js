@@ -21,6 +21,8 @@ function Urac(param) {
 	_self.userRecord = null;
 	_self.user_ACL = null;
 	_self.id = null;
+	console.log(_self.soajs.tenant)
+	console.log(_self.soajs.registry.serviceConfig.oauth)
 	if (param.oauth && 0 === param.oauth.type) {
 		_self.userRecord = param.oauth.bearerToken;
 	} else {
