@@ -586,10 +586,10 @@ let utils = {
 		if (obj.skipOAUTH) {
 			return cb(null, obj);
 		}
-		let callURACDriver = function () {
+		let callURACDriver = function (roaming) {
 			obj.req.soajs.uracDriver = new UracDriver({"soajs": obj.req.soajs, "oauth": obj.req.oauth});
 			obj.req.soajs.uracDriver.init((error) => {
-				if (error) {
+				if (error && !roaming) {
 					obj.req.soajs.log.error(error.message);
 					return cb (146);
 				}
@@ -674,11 +674,11 @@ let utils = {
 					if (response.registry && response.registry.tenantMetaDB) {
 						obj.req.soajs.tenant.roaming.tenantMetaDB = response.registry.tenantMetaDB;
 					}
-					console.log(obj.req.soajs.tenant.roaming);
-					return callURACDriver();
+					console.log(obj.req.soajs.tenant.roaming)
+					return callURACDriver(true);
 				});
 			} else {
-				return callURACDriver();
+				return callURACDriver(false);
 			}
 		} else {
 			return cb(null, obj);
