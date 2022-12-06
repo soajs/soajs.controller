@@ -21,9 +21,6 @@ function Urac(param) {
 	_self.userRecord = null;
 	_self.user_ACL = null;
 	_self.id = null;
-	console.log(_self.soajs.tenant)
-	console.log(_self.soajs.registry.serviceConfig.oauth)
-	console.log(param.oauth.bearerToken)
 	if (param.oauth && 0 === param.oauth.type) {
 		_self.userRecord = param.oauth.bearerToken;
 	} else {
@@ -35,8 +32,7 @@ function Urac(param) {
 			}
 			if (param.oauth.bearerToken.user.loginMode === "oauth") {
 				_self.userRecord = param.oauth.bearerToken.user;
-			}
-			else if (_self.soajs.registry.serviceConfig.oauth.getUserFromToken) {
+			} else if (_self.soajs.registry.serviceConfig.oauth.getUserFromToken) {
 				// NOTE:
 				// if roaming, must load again user
 				// if the clientId is not the same as _self.soajs.tenant.id then we should get the record
@@ -68,7 +64,6 @@ Urac.prototype.init = function (cb) {
 	}
 	else if (_self.id) {
 		uracDriver.getRecord(_self.soajs, {id: _self.id.toString(), username: _self.username}, function (err, record) {
-			console.log(record)
 			if (record) {
 				_self.userRecord = record;
 				_self.resolveACL(() => {

@@ -674,7 +674,7 @@ let utils = {
 					if (response.registry && response.registry.tenantMetaDB) {
 						obj.req.soajs.tenant.roaming.tenantMetaDB = response.registry.tenantMetaDB;
 					}
-					
+					console.log(obj.req.soajs.tenant.roaming);
 					return callURACDriver();
 				});
 			} else {
