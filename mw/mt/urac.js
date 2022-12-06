@@ -39,6 +39,10 @@ function Urac(param) {
 				if (!_self.soajs.tenant.roaming && (param.oauth.bearerToken.clientId === _self.soajs.tenant.id)) {
 					_self.userRecord = param.oauth.bearerToken.user;
 				}
+			} else {
+				if (_self.soajs.tenant.roaming) {
+					_self.userRecord = param.oauth.bearerToken.user;
+				}
 			}
 		} else if (param._id) {
 			_self.id = param._id;
