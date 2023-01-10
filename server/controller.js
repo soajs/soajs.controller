@@ -27,6 +27,7 @@ const favicon_mw = require('../mw/favicon/index');
 const cors_mw = require('../mw/cors/index');
 const soajs_mw = require('../mw/soajs/index');
 const response_mw = require('../mw/response/index');
+const maintenanceMode_mw = require('../mw/maintenanceMode/index');
 const enhancer_mw = require('../mw/enhancer/index');
 const awareness_mw = require('../mw/awareness/index');
 const awarenessEnv_mw = require("../mw/awarenessEnv/index");
@@ -85,6 +86,7 @@ Controller.prototype.init = function (callback) {
 			}));
 			app.use(cors_mw());
 			app.use(response_mw({"controllerResponse": true}));
+			app.use(maintenanceMode_mw());
 			
 			log.info("Loading Provision ...");
 			let dbConfig = registry.coreDB.provision;
