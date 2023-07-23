@@ -68,7 +68,7 @@ describe("Integration for Usecase 1", function () {
 		requester('get', options, (error, body) => {
 			assert.ok(body);
 			assert.strictEqual(body.result, false);
-			assert.deepStrictEqual(body.errors.codes, [158]);
+			assert.deepStrictEqual(body.errors.codes, [400]);
 			done();
 		});
 	});
