@@ -157,6 +157,7 @@ module.exports = (configuration) => {
 										if (err && err.message) {
 											req.soajs.log.error(err.message);
 										}
+										console.log("url_keyACL", err);
 										//doesn't work if you are not logged in
 										return next(158);
 									} else {

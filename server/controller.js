@@ -86,7 +86,7 @@ Controller.prototype.init = function (callback) {
 			}));
 			app.use(cors_mw());
 			app.use(response_mw({"controllerResponse": true}));
-			app.use(maintenanceMode_mw());
+			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
 			
 			log.info("Loading Provision ...");
 			let dbConfig = registry.coreDB.provision;
@@ -133,6 +133,8 @@ Controller.prototype.init = function (callback) {
 					
 					app.use(key_mw({"provision": provision, "regEnvironment": regEnvironment}));
 					
+					//TODO: add maintenance by tenant here req.soajs.controller.serviceParams.keyObj.config
+
 					app.use(keyACL_mw());
 					
 					app.use(gotoService_mw({
