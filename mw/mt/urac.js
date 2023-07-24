@@ -31,6 +31,8 @@ function Urac(param) {
 			if (param.oauth.bearerToken.user.username) {
 				_self.username = param.oauth.bearerToken.user.username;
 			}
+			console.log("_self.username",_self.username);
+			console.log("param.oauth.bearerToken.user.loginMode", param.oauth.bearerToken.user.loginMode);
 			if (param.oauth.bearerToken.user.loginMode === "oauth") {
 				_self.userRecord = param.oauth.bearerToken.user;
 			} else if (_self.soajs.registry.serviceConfig.oauth.getUserFromToken) {
@@ -50,6 +52,7 @@ function Urac(param) {
 			_self.username = param.username;
 		}
 	}
+	console.log (_self.userRecord);
 }
 
 /**
