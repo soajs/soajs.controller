@@ -24,7 +24,6 @@ function Urac(param) {
 	if (param.oauth && 0 === param.oauth.type) {
 		_self.userRecord = param.oauth.bearerToken;
 	} else {
-		console.log (_self.soajs.tenant);
 		// if type === 2
 		if (param.oauth && param.oauth.bearerToken && param.oauth.bearerToken.user) {
 			_self.id = param.oauth.bearerToken.user.id;
@@ -58,7 +57,6 @@ function Urac(param) {
  */
 Urac.prototype.init = function (cb) {
 	let _self = this;
-	console.log (JSON.stringify(_self.userRecord));
 	if (_self.userRecord) {
 		if (_self.user_ACL) {
 			return cb(null, _self.userRecord);
