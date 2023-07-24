@@ -61,7 +61,6 @@ function Urac(param) {
 Urac.prototype.init = function (cb) {
 	let _self = this;
 	if (_self.userRecord) {
-		console.log (JSON.stringify(_self.userRecord));
 		if (_self.user_ACL) {
 			return cb(null, _self.userRecord);
 		} else {
