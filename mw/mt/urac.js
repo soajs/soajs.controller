@@ -24,15 +24,12 @@ function Urac(param) {
 	if (param.oauth && 0 === param.oauth.type) {
 		_self.userRecord = param.oauth.bearerToken;
 	} else {
-		console.log (_self.soajs.tenant);
-		console.log(_self.soajs.tenantOauth);
 		// if type === 2
 		if (param.oauth && param.oauth.bearerToken && param.oauth.bearerToken.user) {
 			_self.id = param.oauth.bearerToken.user.id;
 			if (param.oauth.bearerToken.user.username) {
 				_self.username = param.oauth.bearerToken.user.username;
 			}
-			console.log("param.oauth.bearerToken.user.loginMode", param.oauth.bearerToken.user.loginMode);
 			if (param.oauth.bearerToken.user.loginMode === "oauth") {
 				_self.userRecord = param.oauth.bearerToken.user;
 			} else if (_self.soajs.registry.serviceConfig.oauth.getUserFromToken) {
