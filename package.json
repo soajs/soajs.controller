@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs multi tenant API gateway",
-  "version": "4.0.53",
+  "version": "4.1.0",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -30,8 +30,8 @@
     "path-to-regexp": "6.2.0",
     "request": "2.88.2",
     "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "5.0.24",
-    "soajs.urac.driver": "3.0.26",
+    "soajs.core.modules": "5.1.2",
+    "soajs.urac.driver": "3.1.2",
     "useragent": "2.3.0"
   },
   "devDependencies": {
