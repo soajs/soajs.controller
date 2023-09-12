@@ -572,12 +572,13 @@ let registryModule = {
 			}
 			model.addUpdateServiceIP(registry.coreDB.provision, hostObj, (error, registered) => {
 				if (error) {
-					throw new Error("Unable to register new host for service:" + error.message);
+					console.log("Unable to register new host for service:" + error.message);
+					return  cb(false);
 				}
-				cb(registered);
+				return cb(registered);
 			});
 		} else {
-			cb(false);
+			return cb(false);
 		}
 	},
 	"register": (param, cb) => {
@@ -792,7 +793,8 @@ let registryModule = {
 		};
 		return getRegistry(param, options, (err, reg) => {
 			if (err) {
-				throw new Error('Unable to load Registry Db Info: ' + err.message);
+				console.log('Unable to load Registry Db Info: ' + err.message);
+				process.exit (-1);
 			} else {
 				return cb(reg);
 			}
