@@ -37,12 +37,12 @@ module.exports = {
 				acl.acl = oneAcl.acl;
 				return cb();
 			}
-			async.eachOf(oneAcl.acl, function (service, serviceName, serviceCall) {
+			async.eachOfSeries(oneAcl.acl, function (service, serviceName, serviceCall) {
 				if (!acl.acl[serviceName]) {
 					acl.acl[serviceName] = service;
 					return serviceCall();
 				}
-				async.eachOf(service, function (version, versionValue, versionCall) {
+				async.eachOfSeries(service, function (version, versionValue, versionCall) {
 					if (!acl.acl[serviceName][versionValue]) {
 						acl.acl[serviceName][versionValue] = version;
 						return serviceCall();
