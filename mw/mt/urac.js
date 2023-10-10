@@ -93,12 +93,10 @@ Urac.prototype.resolveACL = function (cb) {
 		let productCode = _self.soajs.tenant.application.product;
 		if (_self.userRecord.groupsConfig && _self.userRecord.groupsConfig.allowedPackages) {
 			if (_self.userRecord.groupsConfig.allowedPackages[productCode]) {
-				console.log(_self.userRecord.groupsConfig.allowedPackages[productCode]);
 				provision.getPackagesData(_self.userRecord.groupsConfig.allowedPackages[productCode], (error, arrayACLs) => {
 					if (error) {
 						return cb();
 					} else {
-						console.log(JSON.stringify(arrayACLs));
 						lib.mergeACLArray(arrayACLs, (error, ACLobject) => {
 							if (ACLobject) {
 								_self.user_ACL = ACLobject;

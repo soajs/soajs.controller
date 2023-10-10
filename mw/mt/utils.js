@@ -81,6 +81,7 @@ let _urac = {
  */
 let _api = {
 	"checkPermission": function (system, req, api) {
+		console.log(system, api);
 		if ('restricted' === system.apisPermission) {
 			if (!api) {
 				return {"result": false, "error": 159};
