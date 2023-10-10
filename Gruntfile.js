@@ -174,17 +174,17 @@ module.exports = function (grunt) {
 		copy: {
 			main: {
 				files: [
-					{expand: true, src: ['package.json'], dest: 'test/coverage/instrument/', filter: 'isFile'},
+					{expand: true, src: ['package.json'], dest: 'test/coverage/instrument/test/dist/', filter: 'isFile'},
 					{
 						cwd: 'modules/driver/kubernetes/model/swagger/',
 						src: '**/*',
-						dest: 'test/coverage/instrument/modules/driver/kubernetes/model/swagger/',
+						dest: 'test/coverage/instrument/test/dist/modules/driver/kubernetes/model/swagger/',
 						expand: true
 					},
 					{
 						cwd: 'modules/driver/kubernetes/model/clients/',  // set working folder / root to copy
 						src: '**/*',
-						dest: 'test/coverage/instrument/modules/driver/kubernetes/model/clients/',    // destination folder
+						dest: 'test/coverage/instrument/test/dist/modules/driver/kubernetes/model/clients/',    // destination folder
 						expand: true           // required when using cwd
 					}
 				]
