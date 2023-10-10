@@ -9,6 +9,9 @@ describe("Unit test for: mw - traffic", () => {
     it("success - default from environment", (done) => {
         let res = {};
         let req = {
+            getClientIP: () => {
+                return "127.0.0.1"
+            },
             soajs: {
                 registry: {
                     serviceConfig: {

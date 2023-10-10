@@ -41,7 +41,7 @@ const traffic_mw = require("../mw/traffic/index");
 const utils = require("../utilities/utils");
 
 let autoRegHost = process.env.SOAJS_SRV_AUTOREGISTERHOST || true;
-if (autoRegHost && typeof(autoRegHost) !== 'boolean') {
+if (autoRegHost && typeof (autoRegHost) !== 'boolean') {
 	autoRegHost = (autoRegHost === 'true');
 }
 let regEnvironment = (process.env.SOAJS_ENV || "dev");
@@ -49,10 +49,10 @@ regEnvironment = regEnvironment.toLowerCase();
 
 function Controller(config) {
 	let _self = this;
-	
+
 	config = config || {};
 	let param = lib.param(config);
-	_self.soajs = {"param": param};
+	_self.soajs = { "param": param };
 }
 
 Controller.prototype.init = function (callback) {
@@ -77,7 +77,7 @@ Controller.prototype.init = function (callback) {
 					log.info("The IP registered for service [" + _self.soajs.param.init.serviceName + "] awareness : ", service.fetched.ip);
 				}
 			}
-			
+
 			let app = connect();
 			app.use(favicon_mw());
 			app.use(soajs_mw({
@@ -85,9 +85,9 @@ Controller.prototype.init = function (callback) {
 				"core": core
 			}));
 			app.use(cors_mw());
-			app.use(response_mw({"controllerResponse": true}));
+			app.use(response_mw({ "controllerResponse": true }));
 			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
-			
+
 			log.info("Loading Provision ...");
 			let dbConfig = registry.coreDB.provision;
 			if (registry.coreDB.oauth) {
@@ -101,11 +101,11 @@ Controller.prototype.init = function (callback) {
 				if (loaded) {
 					log.info("Service provision loaded.");
 					let server = http.createServer(app);
-					
+
 					// Create maintenance routes
 					let maintenance = require("./maintenance.js");
 					let serverMaintenance = maintenance(core, log, _self.soajs.param.init, service.ip, regEnvironment, awareness_mw, soajsLib, provision);
-					
+
 					// Add gateway middleware
 					app.use(awareness_mw.getMw({
 						"awareness": _self.soajs.param.init.awareness,
@@ -116,7 +116,7 @@ Controller.prototype.init = function (callback) {
 						"serviceIp": service.ip
 					}));
 					log.info("Awareness middleware initialization done.");
-					
+
 					//added mw awarenessEnv so that proxy can use req.soajs.awarenessEnv.getHost('dev', cb)
 					app.use(awarenessEnv_mw.getMw({
 						"awarenessEnv": true,
@@ -126,17 +126,17 @@ Controller.prototype.init = function (callback) {
 						"log": log
 					}));
 					log.info("AwarenessEnv middleware initialization done.");
-					
+
 					app.use(enhancer_mw());
-					
-					app.use(url_mw({"core": core}));
-					
-					app.use(key_mw({"provision": provision, "regEnvironment": regEnvironment}));
-					
+
+					app.use(url_mw({ "core": core }));
+
+					app.use(key_mw({ "provision": provision, "regEnvironment": regEnvironment }));
+
 					//TODO: add maintenance by tenant here req.soajs.controller.serviceParams.keyObj.config
 
 					app.use(keyACL_mw());
-					
+
 					app.use(gotoService_mw({
 						"provision": provision,
 						"serviceName": _self.soajs.param.init.serviceName,
@@ -144,7 +144,7 @@ Controller.prototype.init = function (callback) {
 						"serviceGroup": _self.soajs.param.init.serviceGroup,
 						"core": core
 					}));
-					
+
 					if (registry.serviceConfig.oauth) {
 						let oauth_mw = require("../mw/oauth/index");
 						// NOTE: oauth_mw is set on soajs.oauth and is triggered from inside mt_mw
@@ -153,10 +153,10 @@ Controller.prototype.init = function (callback) {
 							"serviceConfig": registry.serviceConfig,
 							"model": provision.oauthModel
 						});
-						
+
 						log.info("oAuth middleware initialization done.");
 					}
-					
+
 					app.use(mt_mw({
 						"soajs": _self.soajs,
 						"app": app,
@@ -166,14 +166,17 @@ Controller.prototype.init = function (callback) {
 						"provision": provision
 					}));
 					log.info("SOAJS MT middleware initialization done.");
-					
-					app.use(traffic_mw({}));
-					
+
+					app.use(traffic_mw({
+						"log": log,
+						"gatewayDB": registry.coreDB.gateway || registry.coreDB.provision
+					}));
+
 					app.use((req, res, next) => {
 						setImmediate(() => {
 							req.soajs.controller.gotoservice(req, res, next);
 						});
-						
+
 						req.on("error", (error) => {
 							req.soajs.log.error("Error @ controller:", error);
 							if (req.soajs.controller.redirectedRequest) {
@@ -181,7 +184,7 @@ Controller.prototype.init = function (callback) {
 								req.soajs.controller.redirectedRequest = null;
 							}
 						});
-						
+
 						req.on("close", () => {
 							if (req.soajs.controller.redirectedRequest) {
 								req.soajs.log.info("Request closed:", req.url);
@@ -190,11 +193,11 @@ Controller.prototype.init = function (callback) {
 							}
 						});
 					});
-					
+
 					app.use(utils.logErrors);
 					app.use(utils.controllerClientErrorHandler);
 					app.use(utils.controllerErrorHandler);
-					
+
 					callback(registry, log, service, server, serverMaintenance);
 				} else {
 					log.error('Unable to load provision. controller will not start :(');
@@ -217,13 +220,13 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 				log.error(err.message);
 			}
 		});
-		
+
 		let getAwarenessInfo = (terminate, cb) => {
 			let tmp = registryModule.get();
 			if (tmp && (tmp.services || tmp.daemons)) {
 				let awarenessStatData = {
 					"ts": Date.now(),
-					"data": soajsUtils.cloneObj({"services": tmp.services, "daemons": tmp.daemons})
+					"data": soajsUtils.cloneObj({ "services": tmp.services, "daemons": tmp.daemons })
 				};
 				if (terminate) {
 					for (let serviceName in awarenessStatData.data.services) {
@@ -252,7 +255,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 				}, cb);
 			}
 		};
-		
+
 		server.listen(registry.services.controller.port, (err) => {
 			if (err) {
 				log.error(err.message);
@@ -268,7 +271,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 					}, registry, (registered) => {
 						if (registered) {
 							log.info("Host IP [" + service.ip + "] for service [" + _self.soajs.param.init.serviceName + "@" + _self.soajs.param.init.serviceVersion + "] successfully registered.");
-							
+
 							//update the database with the awareness Response generated.
 							setTimeout(() => {
 								getAwarenessInfo(false, (error) => {
@@ -277,7 +280,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 									}
 								});
 							}, registry.serviceConfig.awareness.healthCheckInterval);
-							
+
 							//update the database with the awareness Response generated.
 							//controller has been terminated.
 							process.on('SIGINT', () => {
@@ -313,7 +316,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 				log.info(_self.soajs.param.init.serviceName + " service maintenance is listening on port: " + maintenancePort);
 			}
 		});
-		
+
 	}
 };
 
@@ -321,7 +324,7 @@ Controller.prototype.stop = function (registry, log, service, server, serverMain
 	let maintenancePort = registry.services.controller.port + registry.serviceConfig.ports.maintenanceInc;
 	log.info('stopping Server on port:', registry.services.controller.port);
 	log.info('stopping MaintenanceServer on port:', maintenancePort);
-	
+
 	server.close((err) => {
 		serverMaintenance.close(() => {
 			if (callback) {
