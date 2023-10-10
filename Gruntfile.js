@@ -56,7 +56,7 @@ let lib = {
 module.exports = function (grunt) {
 	//Loading the needed plugins to run the grunt tasks
 	let pluginsRootPath = lib.findRoot();
-	lib.loadTasks(grunt, pluginsRootPath, ['grunt-contrib-jshint', 'grunt-jsdoc', 'grunt-contrib-clean', 'grunt-mocha-test', 'grunt-env', 'grunt-istanbul', 'grunt-coveralls', 'grunt-contrib-copy']);
+	lib.loadTasks(grunt, pluginsRootPath, ['grunt-contrib-jshint', 'grunt-jsdoc', 'grunt-contrib-clean', 'grunt-mocha-test', 'grunt-env', 'grunt-istanbul', 'grunt-coveralls', 'grunt-babel', 'grunt-contrib-copy']);
 	grunt.initConfig({
 		//Defining jshint tasks
 		jshint: {
@@ -109,7 +109,7 @@ module.exports = function (grunt) {
 				SOAJS_ENV: "dev",
 				SOAJS_TEST: true,
 				SOAJS_PROFILE: __dirname + "/profiles/single.js",
-				APP_DIR_FOR_CODE_COVERAGE: '../test/coverage/instrument/'
+				APP_DIR_FOR_CODE_COVERAGE: '../test/coverage/instrument/test/dist/'
 			}
 		},
 		
@@ -119,9 +119,58 @@ module.exports = function (grunt) {
 			},
 			coverage: {
 				src: ['test/coverage/']
+			},
+			dist: {
+				src: ['test/dist/']
 			}
 		},
 		
+		babel: {
+			options: {
+				sourceMap: true,
+				presets: ['@babel/preset-env'],
+				plugins: ["@babel/plugin-transform-runtime"],
+			},
+			dist: {
+				files: [
+
+					{
+						expand: true,
+						cwd: 'lib/',
+						src: ['*.js'],
+						dest: 'test/dist/lib/'
+					},
+					{
+						expand: true,
+						cwd: 'modules/',
+						src: ['**/*.js'],
+						dest: 'test/dist/modules/'
+					},
+					{
+						expand: true,
+						cwd: 'mw/',
+						src: ['**/*.js'],
+						dest: 'test/dist/mw/'
+					},
+					{
+						expand: true,
+						cwd: 'profiles/',
+						src: ['*.js'],
+						dest: 'test/dist/profiles/'
+					},
+					{
+						expand: true,
+						cwd: 'server/',
+						src: ['*.js'],
+						dest: 'test/dist/server/'
+					},
+					{ 'test/dist/index.js': 'index.js' },
+					{ 'test/dist/_index.js': '_index.js' },
+					{ 'test/dist/config.js': 'config.js' },
+				]
+			}
+		},
+
 		copy: {
 			main: {
 				files: [
@@ -143,7 +192,8 @@ module.exports = function (grunt) {
 		},
 		
 		instrument: {
-			files: ['index.js', '_index.js', 'config.js', 'lib/**/*.js', 'modules/driver/*.js', 'modules/driver/kubernetes/*.js', 'modules/driver/kubernetes/bl/*.js', 'modules/driver/kubernetes/model/*.js', 'modules/registry/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
+			// files: ['index.js', '_index.js', 'config.js', 'lib/**/*.js', 'modules/driver/*.js', 'modules/driver/kubernetes/*.js', 'modules/driver/kubernetes/bl/*.js', 'modules/driver/kubernetes/model/*.js', 'modules/registry/*.js', 'mw/**/*.js', 'server/**/*.js', 'utilities/**/*.js'],
+			files: ['test/dist/index.js', 'test/dist/_index.js', 'test/dist/config.js', 'test/dist/lib/**/*.js', 'test/dist/modules/**/*.js', 'test/dist/mw/**/*.js', 'test/dist/server/**/*.js', 'test/dist/utilities/**/*.js'],
 			options: {
 				lazy: false,
 				basePath: 'test/coverage/instrument/'
@@ -202,11 +252,11 @@ module.exports = function (grunt) {
 	process.env.SHOW_LOGS = grunt.option('showLogs');
 	grunt.registerTask("default", ['jshint']);
 	grunt.registerTask("integration", ['env:mochaTest', 'mochaTest:integration']);
-	grunt.registerTask("integration-coverage", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:integration', 'storeCoverage', 'makeReport']);
+	grunt.registerTask("integration-coverage", ['clean', 'babel', 'copy', 'env:coverage', 'instrument', 'mochaTest:integration', 'storeCoverage', 'makeReport']);
 	grunt.registerTask("unit", ['env:mochaTest', 'mochaTest:unit']);
-	grunt.registerTask("unit-coverage", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'storeCoverage', 'makeReport']);
-	grunt.registerTask("test", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport']);
-	grunt.registerTask("coverage", ['clean', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport', 'coveralls']);
+	grunt.registerTask("unit-coverage", ['clean', 'babel', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'storeCoverage', 'makeReport']);
+	grunt.registerTask("test", ['clean', 'babel', 'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport']);
+	grunt.registerTask("coverage", ['clean', 'babel',  'copy', 'env:coverage', 'instrument', 'mochaTest:unit', 'mochaTest:integration', 'storeCoverage', 'makeReport', 'coveralls']);
 	
 };
 
