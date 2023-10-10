@@ -181,6 +181,7 @@ Urac.prototype.getAcl = function () {
 	let _self = this;
 	
 	if (_self.user_ACL && _self.user_ACL.acl) {
+		console.log(JSON.stringify(_self.user_ACL.acl));
 		return _self.user_ACL.acl;
 	} else {
 		return null;
