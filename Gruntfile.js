@@ -166,9 +166,9 @@ module.exports = function (grunt) {
 					},
 					{
 						expand: true,
-						cwd: 'utilites/',
+						cwd: 'utilities/',
 						src: ['*.js'],
-						dest: 'test/dist/utilites/'
+						dest: 'test/dist/utilities/'
 					},
 					{ 'test/dist/index.js': 'index.js' },
 					{ 'test/dist/_index.js': '_index.js' },
