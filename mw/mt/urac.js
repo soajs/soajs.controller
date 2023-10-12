@@ -25,6 +25,8 @@ function Urac(param) {
 		_self.userRecord = param.oauth.bearerToken;
 	} else {
 		// if type === 2
+		console.log(JSON.stringify(param.oauth.bearerToken));
+		console.log(_self.soajs.tenant);
 		if (param.oauth && param.oauth.bearerToken && param.oauth.bearerToken.user) {
 			_self.id = param.oauth.bearerToken.user.id;
 			if (param.oauth.bearerToken.user.username) {
