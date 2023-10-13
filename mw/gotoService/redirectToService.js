@@ -81,12 +81,6 @@ module.exports = (configuration) => {
 				let monitoObj = {
 					"time": {}
 				};
-				if (monitor && !monitor.allowedContentTypes) {
-					monitor.allowedContentTypes = [
-						"text/plain",
-						"application/json"
-					];
-				}
 				let monitor_service_blacklist = false;
 				if (monitor && monitor.blacklist) {
 					if (Array.isArray(monitor.blacklist) && monitor.blacklist.length > 0) {
@@ -149,9 +143,9 @@ module.exports = (configuration) => {
 							req.soajs.controller.redirectedRequest.write(chunk);
 							let resContentType = res.getHeader('content-type');
 							if (resContentType) {
-								resContentType = resContentType.toLowerCase();
 								if (!allowedContentType) {
-									allowedContentType = monitor.allowedContentTypes.includes(resContentType);
+									allowedContentType = resContentType.match(/application\/json|text\/plain/i);
+									// allowedContentType = monitor.allowedContentTypes.includes(resContentType);
 								}
 								if (!isStream) {
 									isStream = resContentType.match(/stream/i);
@@ -165,16 +159,16 @@ module.exports = (configuration) => {
 									monitoObj.body += chunk;
 								}
 							} else {
-								monitoObj.body = "content type stream or not allowed";
+								monitoObj.body = { "contentType": "stream or not allowed", "value": resContentType };
 							}
 						});
 						req.on("end", () => {
 							let resContentType = res.getHeader('content-type');
 							if (resContentType) {
-								resContentType = resContentType.toLowerCase();
 								console.log("body", resContentType);
 								if (!allowedContentType) {
-									allowedContentType = monitor.allowedContentTypes.includes(resContentType);
+									allowedContentType = resContentType.match(/application\/json|text\/plain/i);
+									// allowedContentType = monitor.allowedContentTypes.match(resContentType);
 								}
 								if (!isStream) {
 									isStream = resContentType.match(/stream/i);
@@ -205,9 +199,9 @@ module.exports = (configuration) => {
 						res.write(chunk);
 						let resContentType = res.getHeader('content-type');
 						if (resContentType) {
-							resContentType = resContentType.toLowerCase();
 							if (!allowedContentType) {
-								allowedContentType = monitor.allowedContentTypes.includes(resContentType);
+								allowedContentType = resContentType.match(/application\/json|text\/plain/i);
+								// allowedContentType = monitor.allowedContentTypes.match(resContentType);
 							}
 							if (!isStream) {
 								isStream = resContentType.match(/stream/i);
@@ -220,7 +214,7 @@ module.exports = (configuration) => {
 								monitoObj.response += chunk;
 							}
 						} else {
-							monitoObj.response = "content type stream or not allowed";
+							monitoObj.response = { "contentType": "stream or not allowed", "value": resContentType };
 						}
 					});
 					req.soajs.controller.redirectedRequest.on("end", () => {
