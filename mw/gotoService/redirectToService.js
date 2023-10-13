@@ -13,11 +13,11 @@ const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 const request = require('request');
 
 module.exports = (configuration) => {
-	
+
 	let core = configuration.core;
 	let isRequestAuthorized = require("./lib/isRequestAuthorized.js");
 	let preRedirect = require("./lib/preRedirect.js");
-	
+
 	/**
 	 *
 	 * @param req
@@ -36,7 +36,7 @@ module.exports = (configuration) => {
 			if (obj.config.authorization) {
 				isRequestAuthorized(req, core, requestOptions);
 			}
-			
+
 			let restServiceParams = req.soajs.controller.serviceParams;
 			try {
 				let log_monitor = (doc) => {
@@ -46,7 +46,7 @@ module.exports = (configuration) => {
 						port = "4050";
 					}
 					let api = "/monitor/item";
-					
+
 					req.soajs.awareness.getHost(soamonitor, function (host) {
 						if (!host) {
 							req.soajs.log.error('Unable to find any healthy host for service ' + soamonitor);
@@ -64,7 +64,7 @@ module.exports = (configuration) => {
 								"json": true
 							};
 							if (req.headers && req.headers.soajsinjectobj) {
-								requestOptions.headers = {"soajsinjectobj": req.headers.soajsinjectobj};
+								requestOptions.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
 							}
 							request.post(requestOptions, (error, response, body) => {
 								if (error) {
@@ -81,6 +81,12 @@ module.exports = (configuration) => {
 				let monitoObj = {
 					"time": {}
 				};
+				if (!monitor.allowedContentTypes) {
+					monitor.allowedContentTypes = [
+						"text/plain",
+						"application/json"
+					];
+				}
 				let monitor_service_blacklist = false;
 				if (monitor && monitor.blacklist) {
 					if (Array.isArray(monitor.blacklist) && monitor.blacklist.length > 0) {
@@ -115,10 +121,10 @@ module.exports = (configuration) => {
 				if (monitor && !monitor_service_blacklist && monitor.req_query) {
 					monitoObj.query = req.query;
 				}
-				
+
 				// Trigger request
 				req.soajs.controller.redirectedRequest = request(requestOptions);
-				
+
 				// Handle error event for both with monitor and without monitor
 				req.soajs.controller.redirectedRequest.on('error', (err) => {
 					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
@@ -137,16 +143,21 @@ module.exports = (configuration) => {
 				//Handle body
 				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
 					if (monitor && !monitor_service_blacklist && monitor.req_body) {
+						let allowedContentType = false;
 						let isStream = false;
 						req.on("data", (chunk) => {
 							req.soajs.controller.redirectedRequest.write(chunk);
-							if (!isStream) {
-								let resContentType = res.getHeader('content-type');
-								if (resContentType) {
+							let resContentType = res.getHeader('content-type');
+							resContentType = resContentType.toLowerCase;
+							if (resContentType) {
+								if (!allowedContentType) {
+									allowedContentType = monitor.allowedContentTypes.includes(resContentType);
+								}
+								if (!isStream) {
 									isStream = resContentType.match(/stream/i);
 								}
 							}
-							if (!isStream) {
+							if (!isStream && allowedContentType) {
 								if (!monitoObj.body) {
 									monitoObj.time.req_body_start = new Date().getTime();
 									monitoObj.body = chunk;
@@ -154,18 +165,24 @@ module.exports = (configuration) => {
 									monitoObj.body += chunk;
 								}
 							} else {
-								monitoObj.body = "stream";
+								monitoObj.body = "content type stream or not allowed";
 							}
 						});
 						req.on("end", () => {
-							if (!isStream) {
-								let resContentType = res.getHeader('content-type');
-								if (resContentType) {
+							let resContentType = res.getHeader('content-type');
+							resContentType = resContentType.toLowerCase;
+							if (resContentType) {
+								if (!allowedContentType) {
+									allowedContentType = monitor.allowedContentTypes.includes(resContentType);
+								}
+								if (!isStream) {
 									isStream = resContentType.match(/stream/i);
 								}
 							}
 							if (!isStream) {
 								req.soajs.controller.redirectedRequest.end();
+							}
+							if (!isStream && allowedContentType) {
 								monitoObj.time.req_body_end = new Date().getTime();
 							}
 						});
@@ -175,6 +192,7 @@ module.exports = (configuration) => {
 				}
 				// Handle response
 				if (monitor && !monitor_service_blacklist && monitor.req_response) {
+					let allowedContentType = false;
 					let isStream = false;
 					req.soajs.controller.redirectedRequest.on("response", (response) => {
 						if (!res.headersSent) {
@@ -184,34 +202,38 @@ module.exports = (configuration) => {
 					});
 					req.soajs.controller.redirectedRequest.on("data", (chunk) => {
 						res.write(chunk);
-						if (!isStream) {
-							let resContentType = res.getHeader('content-type');
-							if (resContentType) {
+						let resContentType = res.getHeader('content-type');
+						resContentType = resContentType.toLowerCase;
+						if (resContentType) {
+							if (!allowedContentType) {
+								allowedContentType = monitor.allowedContentTypes.includes(resContentType);
+							}
+							if (!isStream) {
 								isStream = resContentType.match(/stream/i);
 							}
 						}
-						if (!isStream) {
+						if (!isStream && allowedContentType) {
 							if (!monitoObj.response) {
 								monitoObj.response = chunk;
 							} else {
 								monitoObj.response += chunk;
 							}
 						} else {
-							monitoObj.response = "stream";
+							monitoObj.response = "content type stream or not allowed";
 						}
 					});
 					req.soajs.controller.redirectedRequest.on("end", () => {
-						if (!isStream) {
-							let resContentType = res.getHeader('content-type');
-							if (resContentType) {
+						let resContentType = res.getHeader('content-type');
+						if (resContentType) {
+							if (!isStream) {
 								isStream = resContentType.match(/stream/i);
 							}
 						}
 						if (!isStream) {
 							res.end();
-							monitoObj.time.res_end = new Date().getTime();
-							log_monitor(monitoObj);
 						}
+						monitoObj.time.res_end = new Date().getTime();
+						log_monitor(monitoObj);
 					});
 					req.soajs.controller.redirectedRequest.on("abort", () => {
 						if (!req.soajs.controller.monitorEndingReq) {
@@ -223,7 +245,7 @@ module.exports = (configuration) => {
 				} else {
 					req.soajs.controller.redirectedRequest.pipe(res);
 				}
-				
+
 			} catch (e) {
 				req.soajs.log.error(e.message + ' @catch with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
 				if (req.soajs.controller.redirectedRequest) {
