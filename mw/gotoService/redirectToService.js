@@ -171,6 +171,7 @@ module.exports = (configuration) => {
 						req.on("end", () => {
 							let resContentType = res.getHeader('content-type');
 							resContentType = resContentType.toLowerCase;
+							console.log("body", resContentType);
 							if (resContentType) {
 								if (!allowedContentType) {
 									allowedContentType = monitor.allowedContentTypes.includes(resContentType);
@@ -224,6 +225,7 @@ module.exports = (configuration) => {
 					});
 					req.soajs.controller.redirectedRequest.on("end", () => {
 						let resContentType = res.getHeader('content-type');
+						console.log("response", resContentType);
 						if (resContentType) {
 							if (!isStream) {
 								isStream = resContentType.match(/stream/i);
