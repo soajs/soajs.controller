@@ -81,7 +81,7 @@ module.exports = (configuration) => {
 				let monitoObj = {
 					"time": {}
 				};
-				if (!monitor.allowedContentTypes) {
+				if (monitor && !monitor.allowedContentTypes) {
 					monitor.allowedContentTypes = [
 						"text/plain",
 						"application/json"
