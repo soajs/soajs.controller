@@ -148,8 +148,8 @@ module.exports = (configuration) => {
 						req.on("data", (chunk) => {
 							req.soajs.controller.redirectedRequest.write(chunk);
 							let resContentType = res.getHeader('content-type');
-							resContentType = resContentType.toLowerCase;
 							if (resContentType) {
+								resContentType = resContentType.toLowerCase();
 								if (!allowedContentType) {
 									allowedContentType = monitor.allowedContentTypes.includes(resContentType);
 								}
@@ -170,9 +170,9 @@ module.exports = (configuration) => {
 						});
 						req.on("end", () => {
 							let resContentType = res.getHeader('content-type');
-							resContentType = resContentType.toLowerCase;
-							console.log("body", resContentType);
 							if (resContentType) {
+								resContentType = resContentType.toLowerCase();
+								console.log("body", resContentType);
 								if (!allowedContentType) {
 									allowedContentType = monitor.allowedContentTypes.includes(resContentType);
 								}
@@ -204,8 +204,8 @@ module.exports = (configuration) => {
 					req.soajs.controller.redirectedRequest.on("data", (chunk) => {
 						res.write(chunk);
 						let resContentType = res.getHeader('content-type');
-						resContentType = resContentType.toLowerCase;
 						if (resContentType) {
+							resContentType = resContentType.toLowerCase();
 							if (!allowedContentType) {
 								allowedContentType = monitor.allowedContentTypes.includes(resContentType);
 							}
