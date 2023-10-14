@@ -165,7 +165,6 @@ module.exports = (configuration) => {
 						req.on("end", () => {
 							let resContentType = res.getHeader('content-type');
 							if (resContentType) {
-								console.log("body", resContentType);
 								if (!allowedContentType) {
 									allowedContentType = resContentType.match(/application\/json|text\/plain/i);
 									// allowedContentType = monitor.allowedContentTypes.match(resContentType);
@@ -190,6 +189,7 @@ module.exports = (configuration) => {
 					let allowedContentType = false;
 					let isStream = false;
 					req.soajs.controller.redirectedRequest.on("response", (response) => {
+						console.log(response.headers);
 						if (!res.headersSent) {
 							res.writeHeader(response.statusCode, response.headers);
 						}
@@ -219,7 +219,6 @@ module.exports = (configuration) => {
 					});
 					req.soajs.controller.redirectedRequest.on("end", () => {
 						let resContentType = res.getHeader('content-type');
-						console.log("response", resContentType);
 						if (resContentType) {
 							if (!isStream) {
 								isStream = resContentType.match(/stream/i);
