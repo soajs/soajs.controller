@@ -189,7 +189,7 @@ module.exports = (configuration) => {
 					let allowedContentType = false;
 					let isStream = false;
 					req.soajs.controller.redirectedRequest.on("response", (response) => {
-						console.log(response.headers);
+						console.log("on response", response.headers);
 						if (!res.headersSent) {
 							res.writeHeader(response.statusCode, response.headers);
 						}
@@ -219,6 +219,7 @@ module.exports = (configuration) => {
 					});
 					req.soajs.controller.redirectedRequest.on("end", () => {
 						let resContentType = res.getHeader('content-type');
+						console.log("on end", res.headers);
 						if (resContentType) {
 							if (!isStream) {
 								isStream = resContentType.match(/stream/i);
