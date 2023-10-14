@@ -141,8 +141,7 @@ module.exports = (configuration) => {
 						let isStream = false;
 						req.on("data", (chunk) => {
 							req.soajs.controller.redirectedRequest.write(chunk);
-							let resContentType = res.getHeader('content-type');
-							console.log("request", req.headers);
+							let resContentType = req.headers['content-length'];
 							if (resContentType) {
 								if (!allowedContentType) {
 									allowedContentType = resContentType.match(/application\/json|text\/plain/i);
@@ -164,7 +163,7 @@ module.exports = (configuration) => {
 							}
 						});
 						req.on("end", () => {
-							let resContentType = res.getHeader('content-type');
+							let resContentType = req.headers['content-length'];
 							if (resContentType) {
 								if (!allowedContentType) {
 									allowedContentType = resContentType.match(/application\/json|text\/plain/i);
