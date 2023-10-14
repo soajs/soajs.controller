@@ -141,7 +141,7 @@ module.exports = (configuration) => {
 						let isStream = false;
 						req.on("data", (chunk) => {
 							req.soajs.controller.redirectedRequest.write(chunk);
-							let resContentType = req.headers['content-length'];
+							let resContentType = req.headers['content-type'];
 							if (resContentType) {
 								if (!allowedContentType) {
 									allowedContentType = resContentType.match(/application\/json|text\/plain/i);
@@ -159,7 +159,7 @@ module.exports = (configuration) => {
 									monitoObj.body += chunk;
 								}
 							} else {
-								monitoObj.body = "{'contentType': 'is stream or not allowed', 'value': '" + resContentType + "'}";
+								monitoObj.body = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";
 							}
 						});
 						req.on("end", () => {
@@ -215,7 +215,7 @@ module.exports = (configuration) => {
 								monitoObj.response += chunk;
 							}
 						} else {
-							monitoObj.response = "{'contentType': 'is stream or not allowed', 'value': '" + resContentType + "'}";
+							monitoObj.response = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";
 						}
 					});
 					req.soajs.controller.redirectedRequest.on("end", () => {
