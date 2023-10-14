@@ -189,8 +189,8 @@ module.exports = (configuration) => {
 					let allowedContentType = false;
 					let isStream = false;
 					req.soajs.controller.redirectedRequest.on("response", (response) => {
-						console.log("on response", response.headers);
-						console.log(response);
+						// console.log("on response", response.headers);
+						// console.log(response);
 						if (!res.headersSent) {
 							res.writeHeader(response.statusCode, response.headers);
 						}
