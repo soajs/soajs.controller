@@ -159,7 +159,7 @@ module.exports = (configuration) => {
 									monitoObj.body += chunk;
 								}
 							} else {
-								monitoObj.body = "contentType is stream or not allowed [" + resContentType + "]";
+								monitoObj.body = "{'contentType': 'is stream or not allowed', 'value': '" + resContentType + "'}";
 							}
 						});
 						req.on("end", () => {
@@ -215,7 +215,7 @@ module.exports = (configuration) => {
 								monitoObj.response += chunk;
 							}
 						} else {
-							monitoObj.response = "contentType is stream or not allowed [" + resContentType + "]";
+							monitoObj.response = "{'contentType': 'is stream or not allowed', 'value': '" + resContentType + "'}";
 						}
 					});
 					req.soajs.controller.redirectedRequest.on("end", () => {
