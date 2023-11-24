@@ -16,9 +16,16 @@ module.exports = () => {
 
 		let maintenanceMode = get(["registry", "custom", "gateway", "value", "maintenanceMode"], req.soajs);
 		if (maintenanceMode && maintenanceMode.on) {
+			let headObj = null;
+			if (maintenanceMode.retryAfter) {
+				headObj = {
+					'Retry-After': maintenanceMode.retryAfter
+				};
+			}
 			req.soajs.controllerResponse({
 				'status': maintenanceMode.status || 503,
-				'msg': maintenanceMode.message || "Maintenance mode is on, come back soon"
+				'msg': maintenanceMode.message || "Maintenance mode is on, come back soon",
+				'headObj': headObj
 			});
 		} else {
 			return next();
