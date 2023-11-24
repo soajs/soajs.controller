@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs multi tenant API gateway",
-  "version": "4.2.6",
+  "version": "4.2.7",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -18,20 +18,20 @@
     "test": "grunt test"
   },
   "dependencies": {
-    "async": "3.2.4",
+    "async": "3.2.5",
     "connect": "3.7.0",
     "http-proxy": "1.18.1",
-    "jsonwebtoken": "8.5.1",
+    "jsonwebtoken": "9.0.2",
     "kubernetes-client": "9.0.0",
     "lodash": "4.17.21",
     "merge": "2.1.1",
     "netmask": "2.0.2",
     "oauth2-server": "2.4.1",
-    "path-to-regexp": "6.2.0",
+    "path-to-regexp": "6.2.1",
     "request": "2.88.2",
     "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "5.2.5",
-    "soajs.urac.driver": "3.2.3",
+    "soajs.core.modules": "5.2.7",
+    "soajs.urac.driver": "3.2.4",
     "useragent": "2.3.0"
   },
   "devDependencies": {
