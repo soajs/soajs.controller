@@ -111,8 +111,6 @@ let lib = {
 					if (error) {
 						if (error.message) {
 							param.log.error(error.message);
-						} else {
-							param.log.error(error);
 						}
 						return cb(null);
 					}
