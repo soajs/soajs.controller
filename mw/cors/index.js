@@ -28,6 +28,7 @@ module.exports = () => {
 				res.setHeader('Access-Control-Allow-Methods', methods);
 				res.setHeader('Access-Control-Allow-Headers', headers);
 				res.setHeader('Access-Control-Max-Age', maxage);
+				res.setHeader('Access-Control-Expose-Headers', headers);
 				
 				res.statusCode = 204;
 				res.end();

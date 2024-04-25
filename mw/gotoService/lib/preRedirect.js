@@ -22,38 +22,38 @@ const request = require('request');
 module.exports = (req, res, core, cb) => {
 	let restServiceParams = req.soajs.controller.serviceParams;
 	let restServiceParams_msg = '[' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']';
-	
+
 	let config = req.soajs.registry.services.controller;
 	if (!config) {
 		return req.soajs.controllerResponse(core.error.getError(131));
 	}
 	let nextStep = function (host, port, fullURI) {
-		req.soajs.log.info({
+		req.soajs.log.info(JSON.stringify({
 			"serviceName": restServiceParams.name,
 			"host": host,
 			"version": restServiceParams.version,
 			"url": restServiceParams.url,
 			"port": restServiceParams.registry.port,
 			"header": req.headers
-		});
-		
+		}));
+
 		let requestTOR = restServiceParams.registry.requestTimeoutRenewal || config.requestTimeoutRenewal;
 		let requestTO = restServiceParams.registry.requestTimeout || config.requestTimeout;
 		let timeToRenew = requestTO * 100;
 		req.soajs.controller.renewalCount = 0;
 		req.soajs.controller.monitorEndingReq = false;
-		
+
 		let isStream = false;
 		let renewReqMonitor = function () {
 			if (!isStream) {
 				req.soajs.log.warn(restServiceParams_msg + ' - Request is taking too much time ...');
 				req.soajs.controller.renewalCount++;
-				
+
 				if (req.soajs.controller.renewalCount < requestTOR) {
 					req.soajs.log.info(' - Trying to keep request alive by checking the service heartbeat ... ' + req.soajs.controller.renewalCount);
-					
+
 					let uri = 'http://' + host + ':' + (restServiceParams.registry.port + req.soajs.registry.serviceConfig.ports.maintenanceInc) + '/heartbeat';
-					
+
 					if (restServiceParams.registry.maintenance && restServiceParams.registry.maintenance.readiness && restServiceParams.registry.maintenance.port) {
 						let maintenancePort = port;
 						let path = restServiceParams.registry.maintenance.readiness;
@@ -117,7 +117,7 @@ module.exports = (req, res, core, cb) => {
 		} else {
 			res.setTimeout(timeToRenew, renewReqMonitor);
 		}
-		
+
 		return cb({
 			'host': host,
 			'config': config,
@@ -125,7 +125,7 @@ module.exports = (req, res, core, cb) => {
 			'uri': (fullURI ? host + restServiceParams.url : 'http://' + host + ':' + port + restServiceParams.url)
 		});
 	};
-	
+
 	if (restServiceParams.registry && restServiceParams.registry.type === "endpoint") {
 		let host = restServiceParams.registry.src.url;
 		if (restServiceParams.version && restServiceParams.registry.src.urls) {
