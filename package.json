@@ -30,8 +30,8 @@
     "path-to-regexp": "6.2.1",
     "request": "2.88.2",
     "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "5.2.9",
-    "soajs.urac.driver": "3.2.6",
+    "soajs.core.modules": "5.2.10",
+    "soajs.urac.driver": "3.2.7",
     "useragent": "2.3.0"
   },
   "devDependencies": {
