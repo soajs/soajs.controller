@@ -79,12 +79,12 @@ Controller.prototype.init = function (callback) {
 			}
 
 			let app = connect();
-			app.use(favicon_mw());
 			app.use(soajs_mw({
 				"log": log,
 				"core": core
 			}));
 			app.use(cors_mw());
+			app.use(favicon_mw());
 			app.use(response_mw({ "controllerResponse": true }));
 			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
 

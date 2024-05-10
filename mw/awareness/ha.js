@@ -176,7 +176,7 @@ let lib = {
 				}, function () {
 					awarenessCache = myCache;
 					param.log.debug("Awareness cache rebuilt successfully");
-					param.log.debug(awarenessCache);
+					param.log.debug(JSON.stringify(awarenessCache));
 					
 					let cacheTTL = registryModule.get().serviceConfig.awareness.cacheTTL;
 					if (cacheTTL) {
