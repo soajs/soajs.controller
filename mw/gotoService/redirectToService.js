@@ -172,7 +172,9 @@ module.exports = (configuration) => {
 								}
 							}
 							if (!isStream) {
-								req.soajs.controller.redirectedRequest.end();
+								if (req.soajs.controller.redirectedRequest) {
+									req.soajs.controller.redirectedRequest.end();
+								}
 							}
 							if (!isStream && allowedContentType) {
 								monitoObj.time.req_body_end = new Date().getTime();
