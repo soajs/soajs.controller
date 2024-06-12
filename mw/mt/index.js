@@ -337,7 +337,8 @@ module.exports = (configuration) => {
 												return next();
 											});
 									} else {
-										req.headers.soajsinjectobj = JSON.stringify(injectObj);
+										let _h = JSON.stringify(injectObj);
+										req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
 										return next();
 									}
 								}
