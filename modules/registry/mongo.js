@@ -164,7 +164,6 @@ let model = {
 					}
 				},
 				resources: function (callback) {
-					console.log("===============resources")
 					//build resources plugged for this environment
 					model.mongo.find(resourcesCollectionName, criteria, null, (error, resourcesRecords) => {
 						obj.ENV_schema.resources = {};
@@ -175,7 +174,6 @@ let model = {
 					});
 				},
 				custom: function (callback) {
-					console.log("===============custom")
 					//build custom registry
 					model.mongo.find(customCollectionName, criteria, null, (error, customRecords) => {
 						if (!obj.ENV_schema.custom) {
@@ -188,7 +186,6 @@ let model = {
 					});
 				},
 				marketplace_service: function (callback) {
-					console.log("===============marketplace_service")
 					model.mongo.find(marketplaceCollectionName, {"$or": [{'type': 'service'}, {'type': 'endpoint'}]}, null, (error, servicesRecords) => {
 						if (error) {
 							return callback(error);
@@ -200,7 +197,6 @@ let model = {
 					});
 				},
 				marketplace_mdaemon: function (callback) {
-					console.log("===============marketplace_mdaemon")
 					model.mongo.find(marketplaceCollectionName, {'type': 'mdaemon'}, null, (error, daemonsRecords) => {
 						if (error) {
 							return callback(error);
@@ -212,7 +208,6 @@ let model = {
 					});
 				},
 				host: function (callback) {
-					console.log("===============host")
 					if (process.env.SOAJS_DEPLOY_HA) {
 						return callback(null, true);
 					} else {
