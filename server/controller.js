@@ -67,7 +67,9 @@ Controller.prototype.init = function (callback) {
 			"maintenance": _self.soajs.param.init.maintenance
 		}, (reg) => {
 			let registry = reg;
+			console.log("============ after load registry")
 			let log = core.getLogger(_self.soajs.param.init.serviceName, registry.serviceConfig.logger);
+			console.log("============ getLogger")
 			if (service.fetched) {
 				if (!service.fetched.result) {
 					log.warn("Unable to find the service host ip. The service will NOT be registered for awareness.");
@@ -78,6 +80,7 @@ Controller.prototype.init = function (callback) {
 				}
 			}
 
+			console.log("============ connect")
 			let app = connect();
 			console.log("============ soajs_mw")
 			app.use(soajs_mw({
