@@ -66,6 +66,7 @@ Controller.prototype.init = function (callback) {
 			"ip": service.ip,
 			"maintenance": _self.soajs.param.init.maintenance
 		}, (reg) => {
+			console.log("============ after load registry")
 			let registry = reg;
 			let log = core.getLogger(_self.soajs.param.init.serviceName, registry.serviceConfig.logger);
 			if (service.fetched) {

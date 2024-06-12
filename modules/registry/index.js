@@ -453,7 +453,6 @@ function getRegistry(param, options, cb) {
 	if (options.reload || process.env.SOAJS_TEST || !registry_struct[options.envCode]) {
 		model.loadProfile(options.envCode, (err, registry) => {
 			if (registry) {
-				console.log("===============getRegistry")
 				model.loadData(registry.coreDB.provision, registry.environment, param, (error, RegistryFromDB) => {
 					if (error) {
 						return cb(error);
@@ -463,9 +462,7 @@ function getRegistry(param, options, cb) {
 					}
 					registry.setBy = options.setBy;
 
-					console.log("===============before buildRegistry")
 					buildRegistry(param, registry, RegistryFromDB, (error, registry) => {
-						console.log("===============after buildRegistry")
 						if (error) {
 							return cb(error);
 						}
