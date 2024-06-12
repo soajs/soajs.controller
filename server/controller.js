@@ -67,9 +67,7 @@ Controller.prototype.init = function (callback) {
 			"maintenance": _self.soajs.param.init.maintenance
 		}, (reg) => {
 			let registry = reg;
-			console.log("============ after load registry")
 			let log = core.getLogger(_self.soajs.param.init.serviceName, registry.serviceConfig.logger);
-			console.log("============ getLogger")
 			if (service.fetched) {
 				if (!service.fetched.result) {
 					log.warn("Unable to find the service host ip. The service will NOT be registered for awareness.");
@@ -80,20 +78,14 @@ Controller.prototype.init = function (callback) {
 				}
 			}
 
-			console.log("============ connect")
 			let app = connect();
-			console.log("============ soajs_mw")
 			app.use(soajs_mw({
 				"log": log,
 				"core": core
 			}));
-			console.log("============ cors_mw")
 			app.use(cors_mw());
-			console.log("============ favicon_mw")
 			app.use(favicon_mw());
-			console.log("============ response_mw")
 			app.use(response_mw({ "controllerResponse": true }));
-			console.log("============ maintenanceMode_mw")
 			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
 
 			log.info("Loading Provision ...");
