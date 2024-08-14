@@ -36,8 +36,8 @@ if (process.env.SOAJS_SENSITIVE_ENVS) {
 const {pathToRegexp} = require("path-to-regexp");
 
 function constructRegExp(route) {
-	let keys = [];
-	let out = pathToRegexp(route, keys, {sensitive: true});
+	// let keys = [];
+	let out = pathToRegexp(route, {sensitive: true});
 	if (out && out.keys && out.keys.length > 0) {
 		out = new RegExp(out.toString());
 	}
