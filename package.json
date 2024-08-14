@@ -27,7 +27,7 @@
     "merge": "2.1.1",
     "netmask": "2.0.2",
     "oauth2-server": "2.4.1",
-    "path-to-regexp": "7.1.0",
+    "path-to-regexp": "6.2.2",
     "request": "2.88.2",
     "soajs.core.libs": "1.2.0",
     "soajs.core.modules": "5.2.11",

@@ -38,16 +38,16 @@ describe("Integration for Usecase 1", function () {
 			server = _server;
 			serverMaintenance = _serverMaintenance;
 			c.start(registry, log, service, server, serverMaintenance, () => {
-				uracserver.startServer({s: {port: 4001}, m: {port: 5001}, name: "URAC"}, function (servers) {
+				uracserver.startServer({s: {port: 4001}, m: {port: 5002}, name: "URAC"}, function (servers) {
 					uracServers = servers;
 				});
-				oauthserver.startServer({s: {port: 4004}, m: {port: 5004}, name: "OAUTH"}, function (servers) {
+				oauthserver.startServer({s: {port: 4004}, m: {port: 5005}, name: "OAUTH"}, function (servers) {
 					oauthServers = servers;
 				});
-				ptserver.startServer({s: {port: 4002}, m: {port: 5002}, name: "PT"}, function (servers) {
+				ptserver.startServer({s: {port: 4002}, m: {port: 5003}, name: "PT"}, function (servers) {
 					ptServers = servers;
 				});
-				ptserver.startServer({s: {port: 4003}, m: {port: 5003}, name: "PT2"}, function (servers) {
+				ptserver.startServer({s: {port: 4003}, m: {port: 5004}, name: "PT2"}, function (servers) {
 					pt2Servers = servers;
 				});
 				setTimeout(function () {
