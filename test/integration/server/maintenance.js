@@ -20,7 +20,7 @@ describe("Unit test for: server - controller maintenance", function () {
 	let service = null;
 	let server = null;
 	let serverMaintenance = null;
-	let port = 5000;
+	let port = 5001;
 	
 	before((done) => {
 		c.init((_registry, _log, _service, _server, _serverMaintenance) => {

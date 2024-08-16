@@ -41,14 +41,14 @@ if (process.env.SOAJS_SENSITIVE_ENVS) {
 
 let build = {
 	"metaAndCoreDB": (STRUCT, envCode, timeLoaded) => {
-		let metaAndCoreDB = {"metaDB": {}, "coreDB": {}};
-		
+		let metaAndCoreDB = { "metaDB": {}, "coreDB": {} };
+
 		if (STRUCT && STRUCT.dbs && STRUCT.dbs.databases) {
 			for (let dbName in STRUCT.dbs.databases) {
 				if (Object.hasOwnProperty.call(STRUCT.dbs.databases, dbName)) {
 					let dbRec = STRUCT.dbs.databases[dbName];
 					let dbObj = null;
-					
+
 					if (dbRec.cluster) {
 						let clusterRec = {};
 						if (STRUCT.dbs.clusters && STRUCT.dbs.clusters[dbRec.cluster]) {
@@ -113,7 +113,7 @@ let build = {
 		}
 		return metaAndCoreDB;
 	},
-	
+
 	"sessionDB": (STRUCT, env, timeLoaded) => {
 		let sessionDB = null;
 		if (STRUCT && STRUCT.dbs && STRUCT.dbs.config) {
@@ -143,7 +143,7 @@ let build = {
 				}
 				sessionDB.cluster = dbRec.cluster;
 				sessionDB.registryLocation.cluster = dbRec.cluster;
-				
+
 				if (clusterRec.config) {
 					for (let dataConf in clusterRec.config) {
 						if (Object.hasOwnProperty.call(clusterRec.config, dataConf)) {
@@ -165,7 +165,7 @@ let build = {
 		}
 		return sessionDB;
 	},
-	
+
 	"registerNewService": (dbConfiguration, serviceObj, collection, cb) => {
 		if (process.env.SOAJS_DEPLOY_HA) {
 			return cb(null);
@@ -177,7 +177,7 @@ let build = {
 		}
 		return model.registerNewService(dbConfiguration, serviceObj, collection, cb);
 	},
-	
+
 	"allServices": (STRUCT, servicesObj, gatewayServiceName) => {
 		if (STRUCT && Array.isArray(STRUCT) && STRUCT.length > 0) {
 			for (let i = 0; i < STRUCT.length; i++) {
@@ -237,7 +237,7 @@ let build = {
 			}
 		}
 	},
-	
+
 	"allDaemons": (STRUCT, servicesObj, gatewayServiceName) => {
 		if (STRUCT && Array.isArray(STRUCT) && STRUCT.length > 0) {
 			for (let i = 0; i < STRUCT.length; i++) {
@@ -269,7 +269,7 @@ let build = {
 			}
 		}
 	},
-	
+
 	"servicesHosts": (STRUCT, servicesObj) => {
 		if (STRUCT && Array.isArray(STRUCT) && STRUCT.length > 0) {
 			for (let i = 0; i < STRUCT.length; i++) {
@@ -280,7 +280,7 @@ let build = {
 						servicesObj[STRUCT[i].name].oport = servicesObj[STRUCT[i].name].port;
 						servicesObj[STRUCT[i].name].port = STRUCT[i].port;
 					}
-					
+
 					if (!STRUCT[i].version) {
 						STRUCT[i].version = "1";
 					}
@@ -303,7 +303,7 @@ let build = {
 			}
 		}
 	},
-	
+
 	"controllerHosts": (STRUCT, controllerObj) => {
 		if (STRUCT && Array.isArray(STRUCT) && STRUCT.length > 0) {
 			for (let i = 0; i < STRUCT.length; i++) {
@@ -338,29 +338,29 @@ function buildRegistry(param, registry, registryDBInfo, callback) {
 	if (!registryDBInfo.ENV_schema || !registryDBInfo.ENV_schema.services || !registryDBInfo.ENV_schema.services.config) {
 		return callback(new Error('Unable to get [' + registry.environment + '] environment services from db'));
 	}
-	
+
 	registry.domain = registryDBInfo.ENV_schema.domain;
 	registry.apiPrefix = registryDBInfo.ENV_schema.apiPrefix;
 	registry.sitePrefix = registryDBInfo.ENV_schema.sitePrefix;
 	registry.protocol = registryDBInfo.ENV_schema.protocol;
 	registry.port = registryDBInfo.ENV_schema.port;
-	
+
 	registry.endpoints = registryDBInfo.ENV_schema.endpoints || {};
-	
+
 	registry.serviceConfig = registryDBInfo.ENV_schema.services.config;
-	
+
 	registry.deployer = registryDBInfo.ENV_schema.deployer || {};
-	
+
 	registry.custom = registryDBInfo.ENV_schema.custom || {};
-	
+
 	registry.resources = registryDBInfo.ENV_schema.resources || {};
-	
+
 	for (let coreDBName in metaAndCoreDB.coreDB) {
 		if (Object.hasOwnProperty.call(metaAndCoreDB.coreDB, coreDBName)) {
 			registry.coreDB[coreDBName] = metaAndCoreDB.coreDB[coreDBName];
 		}
 	}
-	
+
 	registry.services = {
 		"controller": {
 			"name": registryDBInfo.ENV_schema.services.controller.name || "controller",
@@ -373,9 +373,9 @@ function buildRegistry(param, registry, registryDBInfo, callback) {
 			"requestTimeoutRenewal": registryDBInfo.ENV_schema.services.controller.requestTimeoutRenewal || 0
 		}
 	};
-	
+
 	registry.coreDB.session = build.sessionDB(registryDBInfo.ENV_schema, registry.environment, registry.timeLoaded);
-	
+
 	registry.daemons = {};
 	return callback(null, registry);
 }
@@ -383,25 +383,25 @@ function buildRegistry(param, registry, registryDBInfo, callback) {
 function buildSpecificRegistry(param, options, registry, registryDBInfo, callback) {
 	//IF: gateway
 	if (param.name === registry.services.controller.name) {
-		
+
 		build.allServices(registryDBInfo.services_schema, registry.services, registry.services.controller.name);
 		if (!process.env.SOAJS_DEPLOY_HA) {
 			build.servicesHosts(registryDBInfo.ENV_hosts, registry.services);
 		}
-		
+
 		build.allDaemons(registryDBInfo.daemons_schema, registry.daemons, registry.services.controller.name);
 		if (!process.env.SOAJS_DEPLOY_HA) {
 			build.servicesHosts(registryDBInfo.ENV_hosts, registry.daemons);
 		}
-		
+
 		if (!process.env.SOAJS_DEPLOY_HA) {
 			build.controllerHosts(registryDBInfo.ENV_hosts, registry.services.controller);
 		}
-		
+
 		if (process.env.SOAJS_DEPLOY_HA || options.reload || options.setBy === "loadByEnv") {
 			return callback(null, registry);
 		}
-		
+
 		// Only register gateway item if not reload and not HA and not loadByEnv
 		let newServiceObj = {
 			'type': 'service',
@@ -461,6 +461,7 @@ function getRegistry(param, options, cb) {
 						return cb(new Error("Unable to find any registry data!"));
 					}
 					registry.setBy = options.setBy;
+
 					buildRegistry(param, registry, RegistryFromDB, (error, registry) => {
 						if (error) {
 							return cb(error);
@@ -510,7 +511,7 @@ function getRegistry(param, options, cb) {
 									autoReloadTimeout[options.envCode].setBy = options.setBy;
 									autoReloadTimeout[options.envCode].timeout = setTimeout(autoReload, registry.serviceConfig.awareness.autoRelaodRegistry);
 								}
-								
+
 								return cb(null, registry_struct[options.envCode]);
 							});
 						}
@@ -573,7 +574,7 @@ let registryModule = {
 			model.addUpdateServiceIP(registry.coreDB.provision, hostObj, (error, registered) => {
 				if (error) {
 					console.log("Unable to register new host for service:" + error.message);
-					return  cb(false);
+					return cb(false);
 				}
 				return cb(registered);
 			});
@@ -618,7 +619,7 @@ let registryModule = {
 			if ("service" === param.type) {
 				registry_struct[regEnvironment][what][param.name].extKeyRequired = param.extKeyRequired;
 				registry_struct[regEnvironment][what][param.name].version = param.version;
-				
+
 				registry_struct[regEnvironment][what][param.name].versions[param.version].extKeyRequired = param.extKeyRequired;
 				registry_struct[regEnvironment][what][param.name].versions[param.version].oauth = param.oauth;
 				registry_struct[regEnvironment][what][param.name].versions[param.version].urac = param.urac;
@@ -630,21 +631,21 @@ let registryModule = {
 				registry_struct[regEnvironment][what][param.name].versions[param.version].provision_ACL = param.provision_ACL;
 				registry_struct[regEnvironment][what][param.name].versions[param.version].interConnect = param.interConnect;
 			}
-			
+
 			if (!registry_struct[regEnvironment][what][param.name].hosts) {
 				registry_struct[regEnvironment][what][param.name].hosts = {};
 				registry_struct[regEnvironment][what][param.name].hosts.latest = param.version;
 			}
-			
+
 			if (!registry_struct[regEnvironment][what][param.name].hosts[param.version]) {
 				registry_struct[regEnvironment][what][param.name].hosts[param.version] = [];
 			}
-			
+
 			if (registry_struct[regEnvironment][what][param.name].hosts[param.version].indexOf(param.ip) === -1) {
 				registry_struct[regEnvironment][what][param.name].hosts[param.version].push(param.ip);
 			}
 			registry_struct[regEnvironment].timeLoaded = new Date().getTime();
-			
+
 			//register in DB if MW
 			if (param.mw) {
 				if ("mdaemon" === param.type) {
@@ -671,7 +672,7 @@ let registryModule = {
 					if (param.portHost) {
 						registry_struct[regEnvironment][what][param.name].port = param.portHost;
 					}
-					
+
 					try {
 						registryModule.registerHost({
 							"type": param.type,
@@ -683,7 +684,7 @@ let registryModule = {
 						});
 					}
 					catch (e) {
-					
+
 					}
 					build.registerNewService(registry_struct[regEnvironment].coreDB.provision, newDaemonServiceObj, 'marketplace', (error) => {
 						if (error) {
@@ -725,7 +726,7 @@ let registryModule = {
 						verObj.apis = param.apiList;
 					}
 					newServiceObj.versions.push(verObj);
-					
+
 					if (param.portHost) {
 						registry_struct[regEnvironment][what][param.name].port = param.portHost;
 					}
@@ -740,9 +741,9 @@ let registryModule = {
 						});
 					}
 					catch (e) {
-					
+
 					}
-					
+
 					build.registerNewService(registry_struct[regEnvironment].coreDB.provision, newServiceObj, 'marketplace', (error) => {
 						if (error) {
 							let err = new Error('Unable to register new service ' + param.name + ' : ' + error.message);
@@ -794,7 +795,7 @@ let registryModule = {
 		return getRegistry(param, options, (err, reg) => {
 			if (err) {
 				console.log('Unable to load Registry Db Info: ' + err.message);
-				process.exit (-1);
+				process.exit(-1);
 			} else {
 				return cb(reg);
 			}
@@ -813,7 +814,7 @@ let registryModule = {
 				if (registry_struct.hasOwnProperty(envCode)) {
 					if (envCode !== regEnvironment && registry_struct[envCode]) {
 						envArray.push({
-							"options": {"reload": true, "envCode": envCode, "setBy": "reload"},
+							"options": { "reload": true, "envCode": envCode, "setBy": "reload" },
 							"param": param
 						});
 					}

@@ -223,7 +223,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 						}
 						if (!soajsLib.version.validate(infoObj.version)) {
 							log.warn("Failed to register service for [" + infoObj.name + "@" + infoObj.version + "] version should be of format [1.1]");
-							res.writeHead(200, {'Content-Type': 'application/json'});
+							// res.writeHead(200, {'Content-Type': 'application/json'});
 							return res.end(JSON.stringify(response));
 						}
 						
