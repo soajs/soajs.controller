@@ -22,6 +22,9 @@ let model = {
         model.log = log;
         if (!model.mongo) {
             model.mongo = new Mongo(dbConfiguration);
+            model.mongo.createIndex(colName, { 'l1': 1, 'l2': 1 }, {}, (err, index) => {
+                service.log.debug("Index: " + index + " created with error: " + err);
+            });
         }
     },
 
