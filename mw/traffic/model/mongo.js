@@ -22,6 +22,9 @@ let model = {
         model.log = log;
         if (!model.mongo) {
             model.mongo = new Mongo(dbConfiguration);
+            model.mongo.createIndex(throttling_monitor, { 'l1': 1, 'l2': 1 }, {}, (err, index) => {
+                log.debug("Index: " + index + " created with error: " + err);
+            });
         }
     },
 
