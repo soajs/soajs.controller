@@ -37,6 +37,7 @@ const keyACL_mw = require("../mw/keyACL/index");
 const gotoService_mw = require("../mw/gotoService/index");
 const mt_mw = require("../mw/mt/index");
 const traffic_mw = require("../mw/traffic/index");
+const lastSeen_mw = require("../mw/lastSeen/index");
 
 const utils = require("../utilities/utils");
 
@@ -171,6 +172,8 @@ Controller.prototype.init = function (callback) {
 						"log": log,
 						"gatewayDB": registry.coreDB.gateway || registry.coreDB.provision
 					}));
+
+					app.use(lastSeen_mw());
 
 					app.use((req, res, next) => {
 						setImmediate(() => {
