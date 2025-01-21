@@ -33,7 +33,9 @@ module.exports = () => {
             let userId = null;
             if (req.soajs.uracDriver) {
                 let uracObj = req.soajs.uracDriver.getProfile();
-                userId = uracObj._id;
+                if (uracObj) {
+                    userId = uracObj._id;
+                }
             }
 
             if (userId) {
