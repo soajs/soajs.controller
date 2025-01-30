@@ -12,7 +12,7 @@ const coreLibs = require("soajs.core.libs");
 
 module.exports = (configuration) => {
 	let core = configuration.core;
-	
+
 	let return_SOAJS_keyACL = (req) => {
 		let ACL = null;
 		let ALLOWED_PACKAGES = null;
@@ -73,21 +73,47 @@ module.exports = (configuration) => {
 				}
 			}
 		}
+
+		let urac = null;
+		if (req.soajs.uracDriver) {
+			let uracObj = req.soajs.uracDriver.getProfile();
+			if (uracObj) {
+				urac = {
+					"_id": uracObj._id
+				};
+			}
+		}
+
+		let tenant = null;
+		let keyObj = req.soajs.controller.serviceParams.keyObj;
+		if (keyObj && keyObj.application && keyObj.application.package) {
+			tenant = {
+				"id": keyObj.tenant.id,
+				"name": keyObj.tenant.name,
+				"code": keyObj.tenant.code,
+				// "locked": keyObj.tenant.locked,
+				// "roaming": data.req.soajs.tenant.roaming,
+				"type": keyObj.tenant.type
+			};
+		}
+
 		let response = {
-			"acl": ACL,
+			// "acl": ACL,
 			"finalACL": finalACL,
-			"packages": ALLOWED_PACKAGES
+			"packages": ALLOWED_PACKAGES,
+			"urac": urac,
+			"tenant": tenant
 		};
 		return req.soajs.controllerResponse(response);
 	};
-	
+
 	return (req, res, next) => {
-		
+
 		//doesn't work without a key in the headers
 		if (!req.headers || !req.headers.key) {
 			return req.soajs.controllerResponse(core.error.getError(132));
 		}
-		
+
 		//mimic a service named controller with route /key/permission/get
 		let serviceName = configuration.serviceName;
 		req.soajs.controller.serviceParams.registry = req.soajs.registry.services[serviceName];
@@ -112,10 +138,10 @@ module.exports = (configuration) => {
 				]
 			}
 		};
-		
+
 		//assign the correct method to gotoservice in controller
 		req.soajs.controller.gotoservice = return_SOAJS_keyACL;
 		return next();
-		
+
 	};
 };
