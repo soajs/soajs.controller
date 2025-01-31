@@ -85,6 +85,7 @@ describe("Integration for Usecase 1", function () {
 		};
 		requester('get', options, (error, body) => {
 			assert.ok(body.finalACL);
+			assert.ok(body.acl);
 			done();
 		});
 	});

@@ -98,7 +98,7 @@ module.exports = (configuration) => {
 		}
 
 		let response = {
-			// "acl": ACL,
+			"acl": ACL,
 			"finalACL": finalACL,
 			"packages": ALLOWED_PACKAGES,
 			"urac": urac,
