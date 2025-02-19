@@ -41,13 +41,14 @@ module.exports = (configuration) => {
 			try {
 				let log_monitor = (doc) => {
 					let soamonitor = "soamonitor";
+					let soamonitorVersion = "1";
 					let port = get(["registry", "services", "soamonitor", "port"], req.soajs);
 					if (!port) {
 						port = "4050";
 					}
 					let api = "/monitor/item";
 
-					req.soajs.awareness.getHost(soamonitor, function (host) {
+					req.soajs.awareness.getHost(soamonitor, soamonitorVersion, function (host) {
 						if (!host) {
 							req.soajs.log.error('Unable to find any healthy host for service ' + soamonitor);
 						} else {

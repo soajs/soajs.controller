@@ -24,7 +24,7 @@ let awarenessCache = {};
 
 let lib = {
 	"getInfraToken": (envCode, cb) => {
-		registryModule.loadByEnv({envCode: envCode}, (err, envRecord) => {
+		registryModule.loadByEnv({ envCode: envCode }, (err, envRecord) => {
 			if (err) {
 				return cb(err);
 			}
@@ -55,7 +55,7 @@ let lib = {
 			}
 		});
 	},
-	
+
 	"getHostFromCache": function (serviceName, version) {
 		if (awarenessCache[serviceName] &&
 			awarenessCache[serviceName][version] &&
@@ -63,10 +63,10 @@ let lib = {
 			param.log.debug('Got ' + serviceName + ' - ' + version + ' - ' + awarenessCache[serviceName][version].host + ' from awareness cache');
 			return awarenessCache[serviceName][version].host;
 		}
-		
+
 		return null;
 	},
-	
+
 	"getHostFromAPI": function (serviceName, version, cb) {
 		if (!version) {
 			lib.getInfraToken(regEnvironment, (error, configuration) => {
@@ -94,7 +94,7 @@ let lib = {
 		} else {
 			getHost(version);
 		}
-		
+
 		function getHost(version) {
 			lib.getInfraToken(regEnvironment, (error, configuration) => {
 				if (error) {
@@ -105,7 +105,7 @@ let lib = {
 				let options = null;
 				let input = {
 					"configuration": configuration,
-					"item": {"name": serviceName, "version": version, "env": regEnvironment}
+					"item": { "name": serviceName, "version": version, "env": regEnvironment }
 				};
 				param.infraModule.kubernetes.get.host(param, input, options, (error, host) => {
 					if (error) {
@@ -126,7 +126,7 @@ let lib = {
 			});
 		}
 	},
-	
+
 	"rebuildAwarenessCache": function () {
 		lib.getInfraToken(regEnvironment, (error, configuration) => {
 			if (error) {
@@ -155,11 +155,11 @@ let lib = {
 					if (oneService.metadata.labels && oneService.metadata.labels['soajs.service.version']) {
 						version = oneService.metadata.labels['soajs.service.version'];
 					}
-					
+
 					if (oneService.metadata.labels && oneService.metadata.labels['soajs.service.name']) {
 						serviceName = oneService.metadata.labels['soajs.service.name'];
 					}
-					
+
 					if (!serviceName) {
 						return callback();
 					}
@@ -177,7 +177,7 @@ let lib = {
 					awarenessCache = myCache;
 					param.log.debug("Awareness cache rebuilt successfully");
 					param.log.debug(JSON.stringify(awarenessCache));
-					
+
 					let cacheTTL = registryModule.get().serviceConfig.awareness.cacheTTL;
 					if (cacheTTL) {
 						if (timeout) {
@@ -197,7 +197,7 @@ let ha = {
 		param = _param;
 		lib.rebuildAwarenessCache();
 	},
-	
+
 	"getServiceHost": function () {
 		let env = regEnvironment;
 		let serviceName = param.serviceName, version = null, cb = arguments[arguments.length - 1];
@@ -206,20 +206,20 @@ let ha = {
 			case 2:
 				serviceName = arguments[0];
 				break;
-			
+
 			//controller, 1, cb
 			case 3:
 				serviceName = arguments[0];
 				version = arguments[1];
 				break;
-			
+
 			//controller, 1, dash, cb [dash is ignored]
 			case 4:
 				serviceName = arguments[0];
 				version = arguments[1];
 				break;
 		}
-		
+
 		if (serviceName === param.serviceName) {
 			if (process.env.SOAJS_DEPLOY_HA === 'kubernetes') {
 				serviceName += "-v" + param.serviceVersion + "-service";
@@ -235,6 +235,10 @@ let ha = {
 			}
 			return cb(env + "-" + serviceName + namespace);
 		} else {
+			if (process.env.SOAJS_DEPLOY_HA === 'kubernetes' && serviceName && version) {
+				serviceName += "-v" + version + "-service";
+				return cb(env + "-" + serviceName + "-v" + version + "-service");
+			}
 			let hostname = lib.getHostFromCache(serviceName, version);
 			if (hostname) {
 				return cb(hostname);
@@ -243,12 +247,12 @@ let ha = {
 			}
 		}
 	},
-	
+
 	"getLatestVersion": function (name, cb) {
 		if (!awarenessCache[name]) {
 			return cb(null);
 		}
-		
+
 		let serviceVersions = Object.keys(awarenessCache[name]);
 		if (serviceVersions.length === 0) {
 			return cb(null);
@@ -263,7 +267,7 @@ let ha = {
 			return cb(null);
 		}
 	},
-	
+
 	"getLatestVersionFromCluster": function (name, cb) {
 		lib.getInfraToken(regEnvironment, (error, configuration) => {
 			if (error) {
