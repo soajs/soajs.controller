@@ -235,15 +235,16 @@ let ha = {
 			}
 			return cb(env + "-" + serviceName + namespace);
 		} else {
-			if (process.env.SOAJS_DEPLOY_HA === 'kubernetes' && serviceName && version) {
-				serviceName += "-v" + version + "-service";
-				return cb(env + "-" + serviceName + "-v" + version + "-service");
-			}
 			let hostname = lib.getHostFromCache(serviceName, version);
 			if (hostname) {
 				return cb(hostname);
 			} else {
-				lib.getHostFromAPI(serviceName, version, cb);
+				if (process.env.SOAJS_DEPLOY_HA === 'kubernetes' && serviceName && version) {
+					serviceName += "-v" + version + "-service";
+					return cb(env + "-" + serviceName + "-v" + version + "-service");
+				} else {
+					lib.getHostFromAPI(serviceName, version, cb);
+				}
 			}
 		}
 	},
