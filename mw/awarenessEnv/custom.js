@@ -8,10 +8,11 @@
  * found in the LICENSE file at the root of this repository
  */
 
-const request = require('request');
+// const request = require('request');
 const async = require('async');
 
 const registryModule = require("./../../modules/registry");
+const { checkStatus } = require("../../lib/request.js");
 
 let gatewayServiceName = null;
 let regEnvironment = (process.env.SOAJS_ENV || "dev");
@@ -34,7 +35,7 @@ let fetchControllerHosts = function (core, log, next) {
 		setTimeout(() => {
 			fetchControllerHosts(core, log);
 		}, registry.serviceConfig.awareness.autoRelaodRegistry);
-		
+
 		if (next && typeof next === "function") {
 			next();
 		}
@@ -43,7 +44,7 @@ let fetchControllerHosts = function (core, log, next) {
 
 let awareness_healthCheck = function (core, log) {
 	registry = registryModule.get();
-	
+
 	let resume = () => {
 		if (controllerHosts && Array.isArray(controllerHosts) && controllerHosts.length > 0) {
 			let controllerPort = registry.services.controller.port;
@@ -53,7 +54,7 @@ let awareness_healthCheck = function (core, log) {
 						serviceAwarenessObj[sObj.env] = {};
 					}
 					if (!serviceAwarenessObj[sObj.env][sObj.name]) {
-						serviceAwarenessObj[sObj.env][sObj.name] = {"healthy": {}, "indexes": {}, "latest": 1};
+						serviceAwarenessObj[sObj.env][sObj.name] = { "healthy": {}, "indexes": {}, "latest": 1 };
 					}
 					if (!serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version]) {
 						serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version] = [];
@@ -61,17 +62,18 @@ let awareness_healthCheck = function (core, log) {
 					if (!serviceAwarenessObj[sObj.env][sObj.name].indexes[sObj.version]) {
 						serviceAwarenessObj[sObj.env][sObj.name].indexes[sObj.version] = 0;
 					}
-					request({
-						'uri': 'http://' + sObj.ip + ':' + (controllerPort + registry.serviceConfig.ports.maintenanceInc) + '/heartbeat'
-					}, function (error, response) {
-						if (serviceAwarenessObj[sObj.env][sObj.name].latest < sObj.version) {
-							serviceAwarenessObj[sObj.env][sObj.name].latest = sObj.version;
-						}
-						if (!error && response.statusCode === 200) {
+
+					if (serviceAwarenessObj[sObj.env][sObj.name].latest < sObj.version) {
+						serviceAwarenessObj[sObj.env][sObj.name].latest = sObj.version;
+					}
+					checkStatus('http://' + sObj.ip + ':' + (controllerPort + registry.serviceConfig.ports.maintenanceInc) + '/heartbeat')
+						.then(() => {
 							if (serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].indexOf(sObj.ip) === -1) {
 								serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].push(sObj.ip);
 							}
-						} else {
+							callback();
+						})
+						.catch(() => {
 							if (serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].indexOf(sObj.ip) !== -1) {
 								//TODO: if we guarantee uniqueness we will not need the for loop
 								for (let ii = 0; ii < serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].length; ii++) {
@@ -80,9 +82,30 @@ let awareness_healthCheck = function (core, log) {
 									}
 								}
 							}
-						}
-						callback();
-					});
+							callback();
+						});
+					// request({
+					// 	'uri': 'http://' + sObj.ip + ':' + (controllerPort + registry.serviceConfig.ports.maintenanceInc) + '/heartbeat'
+					// }, function (error, response) {
+					// 	if (serviceAwarenessObj[sObj.env][sObj.name].latest < sObj.version) {
+					// 		serviceAwarenessObj[sObj.env][sObj.name].latest = sObj.version;
+					// 	}
+					// 	if (!error && response.statusCode === 200) {
+					// 		if (serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].indexOf(sObj.ip) === -1) {
+					// 			serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].push(sObj.ip);
+					// 		}
+					// 	} else {
+					// 		if (serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].indexOf(sObj.ip) !== -1) {
+					// 			//TODO: if we guarantee uniqueness we will not need the for loop
+					// 			for (let ii = 0; ii < serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].length; ii++) {
+					// 				if (serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version][ii] === sObj.ip) {
+					// 					serviceAwarenessObj[sObj.env][sObj.name].healthy[sObj.version].splice(ii, 1);
+					// 				}
+					// 			}
+					// 		}
+					// 	}
+					// 	callback();
+					// });
 				}, function (err) {
 					if (err) {
 						log.warn('Unable to build awareness ENV structure for controllers: ' + err);
@@ -93,13 +116,13 @@ let awareness_healthCheck = function (core, log) {
 			awareness_healthCheck(core, log);
 		}, registry.serviceConfig.awareness.healthCheckInterval);
 	};
-	
+
 	if (timeLoaded !== registry.timeLoaded) {
 		fetchControllerHosts(core, log, resume);
 	} else {
 		resume();
 	}
-	
+
 	timeLoaded = registry.timeLoaded;
 };
 
@@ -123,7 +146,7 @@ function roundRobin() {
 			env = arguments[2];
 			break;
 	}
-	
+
 	env = env || regEnvironment;
 	s = gatewayServiceName;
 	if (env && s && serviceAwarenessObj[env] && serviceAwarenessObj[env][s] && serviceAwarenessObj[env][s].healthy) {

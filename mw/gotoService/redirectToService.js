@@ -50,7 +50,7 @@ module.exports = (configuration) => {
 
 					req.soajs.awareness.getHost(soamonitor, soamonitorVersion, function (host) {
 						if (!host) {
-							req.soajs.log.error('Unable to find any healthy host for service ' + soamonitor);
+							req.soajs.log.debug('Unable to find any healthy host for service ' + soamonitor);
 						} else {
 							if (doc && doc.body) {
 								doc.body = doc.body.toString();
@@ -69,10 +69,10 @@ module.exports = (configuration) => {
 							}
 							request.post(requestOptions, (error, response, body) => {
 								if (error) {
-									req.soajs.log.error('Unable register monitor: ' + error.message);
+									req.soajs.log.debug('Unable register monitor: ' + error.message);
 								}
 								if (body && !body.result) {
-									req.soajs.log.error(body);
+									req.soajs.log.debug(body);
 								}
 							});
 						}

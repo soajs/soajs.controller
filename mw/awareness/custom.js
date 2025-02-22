@@ -9,8 +9,9 @@
  */
 
 const registryModule = require("./../../modules/registry");
+const { checkStatus } = require("../../lib/request.js");
 
-const request = require('request');
+// const request = require('request');
 const async = require('async');
 
 let registry = null;
@@ -32,7 +33,7 @@ let awareness_healthCheck = function (core, log) {
 		for (let s in registry.services) {
 			if (Object.hasOwnProperty.call(registry.services, s)) {
 				if (!serviceAwarenessObj[s]) {
-					serviceAwarenessObj[s] = {"healthy": {}, "indexes": {}};
+					serviceAwarenessObj[s] = { "healthy": {}, "indexes": {} };
 				}
 				if (!serviceAwarenessObj[s].healthy) {
 					serviceAwarenessObj[s].healthy = {};
@@ -64,11 +65,11 @@ let awareness_healthCheck = function (core, log) {
 				}
 			}
 		}
-		
+
 		for (let s in registry.daemons) {
 			if (Object.hasOwnProperty.call(registry.daemons, s)) {
 				if (!serviceAwarenessObj[s]) {
-					serviceAwarenessObj[s] = {"healthy": {}, "indexes": {}};
+					serviceAwarenessObj[s] = { "healthy": {}, "indexes": {} };
 				}
 				if (!serviceAwarenessObj[s].healthy) {
 					serviceAwarenessObj[s].healthy = {};
@@ -103,24 +104,32 @@ let awareness_healthCheck = function (core, log) {
 	}
 	async.each(awarenessHosts.servicesArr,
 		function (sObj, callback) {
-			
+
 			let checkForHeartBeat = function (host, port, path, callback) {
-				request({
-					'uri': 'http://' + host + ':' + port + path
-				}, function (error, response) {
-					if (!error && response.statusCode === 200) {
-						callback(true);
-					} else {
-						callback(false);
-					}
+				checkStatus ('http://' + host + ':' + port + path)
+				.then (()=>{
+					callback(true);
+				})
+				.catch (()=>{
+					callback(false);
 				});
+
+				// request({
+				// 	'uri': 'http://' + host + ':' + port + path
+				// }, function (error, response) {
+				// 	if (!error && response.statusCode === 200) {
+				// 		callback(true);
+				// 	} else {
+				// 		callback(false);
+				// 	}
+				// });
 			};
-			
+
 			let nextStep = function (found) {
 				if (registry[sObj.what][sObj.name] && !registry[sObj.what][sObj.name].awarenessStats) {
 					registry[sObj.what][sObj.name].awarenessStats = {};
 				}
-				let statusObj = {"lastCheck": new Date().getTime(), "healthy": false, "version": sObj.version};
+				let statusObj = { "lastCheck": new Date().getTime(), "healthy": false, "version": sObj.version };
 				if (found) {
 					statusObj.healthy = true;
 					if (serviceAwarenessObj[sObj.name].healthy[sObj.version].indexOf(sObj.host) === -1) {
@@ -134,7 +143,7 @@ let awareness_healthCheck = function (core, log) {
 						statusObj.downSince = statusObj.lastCheck;
 						statusObj.downCount = 0;
 					}
-					
+
 					let stopLoggingAfter = registry.serviceConfig.awareness.maxLogCount;
 					if (statusObj.downCount <= stopLoggingAfter) {
 						log.warn("Self Awareness health check for service [" + sObj.name + "] for host [" + sObj.host + "] is NOT healthy");
@@ -148,13 +157,13 @@ let awareness_healthCheck = function (core, log) {
 						}
 					}
 				}
-				
+
 				if (registry[sObj.what][sObj.name] && registry[sObj.what][sObj.name].awarenessStats) {
 					registry[sObj.what][sObj.name].awarenessStats[sObj.host] = statusObj;
 				}
 				callback();
 			};
-			
+
 			if (registry.services[sObj.name] && registry.services[sObj.name].maintenance && registry.services[sObj.name].maintenance.readiness && registry.services[sObj.name].maintenance.port) {
 				let port = sObj.port;
 				let path = registry.services[sObj.name].maintenance.readiness;
