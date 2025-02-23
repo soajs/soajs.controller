@@ -9,7 +9,7 @@
  */
 
 // const request = require("request");
-const { postData } = require("../../lib/request.js");
+const { httpRequest } = require("../../lib/request.js");
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
 /**
@@ -53,7 +53,7 @@ module.exports = () => {
                         if (req.headers && req.headers.soajsinjectobj) {
                             options.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
                         }
-                        postData({ "url": "http://" + item.host + ":" + item.port + item.api })
+                        httpRequest(options)
                             .then(() => { })
                             .catch(({ error, body }) => {
                                 if (error) {

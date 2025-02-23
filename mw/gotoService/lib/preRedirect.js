@@ -11,7 +11,8 @@
 
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
-const request = require('request');
+// const request = require('request');
+const { checkStatus } = require("../../../lib/request.js");
 
 /**
  *
@@ -70,16 +71,13 @@ module.exports = (req, res, core, cb) => {
 						uri = 'http://' + host + ':' + maintenancePort + path;
 					}
 					req.soajs.log.info("heartbeat @: " + uri);
-					request({
-						'uri': uri,
-						'headers': req.headers
-					}, function (error, response) {
-						let resContentType = res.getHeader('content-type');
-						//let isStream = false;
-						if (resContentType) {
-							isStream = resContentType.match(/stream/i);
-						}
-						if (!error && response.statusCode === 200) {
+					checkStatus(uri)
+						.then(() => {
+							let resContentType = res.getHeader('content-type');
+							//let isStream = false;
+							if (resContentType) {
+								isStream = resContentType.match(/stream/i);
+							}
 							if (isStream) {
 								req.soajs.controller.renewalCount--;
 								req.soajs.log.info('Stream detected for [' + req.url + ']. Connection will remain open ...');
@@ -87,7 +85,8 @@ module.exports = (req, res, core, cb) => {
 								req.soajs.log.info('... able to renew request for ', requestTO, 'seconds');
 								res.setTimeout(timeToRenew, renewReqMonitor);
 							}
-						} else {
+						})
+						.catch(() => {
 							req.soajs.controller.monitorEndingReq = true;
 							req.soajs.log.error(restServiceParams_msg + ' - Service heartbeat is not responding');
 							if (req.soajs.controller.redirectedRequest) {
@@ -95,8 +94,35 @@ module.exports = (req, res, core, cb) => {
 								req.soajs.controller.redirectedRequest = null;
 							}
 							return req.soajs.controllerResponse(core.error.getError(133));
-						}
-					});
+						});
+
+					// request({
+					// 	'uri': uri,
+					// 	'headers': req.headers
+					// }, function (error, response) {
+					// 	let resContentType = res.getHeader('content-type');
+					// 	//let isStream = false;
+					// 	if (resContentType) {
+					// 		isStream = resContentType.match(/stream/i);
+					// 	}
+					// 	if (!error && response.statusCode === 200) {
+					// 		if (isStream) {
+					// 			req.soajs.controller.renewalCount--;
+					// 			req.soajs.log.info('Stream detected for [' + req.url + ']. Connection will remain open ...');
+					// 		} else {
+					// 			req.soajs.log.info('... able to renew request for ', requestTO, 'seconds');
+					// 			res.setTimeout(timeToRenew, renewReqMonitor);
+					// 		}
+					// 	} else {
+					// 		req.soajs.controller.monitorEndingReq = true;
+					// 		req.soajs.log.error(restServiceParams_msg + ' - Service heartbeat is not responding');
+					// 		if (req.soajs.controller.redirectedRequest) {
+					// 			req.soajs.controller.redirectedRequest.destroy();
+					// 			req.soajs.controller.redirectedRequest = null;
+					// 		}
+					// 		return req.soajs.controllerResponse(core.error.getError(133));
+					// 	}
+					// });
 				} else {
 					if (req.soajs.controller.redirectedRequest) {
 						req.soajs.log.info("Request aborted: " + req.soajs.controller.renewalCount + " ", req.url);

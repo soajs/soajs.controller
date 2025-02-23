@@ -229,7 +229,7 @@ module.exports = (configuration) => {
 						monitoObj.time.res_end = new Date().getTime();
 						log_monitor(monitoObj);
 					});
-					req.soajs.controller.redirectedRequest.on("abort", () => {
+					req.soajs.controller.redirectedRequest.on("close", () => {
 						if (!req.soajs.controller.monitorEndingReq) {
 							req.soajs.controllerResponse(core.error.getError(135));
 						}
