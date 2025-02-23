@@ -45,7 +45,7 @@ module.exports = (configuration) => {
 				"hostname": urlObj.hostname,
 				"port": urlObj.port,
 				"path": fullPath, // Use the full path with query parameters
-				"method": req.toUpperCase(),
+				"method": req.method.toUpperCase(),
 				'timeout': requestTO * 1000,
 				'headers': req.headers
 			};

@@ -176,9 +176,6 @@ Controller.prototype.init = function (callback) {
 					app.use(lastSeen_mw());
 
 					app.use((req, res, next) => {
-						setImmediate(() => {
-							req.soajs.controller.gotoservice(req, res, next);
-						});
 
 						req.on("error", (error) => {
 							req.soajs.log.error("Error @ controller:", error);
@@ -194,6 +191,10 @@ Controller.prototype.init = function (callback) {
 								// req.soajs.controller.redirectedRequest.destroy();
 								// req.soajs.controller.redirectedRequest = null;
 							}
+						});
+						
+						setImmediate(() => {
+							req.soajs.controller.gotoservice(req, res, next);
 						});
 					});
 
