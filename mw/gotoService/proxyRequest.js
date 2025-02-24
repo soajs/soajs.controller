@@ -9,8 +9,9 @@
  */
 
 const registryModule = require("./../../modules/registry");
+const { proxyRequest } = require("../../lib/request.js");
 // const request = require('request');
-const http = require('http');
+// const http = require('http');
 const querystring = require('querystring');
 
 module.exports = (configuration) => {
@@ -30,25 +31,35 @@ module.exports = (configuration) => {
 	 */
 	let proxyRequestToRemoteEnv = (req, res, next, remoteENV, remoteExtKey, requestedRoute) => {
 		let triggerProxy = (myUri, requestTO) => {
-			const urlObj = new URL(myUri);
-			let queryParams = {};
-			//add query params
-			if (req.query && Object.keys(req.query).length > 0) {
-				queryParams = req.query;
-				delete queryParams.proxyRoute;
-				delete queryParams.__env;
-			}
-			const queryString = querystring.stringify(queryParams);
-			const fullPath = urlObj.pathname + (queryString ? `?${queryString}` : '');
+			let requestConfig = {};
+			try {
+				const urlObj = new URL(myUri);
+				let queryParams = {};
+				//add query params
+				if (req.query && Object.keys(req.query).length > 0) {
+					queryParams = req.query;
+					delete queryParams.proxyRoute;
+					delete queryParams.__env;
+				}
+				const queryString = querystring.stringify(queryParams);
+				const fullPath = urlObj.pathname + (queryString ? `?${queryString}` : '');
 
-			let requestConfig = {
-				"hostname": urlObj.hostname,
-				"port": urlObj.port,
-				"path": fullPath, // Use the full path with query parameters
-				"method": req.method.toUpperCase(),
-				'timeout': requestTO * 1000,
-				'headers': req.headers
-			};
+				requestConfig = {
+					"hostname": urlObj.hostname,
+					"port": urlObj.port,
+					"path": fullPath, // Use the full path with query parameters
+					"method": req.method.toUpperCase(),
+					'timeout': requestTO * 1000,
+					'headers': req.headers
+				};
+			} catch (error) {
+				req.soajs.log.error(error.message);
+				if (req.soajs.controller.redirectedRequest) {
+					req.soajs.controller.redirectedRequest.destroy();
+					req.soajs.controller.redirectedRequest = null;
+				}
+				return req.soajs.controllerResponse(core.error.getError(135));
+			}
 
 			requestConfig.headers.soajs_roaming = regEnvironment;
 
@@ -63,10 +74,10 @@ module.exports = (configuration) => {
 
 			req.soajs.log.debug(requestConfig);
 
-			try {
-				//proxy request
-				req.soajs.controller.redirectedRequest = http.request(requestConfig);
-				req.soajs.controller.redirectedRequest.on('error', function (error) {
+			proxyRequest(req, res, requestConfig)
+				.then(() => {
+				})
+				.catch((error) => {
 					req.soajs.log.error(error.message);
 					if (req.soajs.controller.redirectedRequest) {
 						req.soajs.controller.redirectedRequest.destroy();
@@ -75,20 +86,32 @@ module.exports = (configuration) => {
 					return req.soajs.controllerResponse(core.error.getError(135));
 				});
 
-				if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
-					req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
-				} else {
-					req.soajs.controller.redirectedRequest.pipe(res);
-				}
+			// try {
+			// 	//proxy request
+			// 	req.soajs.controller.redirectedRequest = http.request(requestConfig);
+			// 	req.soajs.controller.redirectedRequest.on('error', function (error) {
+			// 		req.soajs.log.error(error.message);
+			// 		if (req.soajs.controller.redirectedRequest) {
+			// 			req.soajs.controller.redirectedRequest.destroy();
+			// 			req.soajs.controller.redirectedRequest = null;
+			// 		}
+			// 		return req.soajs.controllerResponse(core.error.getError(135));
+			// 	});
 
-			} catch (e) {
-				req.soajs.log.error(e.message);
-				if (req.soajs.controller.redirectedRequest) {
-					req.soajs.controller.redirectedRequest.destroy();
-					req.soajs.controller.redirectedRequest = null;
-				}
-				return req.soajs.controllerResponse(core.error.getError(135));
-			}
+			// 	if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE') {
+			// 		req.pipe(req.soajs.controller.redirectedRequest).pipe(res);
+			// 	} else {
+			// 		req.soajs.controller.redirectedRequest.pipe(res);
+			// 	}
+
+			// } catch (e) {
+			// 	req.soajs.log.error(e.message);
+			// 	if (req.soajs.controller.redirectedRequest) {
+			// 		req.soajs.controller.redirectedRequest.destroy();
+			// 		req.soajs.controller.redirectedRequest = null;
+			// 	}
+			// 	return req.soajs.controllerResponse(core.error.getError(135));
+			// }
 		};
 
 		// let triggerProxy = (myUri, requestTO) => {

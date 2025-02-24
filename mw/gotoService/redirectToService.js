@@ -10,7 +10,10 @@
 
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
-const request = require('request');
+// const request = require('request');
+const { httpRequestLight } = require("../../lib/request.js");
+const http = require('http');
+// const querystring = require('querystring');
 
 module.exports = (configuration) => {
 
@@ -26,12 +29,13 @@ module.exports = (configuration) => {
 	 */
 	return (req, res) => {
 		preRedirect(req, res, core, function (obj) {
+			let log_monitor_triggered = false;
 			let requestOptions = {
-				'method': req.method,
+				'method': req.method.toUpperCase(),
 				'uri': obj.uri,
 				//'timeout': obj.requestTO * 1000,
 				'headers': req.headers,
-				'jar': false
+				// 'jar': false
 			};
 			if (obj.config.authorization) {
 				isRequestAuthorized(req, core, requestOptions);
@@ -40,6 +44,10 @@ module.exports = (configuration) => {
 			let restServiceParams = req.soajs.controller.serviceParams;
 			try {
 				let log_monitor = (doc) => {
+					if (log_monitor_triggered) {
+						return;
+					}
+					log_monitor_triggered = true;
 					let soamonitor = "soamonitor";
 					let soamonitorVersion = "1";
 					let port = get(["registry", "services", "soamonitor", "port"], req.soajs);
@@ -58,23 +66,43 @@ module.exports = (configuration) => {
 							if (doc && doc.response) {
 								doc.response = doc.response.toString();
 							}
-							let uri = 'http://' + host + ':' + port + api;
-							let requestOptions = {
-								'uri': uri,
-								"body": doc,
+							let uri = "http://" + host + ":" + port + api;
+							let options = {
+								"method": "POST",
+								"uri": uri,
+								"data": doc,
 								"json": true
 							};
 							if (req.headers && req.headers.soajsinjectobj) {
-								requestOptions.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
+								options.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
 							}
-							request.post(requestOptions, (error, response, body) => {
-								if (error) {
+							httpRequestLight(options)
+								.then((body) => {
+									if (body && !body.result) {
+										req.soajs.log.debug(body);
+									}
+								})
+								.catch((error) => {
 									req.soajs.log.debug('Unable register monitor: ' + error.message);
-								}
-								if (body && !body.result) {
-									req.soajs.log.debug(body);
-								}
-							});
+								});
+
+							// let uri = 'http://' + host + ':' + port + api;
+							// let options = {
+							// 	'uri': uri,
+							// 	"body": doc,
+							// 	"json": true
+							// };
+							// if (req.headers && req.headers.soajsinjectobj) {
+							// 	options.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
+							// }
+							// request.post(options, (error, response, body) => {
+							// 	if (error) {
+							// 		req.soajs.log.debug('Unable register monitor: ' + error.message);
+							// 	}
+							// 	if (body && !body.result) {
+							// 		req.soajs.log.debug(body);
+							// 	}
+							// });
 						}
 					});
 				};
@@ -118,8 +146,11 @@ module.exports = (configuration) => {
 				}
 
 				// Trigger request
-				req.soajs.controller.redirectedRequest = request(requestOptions);
+				req.soajs.controller.redirectedRequest = http.request(requestOptions.uri, requestOptions);
+				// req.soajs.controller.redirectedRequest = request(requestOptions);
 
+
+				//NOTE: on request
 				// Handle error event for both with monitor and without monitor
 				req.soajs.controller.redirectedRequest.on('error', (err) => {
 					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
@@ -181,65 +212,79 @@ module.exports = (configuration) => {
 								monitoObj.time.req_body_end = new Date().getTime();
 							}
 						});
-					} else {
-						req.pipe(req.soajs.controller.redirectedRequest);
 					}
 				}
-				// Handle response
-				if (monitor && !monitor_service_blacklist && monitor.req_response) {
-					let allowedContentType = false;
-					let isStream = false;
-					req.soajs.controller.redirectedRequest.on("response", (response) => {
-						if (!res.headersSent) {
-							res.writeHeader(response.statusCode, response.headers);
-						}
-						monitoObj.time.res_start = new Date().getTime();
-					});
-					req.soajs.controller.redirectedRequest.on("data", (chunk) => {
-						res.write(chunk);
-						let resContentType = res.getHeader('content-type');
-						if (resContentType) {
-							if (!allowedContentType) {
-								allowedContentType = resContentType.match(/application\/json|text\/plain/i);
-							}
-							if (!isStream) {
-								isStream = resContentType.match(/stream/i);
-							}
-						}
-						if (!isStream && allowedContentType) {
-							if (!monitoObj.response) {
-								monitoObj.response = chunk;
-							} else {
-								monitoObj.response += chunk;
-							}
-						} else {
-							monitoObj.response = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";
-						}
-					});
-					req.soajs.controller.redirectedRequest.on("end", () => {
-						let resContentType = res.getHeader('content-type');
-						if (resContentType) {
-							if (!isStream) {
-								isStream = resContentType.match(/stream/i);
-							}
-						}
-						if (!isStream) {
-							res.end();
-						}
-						monitoObj.time.res_end = new Date().getTime();
-						log_monitor(monitoObj);
-					});
-					req.soajs.controller.redirectedRequest.on("close", () => {
-						if (!req.soajs.controller.monitorEndingReq) {
-							req.soajs.controllerResponse(core.error.getError(135));
-						}
-						monitoObj.time.res_end = new Date().getTime();
-						log_monitor(monitoObj);
-					});
-				} else {
-					req.soajs.controller.redirectedRequest.pipe(res);
-				}
+				req.pipe(req.soajs.controller.redirectedRequest);
 
+				// Handle response
+				//NOTE: on request
+				req.soajs.controller.redirectedRequest.on("response", (response) => {
+					if (!res.headersSent) {
+						res.writeHeader(response.statusCode, response.headers);
+					}
+					if (requestOptions.method !== 'HEAD') {
+						if (monitor && !monitor_service_blacklist && monitor.req_response) {
+							let allowedContentType = false;
+							let isStream = false;
+							monitoObj.time.res_start = new Date().getTime();
+							// });
+
+							//NOTE: on response
+							// req.soajs.controller.redirectedRequest.on("data", (chunk) => {
+							response.on("data", (chunk) => {
+								res.write(chunk);
+								let resContentType = res.getHeader('content-type');
+								if (resContentType) {
+									if (!allowedContentType) {
+										allowedContentType = resContentType.match(/application\/json|text\/plain/i);
+									}
+									if (!isStream) {
+										isStream = resContentType.match(/stream/i);
+									}
+								}
+								if (!isStream && allowedContentType) {
+									if (!monitoObj.response) {
+										monitoObj.response = chunk;
+									} else {
+										monitoObj.response += chunk;
+									}
+								} else {
+									monitoObj.response = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";
+								}
+							});
+
+							//NOTE: on response
+							// req.soajs.controller.redirectedRequest.on("end", () => {
+							response.on("end", () => {
+								let resContentType = res.getHeader('content-type');
+								if (resContentType) {
+									if (!isStream) {
+										isStream = resContentType.match(/stream/i);
+									}
+								}
+								if (!isStream) {
+									res.end();
+								}
+								monitoObj.time.res_end = new Date().getTime();
+								log_monitor(monitoObj);
+							});
+
+							//NOTE: on response
+							// req.soajs.controller.redirectedRequest.on("close", () => {
+							response.on("error", () => {
+								if (!req.soajs.controller.monitorEndingReq) {
+									req.soajs.controllerResponse(core.error.getError(135));
+								}
+								monitoObj.time.res_end = new Date().getTime();
+								log_monitor(monitoObj);
+							});
+						} else {
+							response.pipe(res);
+						}
+					} else {
+						res.end();
+					}
+				});
 			} catch (e) {
 				req.soajs.log.error(e.message + ' @catch with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
 				if (req.soajs.controller.redirectedRequest) {
