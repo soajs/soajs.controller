@@ -17,6 +17,7 @@ const SoajsRes = require("./response.js");
  */
 module.exports = (configuration) => {
 	return (req, res, next) => {
+		let ended = false;
 		if (!req.soajs) {
 			req.soajs = {};
 		}
@@ -35,7 +36,7 @@ module.exports = (configuration) => {
 			} else {
 				response = new SoajsRes(true, data);
 			}
-			
+
 			return response;
 		};
 		if (configuration && configuration.controllerResponse) {
@@ -47,7 +48,7 @@ module.exports = (configuration) => {
 					}
 					jsonRes = req.soajs.buildResponse(jsonObj);
 				}
-				
+
 				let headObj = {};
 				if (jsonObj && jsonObj.headObj) {
 					headObj = jsonObj.headObj;
@@ -63,7 +64,10 @@ module.exports = (configuration) => {
 						res.writeHead(200, headObj);
 					}
 				}
-				res.end(JSON.stringify(jsonRes));
+				if (!ended) {
+					ended = true;
+					res.end(JSON.stringify(jsonRes));
+				}
 			};
 		}
 		return next();
