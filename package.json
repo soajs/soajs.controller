@@ -28,7 +28,6 @@
     "netmask": "2.0.2",
     "oauth2-server": "2.4.1",
     "path-to-regexp": "6.2.2",
-    "request": "2.88.2",
     "soajs.core.libs": "1.2.0",
     "soajs.core.modules": "5.2.12",
     "soajs.urac.driver": "3.2.9",
@@ -51,6 +50,7 @@
     "grunt-mocha-test": "0.13.3",
     "mocha": "10.7.3",
     "nock": "13.5.6",
+    "request": "2.88.2",
     "sinon": "19.0.2"
   }
 }

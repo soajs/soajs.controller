@@ -10,8 +10,6 @@
 
 const registryModule = require("./../../modules/registry");
 const { proxyRequest } = require("../../lib/request.js");
-// const request = require('request');
-// const http = require('http');
 const querystring = require('querystring');
 
 module.exports = (configuration) => {

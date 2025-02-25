@@ -8,7 +8,6 @@
  * found in the LICENSE file at the root of this repository
  */
 
-// const request = require('request');
 const async = require('async');
 
 const registryModule = require("./../../modules/registry");

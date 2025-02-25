@@ -11,7 +11,6 @@
 const registryModule = require("./../../modules/registry");
 const { checkStatus } = require("../../lib/request.js");
 
-// const request = require('request');
 const async = require('async');
 
 let registry = null;
