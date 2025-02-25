@@ -33,11 +33,11 @@ if (process.env.SOAJS_SENSITIVE_ENVS) {
 	}
 }
 
-const {pathToRegexp} = require("path-to-regexp");
+const { pathToRegexp } = require("path-to-regexp");
 
 function constructRegExp(route) {
 	let keys = [];
-	let out = pathToRegexp(route, keys, {sensitive: true});
+	let out = pathToRegexp(route, keys, { sensitive: true });
 	if (out && out.keys && out.keys.length > 0) {
 		out = new RegExp(out.toString());
 	}
@@ -83,54 +83,54 @@ let _api = {
 	"checkPermission": function (system, req, api) {
 		if ('restricted' === system.apisPermission) {
 			if (!api) {
-				return {"result": false, "error": 159};
+				return { "result": false, "error": 159 };
 			}
 			return _api.checkAccess(api.access, req);
 		}
 		if (!api) {
-			return {"result": true};
+			return { "result": true };
 		}
 		return _api.checkAccess(api.access, req);
 	},
 	"checkAccess": function (apiAccess, req) {
 		if (!apiAccess) {
-			return {"result": true};
+			return { "result": true };
 		}
 		if (!_urac.getUser(req)) {
-			return {"result": false, "error": 161};
+			return { "result": false, "error": 161 };
 		}
 		if (apiAccess instanceof Array) {
 			let userGroups = _urac.getGroups(req);
 			if (!userGroups) {
-				return {"result": false, "error": 160};
+				return { "result": false, "error": 160 };
 			}
 			for (let ii = 0; ii < userGroups.length; ii++) {
 				if (apiAccess.indexOf(userGroups[ii]) !== -1) {
-					return {"result": true};
+					return { "result": true };
 				}
 			}
-			return {"result": false, "error": 160};
+			return { "result": false, "error": 160 };
 		} else {
-			return {"result": true};
+			return { "result": true };
 		}
 	}
 };
 
 let utils = {
-	
+
 	"ipWhitelist": (obj, cb) => {
-		
+
 		obj.skipACL = false;
 		obj.skipOAUTH = false;
 		/**
 		 * obj.req.soajs.registry.custom.gateway.value.mt
 		 * {
 			  "mt": {
-			    "whitelist": {
-			        "ips": ["10.0.0.0/8"],
-			        "acl": true,
-			        "oauth": true
-			    }
+				"whitelist": {
+					"ips": ["10.0.0.0/8"],
+					"acl": true,
+					"oauth": true
+				}
 			  }
 			}
 		 *
@@ -168,13 +168,13 @@ let utils = {
 					}
 				}
 			}
-			
+
 			return cb(null, obj);
 		} else {
 			return cb(null, obj);
 		}
 	},
-	
+
 	"aclUrackCheck": (obj, cb) => {
 		if (obj.skipOAUTH) {
 			return cb(null, obj);
@@ -190,7 +190,7 @@ let utils = {
 		if (uracACL) {
 			obj.finalAcl = uracACL[obj.req.soajs.controller.serviceParams.name];
 			if (obj.finalAcl) {
-				
+
 				if (!obj.req.soajs.controller.serviceParams.versionRequested) {
 					// get latest from ACL
 					let version = null;
@@ -203,10 +203,10 @@ let utils = {
 						obj.req.soajs.controller.serviceParams.version = version;
 					}
 				}
-				
+
 				let san_v = coreLibs.version.sanitize(obj.req.soajs.controller.serviceParams.version);
 				obj.finalAcl = obj.finalAcl[san_v] || obj.finalAcl;
-				
+
 				let method = obj.req.method.toLocaleLowerCase();
 				if (obj.finalAcl && obj.finalAcl[method] && typeof obj.finalAcl[method] === "object") {
 					let newAclObj = {};
@@ -231,7 +231,7 @@ let utils = {
 		}
 		return cb(null, obj);
 	},
-	
+
 	"aclCheck": (obj, cb) => {
 		obj.finalAcl = null;
 		if (obj.req.soajs.controller.serviceParams.finalAcl) {
@@ -239,7 +239,7 @@ let utils = {
 		}
 		return cb(null, obj);
 	},
-	
+
 	/**
 	 * Checks if the requested service is accessible based on the ACL configuration
 	 *
@@ -258,7 +258,7 @@ let utils = {
 			return cb(154);
 		}
 	},
-	
+
 	/**
 	 * checks the geo location of the ariving request against the key configuration
 	 * if there is a conflict, the request is not allowed to proceed
@@ -273,8 +273,8 @@ let utils = {
 		}
 		let clientIp = obj.req.getClientIP();
 		let geoAccess = obj.keyObj.geo; //{"allow": ["127.0.0.1"], "deny": []};
-		obj.geo = {"ip": clientIp};
-		
+		obj.geo = { "ip": clientIp };
+
 		let checkAccess = (geoAccessArr, ip) => {
 			return (geoAccessArr.some(function (addr) {
 				try {
@@ -287,24 +287,24 @@ let utils = {
 				return false;
 			}));
 		};
-		
+
 		if (clientIp && geoAccess && geoAccess.deny && Array.isArray(geoAccess.deny)) {
 			let denied = checkAccess(geoAccess.deny, clientIp);
 			if (denied) {
 				return cb(155);
 			}
 		}
-		
+
 		if (clientIp && geoAccess && geoAccess.allow && Array.isArray(geoAccess.allow)) {
 			let allowed = checkAccess(geoAccess.allow, clientIp);
 			if (!allowed) {
 				return cb(155);
 			}
 		}
-		
+
 		return cb(null, obj);
 	},
-	
+
 	/**
 	 * checks the device from whicht the ariving request was sent against the key configuration
 	 * if there is a conflict, the request is not allowed to proceed
@@ -320,7 +320,7 @@ let utils = {
 		let clientUA = obj.req.getClientUserAgent();
 		let deviceAccess = obj.keyObj.device; //{"allow": [{"family": "chrome"}], "deny": []};
 		obj.device = clientUA;
-		
+
 		let validateField = (fieldName, uaObj, da) => {
 			if (da[fieldName] && da[fieldName] !== '*' && uaObj[fieldName]) {
 				if (typeof (da[fieldName]) === 'string') {
@@ -342,7 +342,7 @@ let utils = {
 			}
 			return true;
 		};
-		
+
 		let checkAccess = (deviceAccessArr, ua) => {
 			let uaObj = useragent.lookup(ua);
 			//if (uaObj && uaObj.family && uaObj.os && uaObj.os.family) {
@@ -388,24 +388,24 @@ let utils = {
 				}));
 			}
 		};
-		
+
 		if (clientUA && deviceAccess && deviceAccess.deny && Array.isArray(deviceAccess.deny)) {
 			let denied = checkAccess(deviceAccess.deny, clientUA);
 			if (denied) {
 				return cb(156);
 			}
 		}
-		
+
 		if (clientUA && deviceAccess && deviceAccess.allow && Array.isArray(deviceAccess.allow)) {
 			let allowed = checkAccess(deviceAccess.allow, clientUA);
 			if (!allowed) {
 				return cb(156);
 			}
 		}
-		
+
 		return cb(null, obj);
 	},
-	
+
 	/**
 	 * Checks if oauth is turned on and the ACL strategy of the API.
 	 * If the API is public, the request moves forward
@@ -439,7 +439,7 @@ let utils = {
 					if (error) {
 						return cb(error, obj);
 					} else {
-						
+
 						let pin_allowedAPI_check = () => {
 							// Skip is this is pin login route on oauth
 							// Skip if route on controller
@@ -467,10 +467,10 @@ let utils = {
 									obj.req.soajs.registry.custom.oauth.value &&
 									obj.req.soajs.registry.custom.oauth.value.pinWhitelist &&
 									obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name]) {
-									
+
 									let method = obj.req.method.toLocaleLowerCase();
 									let whitelist = obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name];
-									
+
 									obj.req.soajs.log.debug("pinWhitelist detected for service [" + obj.req.soajs.controller.serviceParams.name + "]");
 									if (whitelist[method]) {
 										if (whitelist[method].apis && Array.isArray(whitelist[method].apis)) {
@@ -488,12 +488,12 @@ let utils = {
 										}
 									}
 									obj.req.soajs.log.debug("pinWhitelist not found for method [" + method + "] and path [" + obj.req.soajs.controller.serviceParams.path + "]");
-									
+
 								}
 								return cb(145, obj);
 							}
 						};
-						
+
 						if (obj.req.oauth && obj.req.oauth.bearerToken && obj.req.oauth.bearerToken.user && (obj.req.oauth.bearerToken.user.loginMode === 'urac') && obj.req.oauth.bearerToken.user.pinLocked) {
 							return pin_allowedAPI_check();
 						} else {
@@ -512,7 +512,7 @@ let utils = {
 					}
 				});
 			};
-			
+
 			let system = _system.getAcl(obj);
 			let api = (system && system.apis ? system.apis[obj.req.soajs.controller.serviceParams.path] : null);
 			if (!api && system && system.apisRegExp && Object.keys(system.apisRegExp).length > 0) {
@@ -522,7 +522,7 @@ let utils = {
 					}
 				}
 			}
-			
+
 			//public means:
 			//-------------
 			//case 0:
@@ -575,7 +575,7 @@ let utils = {
 			return cb(null, obj);
 		}
 	},
-	
+
 	/**
 	 * Check if the request contains oauth tokens, and calls the urac Driver to retrieve the corresponding user record
 	 * @param {Object} obj
@@ -587,21 +587,21 @@ let utils = {
 			return cb(null, obj);
 		}
 		let callURACDriver = function (roaming) {
-			obj.req.soajs.uracDriver = new UracDriver({"soajs": obj.req.soajs, "oauth": obj.req.oauth});
+			obj.req.soajs.uracDriver = new UracDriver({ "soajs": obj.req.soajs, "oauth": obj.req.oauth });
 			obj.req.soajs.uracDriver.init((error) => {
 				if (error && !roaming) {
 					obj.req.soajs.log.error(error.message);
-					return cb (146);
+					return cb(146);
 				}
 				let userServiceConf = obj.req.soajs.uracDriver.getConfig();
 				userServiceConf = userServiceConf || {};
-				
+
 				let tenantServiceConf = obj.keyObj.config;
 				obj.servicesConfig = merge.recursive(true, tenantServiceConf, userServiceConf);
 				return cb(null, obj);
 			});
 		};
-		
+
 		/**
 		 * returns code for the requested tenant.
 		 * if tenant is the same in the request, returns tenant from request
@@ -614,7 +614,7 @@ let utils = {
 				obj.req.soajs.log.debug("loading tenant data from req.soajs.tenant.id");
 				return cb(null, obj.req.soajs.tenant);
 			}
-			
+
 			obj.req.soajs.log.debug("loading tenant data from req.oauth.bearerToken.clientId");
 			obj.provision.getTenantData(obj.req.oauth.bearerToken.clientId, function (error, tenant) {
 				if (error || !tenant) {
@@ -624,11 +624,11 @@ let utils = {
 					obj.req.soajs.log.error(error.message);
 					return cb(error);
 				}
-				
+
 				return cb(null, tenant);
 			});
 		};
-		
+
 		/**
 		 * load the registry of the requested environment.
 		 * if environment is the same in the request, return registry from request
@@ -641,9 +641,9 @@ let utils = {
 				obj.req.soajs.log.debug("loading env registry from req.soajs.registry");
 				return cb(null, obj.req.soajs.registry);
 			}
-			
+
 			obj.req.soajs.log.debug("loading env registry from req.oauth.bearerToken.env");
-			registryModule.loadByEnv({"envCode": obj.req.oauth.bearerToken.env}, function (error, registry) {
+			registryModule.loadByEnv({ "envCode": obj.req.oauth.bearerToken.env }, function (error, registry) {
 				if (error || !registry) {
 					if (!registry) {
 						error = new Error("Registry not found for:" + obj.req.oauth.bearerToken.env);
@@ -654,12 +654,12 @@ let utils = {
 				return cb(null, registry);
 			});
 		};
-		
+
 		//NOTE: we go here only if the possibility of roaming is true
 		if (obj.req && obj.req.oauth && obj.req.oauth.bearerToken) {
 			//if (obj.req.oauth.bearerToken.env === "dashboard" && obj.req.oauth.bearerToken.env !== obj.regEnvironment) {
 			if (sensitiveEnvCodes.includes(obj.req.oauth.bearerToken.env.toLowerCase()) && obj.req.oauth.bearerToken.env !== obj.regEnvironment) {
-				async.parallel({"tenant": getTenantInfo, "registry": getEnvRegistry}, function (error, response) {
+				async.parallel({ "tenant": getTenantInfo, "registry": getEnvRegistry }, function (error, response) {
 					if (error) {
 						return cb(170);
 					}
@@ -670,7 +670,7 @@ let utils = {
 						"user": obj.req.oauth.bearerToken.user,
 						"code": response.tenant.code
 					};
-					
+
 					if (response.registry && response.registry.tenantMetaDB) {
 						obj.req.soajs.tenant.roaming.tenantMetaDB = response.registry.tenantMetaDB;
 					}
@@ -683,7 +683,7 @@ let utils = {
 			return cb(null, obj);
 		}
 	},
-	
+
 	/**
 	 * Checks if the acl permissions allow access to the requested api or not
 	 * @param {Object} obj
