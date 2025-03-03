@@ -18,29 +18,29 @@ const gtw_keyACL = require("./../soajsRoutes/keyACL/index.js");
 module.exports = (configuration) => {
 	let provision = configuration.provision;
 	let core = configuration.core;
-	
+
 	let soajs_keyACL = gtw_keyACL({
 		"provision": provision,
 		"serviceName": configuration.serviceName,
 		"serviceVersion": configuration.serviceVersion,
 		"core": core
 	});
-	
+
 	let extractBuildParameters = require("./lib/extractBuildParameters.js");
-	
+
 	let simpleRTS = require("./simpleRTS.js")(configuration);
 	let redirectToService = require("./redirectToService.js")(configuration);
 	let proxyRequest = require("./proxyRequest.js")(configuration);
 	let roaming = require("./roaming.js")(configuration);
-	
-	
+
+
 	return (req, res, next) => {
 		let serviceInfo = req.soajs.controller.serviceParams.serviceInfo;
 		let parsedUrl = req.soajs.controller.serviceParams.parsedUrl;
 		let service_nv = req.soajs.controller.serviceParams.service_nv;
 		let service_n = req.soajs.controller.serviceParams.service_n;
 		let service_v = req.soajs.controller.serviceParams.service_v;
-		
+
 		//check if route is soajs/acl then you also need to bypass the exctract Build Param BL
 		let url_keyACL = (serviceInfo[1] === 'soajs' && serviceInfo[2] === 'acl');
 		if (url_keyACL) {
@@ -62,7 +62,7 @@ module.exports = (configuration) => {
 					pathname: parsedUrl.pathname
 				};
 			}
-			
+
 			extractBuildParameters(req, service_n, service_nv, service_v, proxyInfo, parsedUrl.path, core, function (error, parameters) {
 				if (error) {
 					if (error.message) {
@@ -73,35 +73,36 @@ module.exports = (configuration) => {
 					req.soajs.log.debug(req.headers);
 					return req.soajs.controllerResponse(core.error.getError(130));
 				}
-				
+
 				if (!parameters) {
 					req.soajs.log.fatal("Service [" + service_n + "] URL [" + req.url + "] couldn't be matched to a service or the service entry in registry is missing [port || hosts]");
 					if (req && req.soajs &&
 						req.soajs.registry &&
-						req.soajs.registry.services) {
+						req.soajs.registry.services &&
+						req.soajs.registry.services[service_n]) {
 						req.soajs.log.debug(req.soajs.registry.services[service_n]);
 					}
 					req.soajs.log.debug(req.headers);
 					return req.soajs.controllerResponse(core.error.getError(130));
 				}
-				
+
 				for (let param in parameters) {
 					if (Object.hasOwnProperty.call(parameters, param)) {
 						req.soajs.controller.serviceParams[param] = parameters[param];
 					}
 				}
-				
+
 				let set_gotoservice = () => {
-					
+
 					let passportLogin = false;
 					if (serviceInfo[1] === "oauth") {
 						if (serviceInfo[2] === "passport" && serviceInfo[3] === "login") {
 							passportLogin = true;
 						}
 					}
-					
+
 					let soajsroaming = req.get("soajsroaming");
-					
+
 					if (passportLogin) {
 						req.soajs.controller.gotoservice = simpleRTS;
 					} else if (soajsroaming) {
@@ -112,13 +113,13 @@ module.exports = (configuration) => {
 						req.soajs.controller.gotoservice = redirectToService;
 					}
 				};
-				
+
 				if (parameters.extKeyRequired) {
 					let key = req.headers.key || parsedUrl.query.key;
 					if (!key) {
 						return req.soajs.controllerResponse(core.error.getError(132));
 					}
-					
+
 					core.key.getInfo(key, req.soajs.registry.serviceConfig.key, function (err) {
 						if (err) {
 							req.soajs.log.warn(err.message);
