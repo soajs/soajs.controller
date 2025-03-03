@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs multi tenant API gateway",
-  "version": "4.2.20",
+  "version": "4.2.30",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
