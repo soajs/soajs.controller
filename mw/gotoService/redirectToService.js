@@ -159,6 +159,7 @@ module.exports = (configuration) => {
 				const urlObj = new URL(obj.uri);
 				requestOptions = {
 					"hostname": urlObj.hostname,
+					"protocol": urlObj.protocol,
 					"port": urlObj.port,
 					"path": urlObj.pathname + urlObj.search,
 					"method": req.method.toUpperCase(),
