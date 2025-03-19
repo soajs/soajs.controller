@@ -31,7 +31,9 @@ module.exports = (configuration) => {
 		let triggerProxy = (myUri, requestTO) => {
 			let requestConfig = {};
 			try {
+				console.log(myUri);
 				const urlObj = new URL(myUri);
+				console.log(urlObj);
 				let queryParams = {};
 				//add query params
 				if (req.query && Object.keys(req.query).length > 0) {
