@@ -68,7 +68,7 @@ module.exports = (configuration) => {
 			}
 
 			delete requestConfig.headers.host;
-			console.log(requestConfig)
+			console.log(requestConfig);
 			req.soajs.log.debug(requestConfig);
 
 			const extraOptions = {
