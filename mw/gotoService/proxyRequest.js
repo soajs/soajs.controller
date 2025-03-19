@@ -31,9 +31,7 @@ module.exports = (configuration) => {
 		let triggerProxy = (myUri, requestTO) => {
 			let requestConfig = {};
 			try {
-				console.log(myUri);
 				const urlObj = new URL(myUri);
-				console.log(urlObj);
 				let queryParams = {};
 				//add query params
 				if (req.query && Object.keys(req.query).length > 0) {
@@ -68,7 +66,7 @@ module.exports = (configuration) => {
 			}
 
 			delete requestConfig.headers.host;
-			console.log(requestConfig);
+			
 			req.soajs.log.debug(requestConfig);
 
 			const extraOptions = {
