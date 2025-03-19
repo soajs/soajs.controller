@@ -46,6 +46,7 @@ module.exports = (configuration) => {
 
 				requestConfig = {
 					"hostname": urlObj.hostname,
+					"protocol": urlObj.protocol,
 					"port": urlObj.port,
 					"path": fullPath, // Use the full path with query parameters
 					"method": req.method.toUpperCase(),
@@ -67,7 +68,7 @@ module.exports = (configuration) => {
 			}
 
 			delete requestConfig.headers.host;
-
+			console.log(requestConfig)
 			req.soajs.log.debug(requestConfig);
 
 			const extraOptions = {
