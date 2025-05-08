@@ -34,9 +34,9 @@
     "useragent": "2.3.0"
   },
   "devDependencies": {
-    "@babel/core": "7.26.0",
-    "@babel/plugin-transform-runtime": "7.25.9",
-    "@babel/preset-env": "7.26.0",
+    "@babel/core": "7.27.1",
+    "@babel/plugin-transform-runtime": "7.27.1",
+    "@babel/preset-env": "7.27.2",
     "express": "4.21.1",
     "grunt": "1.6.1",
     "grunt-babel": "8.0.0",
