@@ -37,6 +37,7 @@
     "@babel/core": "7.27.1",
     "@babel/plugin-transform-runtime": "7.27.1",
     "@babel/preset-env": "7.27.2",
+    "@babel/runtime": "7.27.1",
     "express": "4.21.1",
     "grunt": "1.6.1",
     "grunt-babel": "8.0.0",
