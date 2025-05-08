@@ -16,7 +16,7 @@ const lib = require("./lib.js");
 
 function Urac(param) {
 	let _self = this;
-	
+
 	_self.soajs = param.soajs;
 	_self.userRecord = null;
 	_self.user_ACL = null;
@@ -70,7 +70,7 @@ Urac.prototype.init = function (cb) {
 		}
 	}
 	else if (_self.id) {
-		uracDriver.getRecord(_self.soajs, {id: _self.id.toString(), username: _self.username}, function (err, record) {
+		uracDriver.getRecord(_self.soajs, { id: _self.id.toString(), username: _self.username }, function (err, record) {
 			if (record) {
 				_self.userRecord = record;
 				_self.resolveACL(() => {
@@ -78,7 +78,9 @@ Urac.prototype.init = function (cb) {
 				});
 			} else {
 				if (err && err.msg) {
+					const code = err.code;
 					err = new Error(err.msg);
+					err.code = code;
 				}
 				return cb(err, null);
 			}
@@ -141,19 +143,19 @@ Urac.prototype.getProfile = function (_ALL) {
 			"profile": _self.userRecord.profile,
 			"tenant": _self.userRecord.tenant
 		};
-		
+
 		if (_self.userRecord.socialLogin) {
 			urac.socialLogin = {
 				"strategy": _self.userRecord.socialLogin.strategy,
 				"id": _self.userRecord.socialLogin.id
 			};
 		}
-		
+
 		if (_ALL) {
 			if (_self.userRecord.socialLogin) {
 				urac.socialLogin.accessToken = _self.userRecord.socialLogin.accessToken;
 			}
-			
+
 			urac.config = _self.userRecord.config;
 			urac.groupsConfig = _self.userRecord.groupsConfig;
 		}
@@ -162,7 +164,7 @@ Urac.prototype.getProfile = function (_ALL) {
 		urac = {
 			"_id": _self.userRecord._id,
 			"username": _self.userRecord.userId,
-			"tenant": {"id": _self.userRecord.tId}
+			"tenant": { "id": _self.userRecord.tId }
 		};
 	}
 	else if (_self.userRecord) {
@@ -182,7 +184,7 @@ Urac.prototype.getProfile = function (_ALL) {
  */
 Urac.prototype.getAcl = function () {
 	let _self = this;
-	
+
 	if (_self.user_ACL && _self.user_ACL.acl) {
 		return _self.user_ACL.acl;
 	} else {
@@ -195,7 +197,7 @@ Urac.prototype.getAcl = function () {
  */
 Urac.prototype.getAclAllEnv = function () {
 	let _self = this;
-	
+
 	if (_self.user_ACL && _self.user_ACL.acl_all_env) {
 		return _self.user_ACL.acl_all_env;
 	} else {
@@ -214,13 +216,13 @@ Urac.prototype.getConfig = function () {
 		return null;
 	}
 	let config = null;
-	
+
 	if (_self.userRecord.config && _self.userRecord.config.keys) {
 		if (_self.userRecord.config.keys[key] && _self.userRecord.config.keys[key].config) {
 			config = _self.userRecord.config.keys[key].config;
 		}
 	}
-	
+
 	return config;
 };
 

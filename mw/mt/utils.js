@@ -590,7 +590,7 @@ let utils = {
 			obj.req.soajs.uracDriver = new UracDriver({ "soajs": obj.req.soajs, "oauth": obj.req.oauth });
 			obj.req.soajs.uracDriver.init((error) => {
 				if (error && !roaming) {
-					obj.req.soajs.log.error(error.message);
+					obj.req.soajs.log.error(error.message, error.code);
 					return cb(146);
 				}
 				let userServiceConf = obj.req.soajs.uracDriver.getConfig();
