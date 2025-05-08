@@ -56,20 +56,23 @@ module.exports = () => {
                                     if (error) {
                                         req.soajs.log.debug("lastSeen failed for [" + item.name + "@" + item.version + " " + item.api + "]");
                                         req.soajs.log.debug("lastSeen " + error.message);
-                                    } else if (!body.result) {
-                                        let errorMsg = "";
-                                        if (body.errors && body.errors && body.errors.details && body.errors.details.length > 0) {
-                                            body.errors.details.forEach((detail) => {
-                                                if (errorMsg === "") {
-                                                    errorMsg += detail.message;
-                                                }
-                                                else {
-                                                    errorMsg += " - " + detail.message;
-                                                }
-                                            });
-                                        }
-                                        req.soajs.log.debug("lastSeen", errorMsg);
+                                    } else {
+                                        req.soajs.log.debug("lastSeen ", body);
                                     }
+                                    // else if (!body.result) {
+                                    //     let errorMsg = "";
+                                    //     if (body.errors && body.errors && body.errors.details && body.errors.details.length > 0) {
+                                    //         body.errors.details.forEach((detail) => {
+                                    //             if (errorMsg === "") {
+                                    //                 errorMsg += detail.message;
+                                    //             }
+                                    //             else {
+                                    //                 errorMsg += " - " + detail.message;
+                                    //             }
+                                    //         });
+                                    //     }
+                                    //     req.soajs.log.debug("lastSeen", errorMsg);
+                                    // }
                                 });
 
                             // let options = {
