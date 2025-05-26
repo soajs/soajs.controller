@@ -38,6 +38,7 @@ function logErrors(err, req, res, next) {
             return next(err);
         } else {
             req.soajs.log.error(err.message || err);
+            req.soajs.log.error(req.url);
             req.soajs.log.error(core.error.generate(164).message);
         }
     } else {
