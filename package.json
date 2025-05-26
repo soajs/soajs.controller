@@ -28,9 +28,9 @@
     "netmask": "2.0.2",
     "oauth2-server": "2.4.1",
     "path-to-regexp": "6.2.2",
-    "soajs.core.libs": "1.2.0",
-    "soajs.core.modules": "5.2.12",
-    "soajs.urac.driver": "3.2.9",
+    "soajs.core.libs": "1.2.1",
+    "soajs.core.modules": "5.2.15",
+    "soajs.urac.driver": "3.2.12",
     "useragent": "2.3.0"
   },
   "devDependencies": {
@@ -49,9 +49,9 @@
     "grunt-istanbul": "0.8.0",
     "grunt-jsdoc": "2.4.1",
     "grunt-mocha-test": "0.13.3",
-    "mocha": "10.7.3",
-    "nock": "13.5.6",
+    "mocha": "11.5.0",
+    "nock": "14.0.4",
     "request": "2.88.2",
-    "sinon": "19.0.2"
+    "sinon": "20.0.0"
   }
 }
