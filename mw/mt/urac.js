@@ -21,12 +21,15 @@ function Urac(param) {
 	_self.userRecord = null;
 	_self.user_ACL = null;
 	_self.id = null;
+	_self.bearerTokenUser = null;
+
 	if (param.oauth && 0 === param.oauth.type) {
 		_self.userRecord = param.oauth.bearerToken;
 	} else {
 		// if type === 2
 		if (param.oauth && param.oauth.bearerToken && param.oauth.bearerToken.user) {
 			_self.id = param.oauth.bearerToken.user.id;
+			_self.bearerTokenUser = param.oauth.bearerToken.user;
 			if (param.oauth.bearerToken.user.username) {
 				_self.username = param.oauth.bearerToken.user.username;
 			}

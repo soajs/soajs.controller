@@ -588,10 +588,24 @@ let utils = {
 		}
 		let callURACDriver = function (roaming) {
 			obj.req.soajs.uracDriver = new UracDriver({ "soajs": obj.req.soajs, "oauth": obj.req.oauth });
-			obj.req.soajs.uracDriver.init((error) => {
+			obj.req.soajs.uracDriver.init((error, record) => {
 				if (error && !roaming) {
 					obj.req.soajs.log.error(error.message, error.code);
 					return cb(146);
+				}
+				if (obj.keyObj.config && obj.keyObj.config.gateway && obj.keyObj.config.gateway.validateTokenAccount) {
+					if (obj.req.soajs.uracDriver.bearerTokenUser && record) {
+						if (obj.keyObj.config.gateway.validateTokenAccount.email && record.email) {
+							if (record.email !== obj.req.soajs.uracDriver.bearerTokenUser.email) {
+								return cb(146);
+							}
+						}
+						if (obj.keyObj.config.gateway.validateTokenAccount.phone && record.phone) {
+							if (record.phone !== obj.req.soajs.uracDriver.bearerTokenUser.phone) {
+								return cb(146);
+							}
+						}
+					}
 				}
 				let userServiceConf = obj.req.soajs.uracDriver.getConfig();
 				userServiceConf = userServiceConf || {};
