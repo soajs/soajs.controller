@@ -82,7 +82,6 @@ module.exports = (configuration) => {
 						req.soajs.registry.services[service_n]) {
 						req.soajs.log.debug(req.soajs.registry.services[service_n]);
 					}
-					req.soajs.log.debug(req.headers);
 					return req.soajs.controllerResponse(core.error.getError(130));
 				}
 
