@@ -89,6 +89,8 @@ Controller.prototype.init = function (callback) {
 			app.use(favicon_mw());
 			app.use(response_mw({ "controllerResponse": true }));
 
+			app.use(enhancer_mw());
+			
 			app.use(ip2ban_mw());
 			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
 
@@ -131,7 +133,7 @@ Controller.prototype.init = function (callback) {
 					}));
 					log.info("AwarenessEnv middleware initialization done.");
 
-					app.use(enhancer_mw());
+					// app.use(enhancer_mw());
 
 					app.use(url_mw({ "core": core }));
 
