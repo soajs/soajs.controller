@@ -38,6 +38,7 @@ const gotoService_mw = require("../mw/gotoService/index");
 const mt_mw = require("../mw/mt/index");
 const traffic_mw = require("../mw/traffic/index");
 const lastSeen_mw = require("../mw/lastSeen/index");
+const ip2ban_mw = require("../mw/ip2ban/index");
 
 const utils = require("../utilities/utils");
 
@@ -87,6 +88,8 @@ Controller.prototype.init = function (callback) {
 			app.use(cors_mw());
 			app.use(favicon_mw());
 			app.use(response_mw({ "controllerResponse": true }));
+
+			app.use(ip2ban_mw());
 			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
 
 			log.info("Loading Provision ...");

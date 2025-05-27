@@ -126,17 +126,20 @@ module.exports = function (configuration) {
 
 	return (req, res, next) => {
 
-		let ip2ban = get(["soajs", "registry", "custom", "gateway", "value", "traffic", "ip2ban"], req);
+		// NOTE: moved to ip2ban MW
+		//
+		// let ip2ban = get(["soajs", "registry", "custom", "gateway", "value", "traffic", "ip2ban"], req);
+		// let clientIP = req.getClientIP();
+
+		// if (ip2ban && Array.isArray(ip2ban) && ip2ban.includes(clientIP)) {
+		// 	req.soajs.controllerResponse({
+		// 		'status': 403,
+		// 		'msg': 'banned'
+		// 	});
+		// 	return;
+		// }
 		let clientIP = req.getClientIP();
-
-		if (ip2ban && Array.isArray(ip2ban) && ip2ban.includes(clientIP)) {
-			req.soajs.controllerResponse({
-				'status': 403,
-				'msg': 'banned'
-			});
-			return;
-		}
-
+		
 		if (req && req.soajs && req.soajs.registry && req.soajs.registry.serviceConfig && req.soajs.registry.serviceConfig.throttling && req.soajs.tenant && req.soajs.controller) {
 
 			let serviceName = req.soajs.controller.serviceParams.name;
