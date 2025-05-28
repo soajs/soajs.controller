@@ -94,6 +94,8 @@ Controller.prototype.init = function (callback) {
 			app.use(ip2ban_mw());
 			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
 
+			app.use(url_mw({ "core": core }));
+			
 			log.info("Loading Provision ...");
 			let dbConfig = registry.coreDB.provision;
 			if (registry.coreDB.oauth) {
@@ -135,7 +137,7 @@ Controller.prototype.init = function (callback) {
 
 					// app.use(enhancer_mw());
 
-					app.use(url_mw({ "core": core }));
+					// app.use(url_mw({ "core": core }));
 
 					app.use(key_mw({ "provision": provision, "regEnvironment": regEnvironment }));
 

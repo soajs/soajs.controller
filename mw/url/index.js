@@ -20,21 +20,21 @@ let libParseURL = require('../../lib/parseURL');
  */
 module.exports = (configuration) => {
 	let core = configuration.core;
-	
+
 	return (req, res, next) => {
 		if (!req.soajs) {
 			throw new TypeError('soajs mw is not started');
 		}
-		
+
 		if (!req.soajs.controller) {
 			req.soajs.controller = {};
 		}
-		
+
 		let parsedUrl = url.parse(req.url, true);
 		if (!req.query && parsedUrl.query) {
 			req.query = parsedUrl.query;
 		}
-		
+
 		if (!req.query) {
 			req.query = {};
 		}
@@ -42,6 +42,14 @@ module.exports = (configuration) => {
 		if (!req.soajs.controller.serviceParams.service_n || req.soajs.controller.serviceParams.service_n === '') {
 			return req.soajs.controllerResponse(core.error.getError(136));
 		}
+		if (!req.soajs.registry ||
+			!req.soajs.registry.services ||
+			!req.soajs.registry.services[req.soajs.controller.serviceParams.service_n]) {
+			req.soajs.log.fatal("Service [" + req.soajs.controller.serviceParams.service_n + "] URL [" + req.url + "] couldn't be matched to a service or the service entry in registry is missing [port || hosts]");
+			req.soajs.log.warn(JSON.stringify({ "url": req.url, "headers": req.headers }));
+			return req.soajs.controllerResponse(core.error.getError(130));
+		}
+
 		let key = req.headers.key || req.query.key;
 		if (!req.headers.key) {
 			req.headers.key = key;
