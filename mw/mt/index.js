@@ -12,6 +12,9 @@ const async = require("async");
 
 const utils = require("./utils");
 
+
+const { encodeHeaderValue } = require("../../lib/header.js");
+
 /**
  *
  * @param configuration
@@ -336,12 +339,14 @@ module.exports = (configuration) => {
 													req.soajs.log.error(err.message);
 												}
 												let _h = JSON.stringify(injectObj);
-												req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
+												// req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
+												req.headers.soajsinjectobj = encodeHeaderValue(_h);
 												return next();
 											});
 									} else {
 										let _h = JSON.stringify(injectObj);
-										req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
+										// req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
+										req.headers.soajsinjectobj = encodeHeaderValue(_h);
 										return next();
 									}
 								}
