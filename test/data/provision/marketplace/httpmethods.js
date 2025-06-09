@@ -27,7 +27,7 @@ let service = {
 		},
 		oauth: true,
 		extKeyRequired: true,
-		urac: false,
+		urac: true,
 		urac_Profile: false,
 		urac_ACL: false,
 		provision_ACL: false,

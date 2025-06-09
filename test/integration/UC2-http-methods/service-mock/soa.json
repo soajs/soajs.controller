@@ -44,7 +44,7 @@
   "requestTimeoutRenewal": 5,
   "extKeyRequired": true,
   "oauth": true,
-  "urac": false,
+  "urac": true,
   "urac_Profile": false,
   "urac_ACL": false,
   "tenant_Profile": false,

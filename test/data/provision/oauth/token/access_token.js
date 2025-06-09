@@ -9,7 +9,7 @@ let token = {
         _id: "5c8d0c505653de3985aa0ffd",
         locked: true,
         username: "owner",
-        firstName: "owner3",
+        firstName: "owner3'sèį",
         lastName: "owner",
         email: "me@localhost.com",
         "ts": new Date().getTime(),

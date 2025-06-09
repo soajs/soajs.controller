@@ -250,8 +250,8 @@ module.exports = (configuration) => {
 												injectObj.urac = {
 													"_id": uracObj._id,
 													"username": uracObj.username,
-													"firstName": uracObj.firstName,
-													"lastName": uracObj.lastName,
+													"firstName": encodeHeaderValue(uracObj.firstName),
+													"lastName": encodeHeaderValue(uracObj.lastName),
 													"email": uracObj.email,
 													"groups": uracObj.groups,
 													"socialLogin": uracObj.socialLogin,
@@ -340,13 +340,13 @@ module.exports = (configuration) => {
 												}
 												let _h = JSON.stringify(injectObj);
 												// req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
-												req.headers.soajsinjectobj = encodeHeaderValue(_h);
+												req.headers.soajsinjectobj = _h; //encodeHeaderValue(_h);
 												return next();
 											});
 									} else {
 										let _h = JSON.stringify(injectObj);
 										// req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
-										req.headers.soajsinjectobj = encodeHeaderValue(_h);
+										req.headers.soajsinjectobj = _h; //encodeHeaderValue(_h);
 										return next();
 									}
 								}

@@ -4,7 +4,7 @@ let user = {
     locked: true,
     username: "owner",
     password: "$2a$12$geJJfv33wkYIXEAlDkeeuOgiQ6y6MjP/YxbqLdHdDSK7LDG.7n7Pq",
-    firstName: "owner3",
+    firstName: "owner3'sèį",
     lastName: "owner",
     email: "me@localhost.com",
     ts: 1552747600152,
