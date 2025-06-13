@@ -60,10 +60,10 @@ module.exports = (configuration) => {
 				})
 				.catch((err) => {
 					req.soajs.log.error(err.code, err.message);
-					// if (req.soajs.controller.redirectedRequest) {
-					// 	req.soajs.controller.redirectedRequest.destroy();
-					// 	req.soajs.controller.redirectedRequest = null;
-					// }
+					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.controller.redirectedRequest.destroy();
+						req.soajs.controller.redirectedRequest = null;
+					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						return req.soajs.controllerResponse(core.error.getError(135));
 					}

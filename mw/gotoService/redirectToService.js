@@ -220,10 +220,10 @@ module.exports = (configuration) => {
 				})
 				.catch((err) => {
 					req.soajs.log.error(err.message + ' with [' + restServiceParams.name + (restServiceParams.version ? ('@' + restServiceParams.version) : '') + ']');
-					// if (req.soajs.controller.redirectedRequest) {
-					// 	req.soajs.controller.redirectedRequest.destroy();
-					// 	req.soajs.controller.redirectedRequest = null;
-					// }
+					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.controller.redirectedRequest.destroy();
+						req.soajs.controller.redirectedRequest = null;
+					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						req.soajs.controllerResponse(core.error.getError(135));
 					}

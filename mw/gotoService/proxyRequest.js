@@ -79,10 +79,10 @@ module.exports = (configuration) => {
 				.then(() => { })
 				.catch((error) => {
 					req.soajs.log.error(error.message);
-					// if (req.soajs.controller.redirectedRequest) {
-					// 	req.soajs.controller.redirectedRequest.destroy();
-					// 	req.soajs.controller.redirectedRequest = null;
-					// }
+					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.controller.redirectedRequest.destroy();
+						req.soajs.controller.redirectedRequest = null;
+					}
 					return req.soajs.controllerResponse(core.error.getError(135));
 				});
 		};
