@@ -240,7 +240,7 @@ let ha = {
 				return cb(hostname);
 			} else {
 				if (process.env.SOAJS_DEPLOY_HA === 'kubernetes' && serviceName && version) {
-					serviceName += "-v" + version + "-service";
+					// serviceName += "-v" + version + "-service";
 					return cb(env + "-" + serviceName + "-v" + version + "-service");
 				} else {
 					lib.getHostFromAPI(serviceName, version, cb);
