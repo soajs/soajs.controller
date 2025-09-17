@@ -325,6 +325,7 @@ module.exports = (configuration) => {
 																injectObj.awareness.interConnect.push(item);
 															} else {
 																req.soajs.log.debug(serviceName + " interConnect failed to fetch latestVersion for [" + item.name + "]");
+																injectObj.awareness.interConnect.push(item);
 															}
 															return callback();
 														});
