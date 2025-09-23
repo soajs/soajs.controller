@@ -26,6 +26,9 @@ describe("Unit test for: lib - apiPathParam2apiRegExp", function () {
                     },
                     "/refreshToken/:token": {
                         access: false
+                    },
+                    "/refreshToken/:token/user/:userId": {
+                        access: false
                     }
                 }
             }
@@ -34,6 +37,9 @@ describe("Unit test for: lib - apiPathParam2apiRegExp", function () {
     it("Vanilla test", function (done) {
         let response = lib(acl);
         assert.ok(response.oauth.delete.apisRegExp);
+        let _path = "/refreshToken/12242rde21sew/user/ed2ed23werd2wfd3"
+        let test = _path.match(response.oauth.delete.apisRegExp[0].regExp);
+        assert.ok(test);
         done();
     });
 });
