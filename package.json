@@ -1,7 +1,7 @@
 {
   "name": "soajs.controller",
   "description": "soajs multi tenant API gateway",
-  "version": "4.2.39",
+  "version": "4.2.40",
   "author": {
     "name": "soajs team",
     "email": "team@soajs.org"
@@ -27,17 +27,17 @@
     "merge": "2.1.1",
     "netmask": "2.0.2",
     "oauth2-server": "2.4.1",
-    "path-to-regexp": "6.2.2",
+    "path-to-regexp": "8.3.0",
     "soajs.core.libs": "1.2.1",
-    "soajs.core.modules": "5.2.15",
-    "soajs.urac.driver": "3.2.12",
+    "soajs.core.modules": "5.2.16",
+    "soajs.urac.driver": "3.2.13",
     "useragent": "2.3.0"
   },
   "devDependencies": {
-    "@babel/core": "7.27.1",
-    "@babel/plugin-transform-runtime": "7.27.1",
-    "@babel/preset-env": "7.27.2",
-    "@babel/runtime": "7.27.1",
+    "@babel/core": "7.28.4",
+    "@babel/plugin-transform-runtime": "7.28.3",
+    "@babel/preset-env": "7.28.3",
+    "@babel/runtime": "7.28.4",
     "express": "4.21.1",
     "grunt": "1.6.1",
     "grunt-babel": "8.0.0",
@@ -49,9 +49,9 @@
     "grunt-istanbul": "0.8.0",
     "grunt-jsdoc": "2.4.1",
     "grunt-mocha-test": "0.13.3",
-    "mocha": "11.5.0",
-    "nock": "14.0.4",
+    "mocha": "11.7.2",
+    "nock": "14.0.10",
     "request": "2.88.2",
-    "sinon": "20.0.0"
+    "sinon": "21.0.0"
   }
 }
