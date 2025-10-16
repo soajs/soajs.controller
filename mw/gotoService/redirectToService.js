@@ -116,6 +116,11 @@ module.exports = (configuration) => {
 				(req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH' || req.method === 'DELETE')) {
 				let allowedContentType = false;
 				let isStream = false;
+				// Performance: Prevent memory exhaustion from large request bodies
+				const MAX_BODY_SIZE = process.env.SOAJS_MAX_BODY_SIZE || 10 * 1024 * 1024; // 10MB default
+				let bodySize = 0;
+				let bodyExceeded = false;
+
 				req.on("data", (chunk) => {
 					let resContentType = req.headers['content-type'];
 					if (resContentType) {
@@ -127,11 +132,19 @@ module.exports = (configuration) => {
 						}
 					}
 					if (!isStream && allowedContentType) {
-						if (!monitoObj.body) {
-							monitoObj.time.req_body_start = new Date().getTime();
-							monitoObj.body = chunk;
-						} else {
-							monitoObj.body += chunk;
+						bodySize += chunk.length;
+						if (bodySize > MAX_BODY_SIZE) {
+							if (!bodyExceeded) {
+								bodyExceeded = true;
+								monitoObj.body = "{\"error\": \"Request body exceeds maximum size limit\"}";
+							}
+						} else if (!bodyExceeded) {
+							if (!monitoObj.body) {
+								monitoObj.time.req_body_start = new Date().getTime();
+								monitoObj.body = chunk;
+							} else {
+								monitoObj.body += chunk;
+							}
 						}
 					} else {
 						monitoObj.body = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";

@@ -20,6 +20,35 @@ const merge = require('merge');
 
 const UracDriver = require("./urac.js");
 
+// Performance: Configuration accessor utility for deep property access with defaults
+function getConfig(obj, path, defaultValue = undefined) {
+	const keys = path.split('.');
+	let result = obj;
+	for (const key of keys) {
+		if (result && typeof result === 'object' && key in result) {
+			result = result[key];
+		} else {
+			return defaultValue;
+		}
+	}
+	return result;
+}
+
+// Performance: Cache Netmask objects to avoid repeated parsing
+const netmaskCache = new Map();
+function getCachedNetmask(addr) {
+	if (!netmaskCache.has(addr)) {
+		try {
+			netmaskCache.set(addr, new Netmask(addr));
+		} catch (err) {
+			// Store null for invalid addresses to avoid repeated parsing attempts
+			netmaskCache.set(addr, null);
+			throw err;
+		}
+	}
+	return netmaskCache.get(addr);
+}
+
 let sensitiveEnvCodes = ["dashboard"];
 if (process.env.SOAJS_SENSITIVE_ENVS) {
 	let temp_sensitiveEnvCodes = null;
@@ -28,24 +57,36 @@ if (process.env.SOAJS_SENSITIVE_ENVS) {
 	} catch (e) {
 		temp_sensitiveEnvCodes = null;
 	}
-	if (Array.isArray(temp_sensitiveEnvCodes) && temp_sensitiveEnvCodes > 0) {
+	if (Array.isArray(temp_sensitiveEnvCodes) && temp_sensitiveEnvCodes.length > 0) {
 		sensitiveEnvCodes = temp_sensitiveEnvCodes;
 	}
 }
 
 const { pathToRegexp } = require("path-to-regexp");
 
+// Performance: Cache compiled RegExp objects for route matching
+const regexpCache = new Map();
+const MAX_REGEXP_CACHE_SIZE = 500; // Prevent unbounded growth
+
 function constructRegExp(route) {
-	// let keys = [];
-	// let out = pathToRegexp(route, keys, { sensitive: true });
-	let out = pathToRegexp(route, { sensitive: true });
-	if (out.regexp) {
-		return out.regexp;
+	// Check cache first
+	if (regexpCache.has(route)) {
+		return regexpCache.get(route);
 	}
-	// if (out && out.keys && out.keys.length > 0) {
-	// 	out = new RegExp(out.toString());
-	// }
-	return out;
+
+	// Compile the route pattern
+	let out = pathToRegexp(route, { sensitive: true });
+	let regexp = out.regexp || out;
+
+	// Implement simple LRU by clearing cache when it gets too large
+	if (regexpCache.size >= MAX_REGEXP_CACHE_SIZE) {
+		// Clear oldest 25% of entries
+		const keysToDelete = Array.from(regexpCache.keys()).slice(0, Math.floor(MAX_REGEXP_CACHE_SIZE * 0.25));
+		keysToDelete.forEach(key => regexpCache.delete(key));
+	}
+
+	regexpCache.set(route, regexp);
+	return regexp;
 }
 
 /**
@@ -139,20 +180,15 @@ let utils = {
 			}
 		 *
 		 */
-		if (obj.req.soajs.registry &&
-			obj.req.soajs.registry.custom &&
-			obj.req.soajs.registry.custom.gateway &&
-			obj.req.soajs.registry.custom.gateway.value &&
-			obj.req.soajs.registry.custom.gateway.value.mt &&
-			obj.req.soajs.registry.custom.gateway.value.mt.whitelist &&
-			obj.req.soajs.registry.custom.gateway.value.mt.whitelist.ips) {
+		// Performance: Use config accessor to simplify deeply nested property access
+		const whitelistIps = getConfig(obj.req, 'soajs.registry.custom.gateway.value.mt.whitelist.ips');
+		if (whitelistIps && Array.isArray(whitelistIps)) {
 			let clientIp = obj.req.getClientIP();
-			let geoAccess = obj.req.soajs.registry.custom.gateway.value.mt.whitelist.ips; //["127.0.0.0/8"];
 			let checkAccess = (geoAccessArr, ip) => {
 				return (geoAccessArr.some(function (addr) {
 					try {
-						let block = new Netmask(addr);
-						return block.contains(ip);
+						let block = getCachedNetmask(addr);
+						return block && block.contains(ip);
 					} catch (err) {
 						obj.req.soajs.log.error('IP whitelist security configuration failed: ', addr);
 						obj.req.soajs.log.error(err);
@@ -160,23 +196,22 @@ let utils = {
 					return false;
 				}));
 			};
-			if (clientIp && geoAccess && geoAccess && Array.isArray(geoAccess)) {
-				let matched = checkAccess(geoAccess, clientIp);
+			if (clientIp) {
+				let matched = checkAccess(whitelistIps, clientIp);
 				if (matched) {
 					obj.req.soajs.log.debug("ACL skip detected for ip: " + clientIp);
-					if (obj.req.soajs.registry.custom.gateway.value.mt.whitelist.acl) {
+					const whitelistConfig = getConfig(obj.req, 'soajs.registry.custom.gateway.value.mt.whitelist', {});
+					if (whitelistConfig.acl) {
 						obj.skipACL = true;
 					}
-					if (obj.req.soajs.registry.custom.gateway.value.mt.whitelist.oauth) {
+					if (whitelistConfig.oauth) {
 						obj.skipOAUTH = true;
 					}
 				}
 			}
-
-			return cb(null, obj);
-		} else {
-			return cb(null, obj);
 		}
+
+		return cb(null, obj);
 	},
 
 	"aclUrackCheck": (obj, cb) => {
@@ -282,8 +317,8 @@ let utils = {
 		let checkAccess = (geoAccessArr, ip) => {
 			return (geoAccessArr.some(function (addr) {
 				try {
-					let block = new Netmask(addr);
-					return block.contains(ip);
+					let block = getCachedNetmask(addr);
+					return block && block.contains(ip);
 				} catch (err) {
 					obj.req.soajs.log.error('Geographic security configuration failed: ', addr);
 					obj.req.soajs.log.error(err.message);

@@ -35,7 +35,7 @@ Response.prototype.addErrorCode = function (code, message) {
 	}
 	let errorCode = {
 		"code": code,
-		"message": message.trim()
+		"message": message ? message.trim() : ''
 	};
 	
 	if (!this.errors) {
