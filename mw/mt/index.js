@@ -339,15 +339,30 @@ module.exports = (configuration) => {
 												if (err) {
 													req.soajs.log.error(err.message);
 												}
+
+												// Security: Validate and limit soajsinjectobj header size
 												let _h = JSON.stringify(injectObj);
-												// req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
-												req.headers.soajsinjectobj = _h; //encodeHeaderValue(_h);
+												const MAX_HEADER_SIZE = process.env.SOAJS_MAX_INJECT_HEADER_SIZE || 65536; // 64KB default
+
+												if (_h.length > MAX_HEADER_SIZE) {
+													req.soajs.log.error('soajsinjectobj header exceeds maximum size:', _h.length);
+													return next(135);
+												}
+
+												req.headers.soajsinjectobj = _h;
 												return next();
 											});
 									} else {
+										// Security: Validate and limit soajsinjectobj header size
 										let _h = JSON.stringify(injectObj);
-										// req.headers.soajsinjectobj = Buffer.from(_h, 'ascii').toString('utf-8');
-										req.headers.soajsinjectobj = _h; //encodeHeaderValue(_h);
+										const MAX_HEADER_SIZE = process.env.SOAJS_MAX_INJECT_HEADER_SIZE || 65536; // 64KB default
+
+										if (_h.length > MAX_HEADER_SIZE) {
+											req.soajs.log.error('soajsinjectobj header exceeds maximum size:', _h.length);
+											return next(135);
+										}
+
+										req.headers.soajsinjectobj = _h;
 										return next();
 									}
 								}

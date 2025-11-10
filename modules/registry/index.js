@@ -34,7 +34,7 @@ if (process.env.SOAJS_SENSITIVE_ENVS) {
 	} catch (e) {
 		temp_sensitiveEnvCodes = null;
 	}
-	if (Array.isArray(temp_sensitiveEnvCodes) && temp_sensitiveEnvCodes > 0) {
+	if (Array.isArray(temp_sensitiveEnvCodes) && temp_sensitiveEnvCodes.length > 0) {
 		sensitiveEnvCodes = temp_sensitiveEnvCodes;
 	}
 }
@@ -496,15 +496,25 @@ function getRegistry(param, options, cb) {
 									registry_struct[options.envCode] = registry;
 								}
 								if (registry && registry.serviceConfig.awareness.autoRelaodRegistry) {
-									let autoReload = () => {
-										options.setBy = "autoReload";
-										getRegistry(param, options, () => {
-											// cb(err, reg);
-										});
-									};
 									if (!autoReloadTimeout[options.envCode]) {
 										autoReloadTimeout[options.envCode] = {};
 									}
+
+									// Performance: Prevent overlapping reloads with status tracking
+									if (autoReloadTimeout[options.envCode].reloading) {
+										// Already reloading, skip scheduling another
+										return cb(null, registry_struct[options.envCode]);
+									}
+
+									let autoReload = () => {
+										autoReloadTimeout[options.envCode].reloading = true;
+										options.setBy = "autoReload";
+										getRegistry(param, options, () => {
+											autoReloadTimeout[options.envCode].reloading = false;
+											// cb(err, reg);
+										});
+									};
+
 									if (autoReloadTimeout[options.envCode].timeout) {
 										clearTimeout(autoReloadTimeout[options.envCode].timeout);
 									}

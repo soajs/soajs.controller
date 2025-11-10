@@ -76,10 +76,17 @@ module.exports = (configuration) => {
 			};
 
 			proxyRequest(req, res, requestConfig, extraOptions)
-				.then(() => { })
+				.then(() => {
+					// Performance: Clean up proxy request reference after success
+					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.controller.redirectedRequest.removeAllListeners();
+						req.soajs.controller.redirectedRequest = null;
+					}
+				})
 				.catch((error) => {
 					req.soajs.log.error(error.message);
 					if (req.soajs.controller.redirectedRequest) {
+						req.soajs.controller.redirectedRequest.removeAllListeners();
 						req.soajs.controller.redirectedRequest.destroy();
 						req.soajs.controller.redirectedRequest = null;
 					}
