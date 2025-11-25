@@ -7,7 +7,7 @@ const nock = require('nock')
 
 describe("Unit test for: mw - lastSeen", () => {
 
-    it("success - default from environment", (done) => {
+    it("success - with network", (done) => {
         let res = {};
         let req = {
             getClientIP: () => {
@@ -42,7 +42,8 @@ describe("Unit test for: mw - lastSeen", () => {
                         gateway: {
                             value: {
                                 lastSeen: {
-                                    active: true
+                                    active: true,
+                                    network: "YAYA"
                                 }
                             }
                         }
@@ -51,11 +52,11 @@ describe("Unit test for: mw - lastSeen", () => {
             }
         };
         const scope = nock('http://urac.fake:4001')
-            .post('/user/last/seen')
+            .post('/user/last/seen', "{\"network\":\"YAYA\"}")
             .reply(200, {
                 result: true,
                 data: true
-            })
+            });
         let functionMw = mw({});
         functionMw(req, res, (error) => {
             assert.ifError(error);

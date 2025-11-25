@@ -166,7 +166,7 @@ describe("Integration for Usecase 1", function () {
 		};
 		requester('get', options, (error, body) => {
 			assert.ok(body);
-			assert.equal(body.data.type, "endpoint");
+			assert.strictEqual(body.data.type, "endpoint");
 			done();
 		});
 	});
@@ -252,7 +252,7 @@ describe("Integration for Usecase 1", function () {
 			}
 		};
 		requester('get', options, (error, body) => {
-			assert.equal(body.data.id, '/muser/:12?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
+			assert.strictEqual(body.data.id, '/muser/:12?access_token=cfb209a91b23896820f510aadbf1f4284b512123');
 			done();
 		});
 	});

@@ -194,6 +194,9 @@ module.exports = (configuration) => {
 			const extraOptions = {};
 
 			if (monitor && !monitor_service_blacklist && monitor.req_response) {
+				const MAX_RESPONSE_SIZE = process.env.SOAJS_MAX_RESPONSE_SIZE || 10 * 1024 * 1024; // 10MB default
+				let responseSize = 0;
+				let responseExceeded = false;
 				extraOptions.events = {
 					"response": (_resContentType) => {
 						resContentType = _resContentType;
@@ -209,10 +212,18 @@ module.exports = (configuration) => {
 					},
 					"data": (chunk) => {
 						if (!isStream && allowedContentType) {
-							if (!monitoObj.response) {
-								monitoObj.response = chunk;
-							} else {
-								monitoObj.response += chunk;
+							responseSize += chunk.length;
+							if (responseSize > MAX_RESPONSE_SIZE) {
+								if (!responseExceeded) {
+									responseExceeded = true;
+									monitoObj.response = "{\"error\": \"Response body exceeds maximum size limit\"}";
+								}
+							} else if (!responseExceeded) {
+								if (!monitoObj.response) {
+									monitoObj.response = chunk;
+								} else {
+									monitoObj.response += chunk;
+								}
 							}
 						} else {
 							monitoObj.response = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";
