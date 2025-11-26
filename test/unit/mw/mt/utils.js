@@ -83,7 +83,7 @@ describe("Unit test for: mw - mt utils", () => {
 			}
 		};
 		utils.securityDeviceCheck(obj, function (error, obj) {
-			assert.equal(error, 156);
+			assert.strictEqual(error, 156);
 			done();
 		});
 	});
@@ -132,7 +132,7 @@ describe("Unit test for: mw - mt utils", () => {
 			}
 		};
 		utils.securityDeviceCheck(obj, function (error, obj) {
-			assert.equal(error, 156);
+			assert.strictEqual(error, 156);
 			done();
 		});
 	});
@@ -181,7 +181,7 @@ describe("Unit test for: mw - mt utils", () => {
 			}
 		};
 		utils.securityDeviceCheck(obj, function (error, obj) {
-			assert.equal(error, 156);
+			assert.strictEqual(error, 156);
 			done();
 		});
 	});
@@ -223,7 +223,7 @@ describe("Unit test for: mw - mt utils", () => {
 			}
 		};
 		utils.securityDeviceCheck(obj, function (error, obj) {
-			assert.equal(error, 156);
+			assert.strictEqual(error, 156);
 			done();
 		});
 	});
@@ -265,7 +265,7 @@ describe("Unit test for: mw - mt utils", () => {
 			}
 		};
 		utils.securityDeviceCheck(obj, function (error, obj) {
-			assert.equal(error, 156);
+			assert.strictEqual(error, 156);
 			done();
 		});
 	});
@@ -305,7 +305,7 @@ describe("Unit test for: mw - mt utils", () => {
 			}
 		};
 		utils.securityDeviceCheck(obj, function (error, obj) {
-			assert.equal(error, 156);
+			assert.strictEqual(error, 156);
 			done();
 		});
 	});

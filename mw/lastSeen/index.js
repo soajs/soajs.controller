@@ -47,6 +47,9 @@ module.exports = () => {
                                 "json": true,
                                 "method": "POST"
                             };
+                            if (lastSeen.network) {
+                                options.body = { "network": lastSeen.network };
+                            }
                             if (req.headers && req.headers.soajsinjectobj) {
                                 options.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
                             }
