@@ -8,13 +8,15 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
 /**
  *
  * @param {object} configuration {provision,regEnvironment}
  * @returns {Function}
  */
 module.exports = (configuration) => {
-	
+
 	return (req, res, next) => {
 		let key = req.get("key");
 		if (key) {
@@ -34,6 +36,19 @@ module.exports = (configuration) => {
 							return next(144);
 						}
 					}
+
+					// Check for network-based package override
+					let network = get(["soajs", "registry", "custom", "gateway", "value", "lastSeen", "network"], req);
+					if (network) {
+						let product = keyObj.application.product;
+						let networkPackageConfig = get(["config", "gateway", "networkPackages", network, product], keyObj);
+						if (networkPackageConfig && networkPackageConfig.default) {
+							let originalPackage = keyObj.application.package;
+							keyObj.application.package = networkPackageConfig.default;
+							req.soajs.log.debug("Network package override: replaced package [" + originalPackage + "] with [" + networkPackageConfig.default + "] for network [" + network + "] and product [" + product + "]");
+						}
+					}
+
 					configuration.provision.getPackageData(keyObj.application.package, function (err, packObj) {
 						if (err) {
 							req.soajs.log.error("Unable to fetch data about package [" + keyObj.application.package + "]");
