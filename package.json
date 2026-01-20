@@ -38,7 +38,7 @@
     "@babel/plugin-transform-runtime": "7.28.5",
     "@babel/preset-env": "7.28.6",
     "@babel/runtime": "7.28.6",
-    "express": "4.21.1",
+    "express": "5.2.1",
     "grunt": "1.6.1",
     "grunt-babel": "8.0.0",
     "grunt-contrib-clean": "2.0.1",
