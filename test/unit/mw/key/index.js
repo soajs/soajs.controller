@@ -134,4 +134,154 @@ describe("Unit test for: mw - key", function () {
             done();
         });
     });
+
+    describe("Network Package Override", function () {
+        let networkKeyObj = {
+            "key": "a139786a6e6d18e48b4987e83789430b",
+            "tenant": {"id": "10d2cb5fc04ce51e06000001", "code": "DBTN", "locked": true},
+            "application": {
+                "product": "AVAPP",
+                "package": "AVAPP_EXMPL",
+                "appId": "5c0e74ba9acc3c5a84a5125a",
+                "acl": null,
+                "acl_all_env": null
+            },
+            "device": null,
+            "env": "dev",
+            "geo": null,
+            "config": {
+                "gateway": {
+                    "networkPackages": {
+                        "mw": {
+                            "AVAPP": {
+                                "default": "AVAPP_DEFAU",
+                                "users": {
+                                    "AVAPP_EXMPL": "AVAPP_ALTRN"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        let networkReq = {
+            "get": () => {
+                return key;
+            },
+            "soajs": {
+                "controller": {"serviceParams": {}},
+                "registry": {
+                    "serviceConfig": {
+                        "key": {
+                            algorithm: "aes256",
+                            password: "soajs key lal massa"
+                        }
+                    },
+                    "custom": {
+                        "gateway": {
+                            "value": {
+                                "lastSeen": {
+                                    "network": "mw"
+                                }
+                            }
+                        }
+                    }
+                },
+                "log": {
+                    "error": (err) => {
+                        console.log(err);
+                    },
+                    "debug": (msg) => {
+                        console.log(msg);
+                    }
+                }
+            }
+        };
+
+        it("Call MW with network package override - should replace package with default", function (done) {
+            let networkProvision = {
+                "getExternalKeyData": (key, keyConfig, cb) => {
+                    return cb(null, JSON.parse(JSON.stringify(networkKeyObj)));
+                },
+                "getPackageData": (pack, cb) => {
+                    // Verify the package was overridden
+                    if (pack === "AVAPP_DEFAU") {
+                        return cb(null, {"acl": {}, "_TTL": 604800000});
+                    }
+                    return cb(new Error("Expected package AVAPP_DEFAU but got " + pack));
+                }
+            };
+            let mw_use = mw({"provision": networkProvision, "regEnvironment": "dev"});
+            mw_use(networkReq, res, (err) => {
+                if (err) {
+                    done(new Error("Unexpected error: " + err));
+                } else {
+                    done();
+                }
+            });
+        });
+
+        it("Call MW without network in registry - should NOT replace package", function (done) {
+            let reqNoNetwork = JSON.parse(JSON.stringify(networkReq));
+            reqNoNetwork.soajs.registry.custom = {};
+            reqNoNetwork.get = () => key;
+            reqNoNetwork.soajs.log = {
+                "error": (err) => { console.log(err); },
+                "debug": (msg) => { console.log(msg); }
+            };
+
+            let networkProvision = {
+                "getExternalKeyData": (key, keyConfig, cb) => {
+                    return cb(null, JSON.parse(JSON.stringify(networkKeyObj)));
+                },
+                "getPackageData": (pack, cb) => {
+                    // Verify the package was NOT overridden
+                    if (pack === "AVAPP_EXMPL") {
+                        return cb(null, {"acl": {}, "_TTL": 604800000});
+                    }
+                    return cb(new Error("Expected package AVAPP_EXMPL but got " + pack));
+                }
+            };
+            let mw_use = mw({"provision": networkProvision, "regEnvironment": "dev"});
+            mw_use(reqNoNetwork, res, (err) => {
+                if (err) {
+                    done(new Error("Unexpected error: " + err));
+                } else {
+                    done();
+                }
+            });
+        });
+
+        it("Call MW with different network - should NOT replace package", function (done) {
+            let reqDiffNetwork = JSON.parse(JSON.stringify(networkReq));
+            reqDiffNetwork.soajs.registry.custom.gateway.value.lastSeen.network = "other";
+            reqDiffNetwork.get = () => key;
+            reqDiffNetwork.soajs.log = {
+                "error": (err) => { console.log(err); },
+                "debug": (msg) => { console.log(msg); }
+            };
+
+            let networkProvision = {
+                "getExternalKeyData": (key, keyConfig, cb) => {
+                    return cb(null, JSON.parse(JSON.stringify(networkKeyObj)));
+                },
+                "getPackageData": (pack, cb) => {
+                    // Verify the package was NOT overridden (different network)
+                    if (pack === "AVAPP_EXMPL") {
+                        return cb(null, {"acl": {}, "_TTL": 604800000});
+                    }
+                    return cb(new Error("Expected package AVAPP_EXMPL but got " + pack));
+                }
+            };
+            let mw_use = mw({"provision": networkProvision, "regEnvironment": "dev"});
+            mw_use(reqDiffNetwork, res, (err) => {
+                if (err) {
+                    done(new Error("Unexpected error: " + err));
+                } else {
+                    done();
+                }
+            });
+        });
+    });
 });
