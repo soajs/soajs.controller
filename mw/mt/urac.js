@@ -14,6 +14,8 @@ let provision = coreModules.provision;
 
 const lib = require("./lib.js");
 
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
+
 function Urac(param) {
 	let _self = this;
 
@@ -101,7 +103,25 @@ Urac.prototype.resolveACL = function (cb) {
 		let productCode = _self.soajs.tenant.application.product;
 		if (_self.userRecord.groupsConfig && _self.userRecord.groupsConfig.allowedPackages) {
 			if (_self.userRecord.groupsConfig.allowedPackages[productCode]) {
-				provision.getPackagesData(_self.userRecord.groupsConfig.allowedPackages[productCode], (error, arrayACLs) => {
+				let allowedPackages = _self.userRecord.groupsConfig.allowedPackages[productCode].slice();
+
+				// Check for user-specific network package override
+				let network = get(["registry", "custom", "gateway", "value", "lastSeen", "network"], _self.soajs);
+				if (network) {
+					let keyObj = get(["controller", "serviceParams", "keyObj"], _self.soajs);
+					let networkPackageConfig = get(["config", "gateway", "networkPackages", network, productCode], keyObj);
+					if (networkPackageConfig && networkPackageConfig.users) {
+						for (let i = 0; i < allowedPackages.length; i++) {
+							if (networkPackageConfig.users[allowedPackages[i]]) {
+								let originalPackage = allowedPackages[i];
+								allowedPackages[i] = networkPackageConfig.users[allowedPackages[i]];
+								_self.soajs.log.debug("User network package override: replaced package [" + originalPackage + "] with [" + allowedPackages[i] + "] for network [" + network + "] and product [" + productCode + "]");
+							}
+						}
+					}
+				}
+
+				provision.getPackagesData(allowedPackages, (error, arrayACLs) => {
 					if (error) {
 						return cb();
 					} else {

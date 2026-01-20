@@ -632,6 +632,8 @@ let utils = {
 					obj.req.soajs.log.error(error.message, error.code);
 					return cb(146);
 				}
+				//NOTE: if the user changes the account's email or phone and validateTokenAccount is set to true,
+				// 		kick the user out to force re login. i.e. the username behaviour is similar by default
 				if (obj.keyObj.config && obj.keyObj.config.gateway && obj.keyObj.config.gateway.validateTokenAccount) {
 					if (obj.req.soajs.uracDriver.bearerTokenUser && record) {
 						if (obj.keyObj.config.gateway.validateTokenAccount.email && record.email) {
