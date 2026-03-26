@@ -141,6 +141,7 @@ module.exports = (configuration) => {
 	 */
 	return (req, res) => {
 		preRedirect(req, res, core, function (obj) {
+			let monitor = get(["registry", "custom", "gateway", "value", "gotoService", "monitor"], req.soajs);
 			let log_monitor_triggered = false;
 			let log_monitor = (doc) => {
 				if (log_monitor_triggered) {
@@ -195,8 +196,6 @@ module.exports = (configuration) => {
 					}
 				});
 			};
-
-			let monitor = get(["registry", "custom", "gateway", "value", "gotoService", "monitor"], req.soajs);
 			let monitoObj = {
 				"time": {}
 			};
