@@ -12,6 +12,121 @@ const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
 const { httpRequestLight, proxyRequestMonitor } = require("../../lib/request.js");
 
+// Monitor buffer for batch uploads
+let monitorBuffer = [];
+let monitorFlushTimer = null;
+let monitorFlushInProgress = false;
+let lastReqForFlush = null;
+
+/**
+ * Flush the monitor buffer to soamonitor
+ */
+function flushMonitorBuffer() {
+	if (monitorFlushInProgress || monitorBuffer.length === 0 || !lastReqForFlush) {
+		return;
+	}
+
+	monitorFlushInProgress = true;
+
+	// Clear timer if exists
+	if (monitorFlushTimer) {
+		clearTimeout(monitorFlushTimer);
+		monitorFlushTimer = null;
+	}
+
+	// Take current buffer and reset
+	let itemsToSend = monitorBuffer;
+	let req = lastReqForFlush;
+	monitorBuffer = [];
+
+	let soamonitor = "soamonitor";
+	let soamonitorVersion = "1";
+	let port = get(["registry", "services", "soamonitor", "port"], req.soajs) || "4050";
+	let api = "/monitor/items";  // Batch endpoint
+
+	req.soajs.awareness.getHost(soamonitor, soamonitorVersion, function (host) {
+		monitorFlushInProgress = false;
+
+		if (!host) {
+			req.soajs.log.debug('Monitor buffer flush: Unable to find host for ' + soamonitor);
+			// Put items back in buffer for retry
+			monitorBuffer = itemsToSend.concat(monitorBuffer);
+			return;
+		}
+
+		// Convert body/response to strings
+		itemsToSend.forEach(doc => {
+			if (doc.body) {
+				doc.body = doc.body.toString();
+			}
+			if (doc.response) {
+				doc.response = doc.response.toString();
+			}
+		});
+
+		let uri = "http://" + host + ":" + port + api;
+		let options = {
+			"method": "POST",
+			"uri": uri,
+			"data": { "items": itemsToSend },
+			"json": true
+		};
+
+		httpRequestLight(options)
+			.then((body) => {
+				if (body && !body.result) {
+					req.soajs.log.debug('Monitor buffer flush response:', body);
+				} else {
+					req.soajs.log.debug('Monitor buffer flushed: ' + itemsToSend.length + ' items');
+				}
+			})
+			.catch((error) => {
+				req.soajs.log.debug('Monitor buffer flush failed: ' + error.message);
+			});
+	});
+}
+
+/**
+ * Add item to monitor buffer and trigger flush if needed
+ * @param {Object} req - Request object
+ * @param {Object} doc - Monitor document to buffer
+ * @param {Object} monitor - Monitor configuration
+ */
+function bufferMonitorItem(req, doc, monitor) {
+	monitorBuffer.push(doc);
+	lastReqForFlush = req;
+
+	let bufferConfig = monitor.buffer || {};
+	let bufferTime = bufferConfig.time;
+	let bufferLimit = bufferConfig.limit;
+
+	// Check count threshold
+	if (bufferLimit && monitorBuffer.length >= bufferLimit) {
+		flushMonitorBuffer();
+		return;
+	}
+
+	// Start timer if not already running and time threshold is set
+	if (bufferTime && !monitorFlushTimer) {
+		monitorFlushTimer = setTimeout(() => {
+			monitorFlushTimer = null;
+			flushMonitorBuffer();
+		}, bufferTime);
+	}
+}
+
+// Graceful shutdown - flush remaining buffer
+process.on('SIGTERM', () => {
+	if (monitorBuffer.length > 0 && !monitorFlushInProgress) {
+		// Best-effort cleanup
+		monitorBuffer = [];
+		if (monitorFlushTimer) {
+			clearTimeout(monitorFlushTimer);
+			monitorFlushTimer = null;
+		}
+	}
+});
+
 module.exports = (configuration) => {
 
 	let core = configuration.core;
@@ -32,6 +147,14 @@ module.exports = (configuration) => {
 					return;
 				}
 				log_monitor_triggered = true;
+
+				// Check if buffering is enabled
+				if (monitor && monitor.buffer && (monitor.buffer.time || monitor.buffer.limit)) {
+					bufferMonitorItem(req, doc, monitor);
+					return;
+				}
+
+				// Original immediate send logic (unchanged)
 				let soamonitor = "soamonitor";
 				let soamonitorVersion = "1";
 				let port = get(["registry", "services", "soamonitor", "port"], req.soajs);
