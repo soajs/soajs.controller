@@ -14,8 +14,22 @@ const registryModule = require("./../modules/registry");
 
 const httpProxy = require('http-proxy');
 const http = require('http');
-const url = require('url');
 const soajsLib = require("soajs.core.libs");
+
+/**
+ * Parse URL using WHATWG URL API and return object compatible with legacy url.parse()
+ * @param {string} urlString - URL string to parse
+ * @returns {Object} - Object with pathname, path, and query properties
+ */
+const parseURL = (urlString) => {
+	const urlObj = new URL(urlString, 'http://localhost');
+	const search = urlObj.search || '';
+	return {
+		pathname: urlObj.pathname,
+		path: urlObj.pathname + search,
+		query: Object.fromEntries(urlObj.searchParams)
+	};
+};
 const soajsUtils = soajsLib.utils;
 
 const packageInfo = require("../package.json");
@@ -148,7 +162,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 		log.error('Internal proxy error: ' + error);
 		
 		res.writeHead(200, {'Content-Type': 'application/json'});
-		let parsedUrl = url.parse(req.url, true);
+		let parsedUrl = parseURL(req.url);
 		let response = maintenanceResponse(parsedUrl, param, '/proxySocket');
 		return res.end(JSON.stringify(response));
 	});
@@ -159,7 +173,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 			res.writeHead(200, {'Content-Type': 'image/x-icon'});
 			return res.end();
 		}
-		let parsedUrl = url.parse(req.url, true);
+		let parsedUrl = parseURL(req.url);
 		
 		if (parsedUrl.pathname === '/reloadRegistry') {
 			reloadRegistry(parsedUrl, core, log, param, serviceIp, (response) => {

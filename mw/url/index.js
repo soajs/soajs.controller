@@ -8,8 +8,22 @@
  * found in the LICENSE file at the root of this repository
  */
 
-const url = require('url');
 let libParseURL = require('../../lib/parseURL');
+
+/**
+ * Parse URL using WHATWG URL API and return object compatible with legacy url.parse()
+ * @param {string} urlString - URL string to parse
+ * @returns {Object} - Object with pathname, path, and query properties
+ */
+const parseURL = (urlString) => {
+	const urlObj = new URL(urlString, 'http://localhost');
+	const search = urlObj.search || '';
+	return {
+		pathname: urlObj.pathname,
+		path: urlObj.pathname + search,
+		query: Object.fromEntries(urlObj.searchParams)
+	};
+};
 
 /**
  * Assure req param (soajs & soajs.controller)
@@ -30,7 +44,7 @@ module.exports = (configuration) => {
 			req.soajs.controller = {};
 		}
 
-		let parsedUrl = url.parse(req.url, true);
+		let parsedUrl = parseURL(req.url);
 		if (!req.query && parsedUrl.query) {
 			req.query = parsedUrl.query;
 		}
