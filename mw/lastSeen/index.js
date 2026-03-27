@@ -52,11 +52,12 @@ function getRouteRegExp(route) {
  * Check if the current request should trigger lastSeen
  * @param {Object} include - The include whitelist configuration
  * @param {string} serviceName - The current service name
- * @param {string} apiPath - The current API path
+ * @param {string} apiPath - The current API path (relative to service, e.g., "/active")
+ * @param {string} fullPath - The full API path (e.g., "/connectspaces/active")
  * @param {string} method - The HTTP method (GET, POST, etc.)
  * @returns {boolean} - true if lastSeen should be triggered
  */
-function shouldTriggerLastSeen(include, serviceName, apiPath, method) {
+function shouldTriggerLastSeen(include, serviceName, apiPath, fullPath, method) {
     // No include filter = trigger for all (backward compatible)
     if (!include) {
         return true;
@@ -74,9 +75,17 @@ function shouldTriggerLastSeen(include, serviceName, apiPath, method) {
         return true;
     }
 
-    // API-level match
+    // API-level match - check both relative path and full path for backward compatibility
     if (typeof serviceConfig === 'object' && serviceConfig.apis) {
-        return isApiMethodMatch(serviceConfig.apis, apiPath, method);
+        // Try relative path first (e.g., "/active")
+        if (apiPath && isApiMethodMatch(serviceConfig.apis, apiPath, method)) {
+            return true;
+        }
+        // Fallback to full path for backward compatibility (e.g., "/connectspaces/active")
+        if (fullPath && fullPath !== apiPath && isApiMethodMatch(serviceConfig.apis, fullPath, method)) {
+            return true;
+        }
+        return false;
     }
 
     return false;
@@ -150,11 +159,13 @@ module.exports = () => {
 
                 // Check include filter
                 let currentService = get(["soajs", "controller", "serviceParams", "name"], req);
-                let currentApi = get(["soajs", "controller", "serviceParams", "parsedUrl", "pathname"], req);
+                // Get both relative path (e.g., "/active") and full path (e.g., "/connectspaces/active")
+                let currentApi = get(["soajs", "controller", "serviceParams", "path"], req);
+                let fullPath = get(["soajs", "controller", "serviceParams", "parsedUrl", "pathname"], req);
                 let currentMethod = req.method;
 
-                if (!shouldTriggerLastSeen(lastSeen.include, currentService, currentApi, currentMethod)) {
-                    req.soajs.log.debug("lastSeen skipped for [" + currentService + " " + currentMethod + " " + currentApi + "]");
+                if (!shouldTriggerLastSeen(lastSeen.include, currentService, currentApi, fullPath, currentMethod)) {
+                    req.soajs.log.debug("lastSeen skipped for [" + currentService + " " + currentMethod + " " + (currentApi || fullPath) + "]");
                     return;
                 }
 
