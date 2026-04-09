@@ -31,7 +31,7 @@ module.exports = (configuration) => {
 		}
 		if (!ACL && req.soajs.controller.serviceParams.packObj.acl) {
 			req.soajs.log.debug("soajsRoute keyACL: Found Default ACL at Package level, setting default ACL configuration.");
-			ACL = req.soajs.controller.serviceParams.packObj.acl;
+			ACL = coreLibs.utils.cloneObj(req.soajs.controller.serviceParams.packObj.acl);
 		}
 		let finalACL = null;
 		if (ACL) {

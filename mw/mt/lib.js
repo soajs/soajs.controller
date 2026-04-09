@@ -13,7 +13,7 @@ let _ = require("lodash");
 
 module.exports = {
 	"mergeACLArray": function (arrayACL, cb) {
-		
+
 		//if only one return it
 		if (arrayACL.length === 1) {
 			return cb(null, arrayACL[0]);
@@ -30,30 +30,30 @@ module.exports = {
 			function () {
 				return cb(null, acl);
 			});
-		
+
 		function mergePackageAcl(oneAcl, cb) {
 			//first object
 			if (!acl.acl) {
-				acl.acl = oneAcl.acl;
+				acl.acl = _.cloneDeep(oneAcl.acl);
 				return cb();
 			}
 			async.eachOfSeries(oneAcl.acl, function (service, serviceName, serviceCall) {
 				if (!acl.acl[serviceName]) {
-					acl.acl[serviceName] = service;
+					acl.acl[serviceName] = _.cloneDeep(service);
 					return serviceCall();
 				}
 				async.eachOfSeries(service, function (version, versionValue, versionCall) {
 					if (!acl.acl[serviceName][versionValue]) {
-						acl.acl[serviceName][versionValue] = version;
+						acl.acl[serviceName][versionValue] = _.cloneDeep(version);
 						return serviceCall();
 					}
 					if (version.apisPermission === "restricted") {
 						if (acl.acl[serviceName] && acl.acl[serviceName][versionValue] && acl.acl[serviceName][versionValue].apisPermission && acl.acl[serviceName][versionValue].apisPermission === "restricted") {
 							//only restricted allowed to merge
-							acl.acl[serviceName][versionValue] = _.merge(acl.acl[serviceName][versionValue], version);
+							acl.acl[serviceName][versionValue] = _.merge(acl.acl[serviceName][versionValue], _.cloneDeep(version));
 							return versionCall();
 						} else {
-							acl.acl[serviceName][versionValue] = version;
+							acl.acl[serviceName][versionValue] = _.cloneDeep(version);
 							return versionCall();
 						}
 					} else {
@@ -62,42 +62,42 @@ module.exports = {
 							return versionCall();
 						} else {
 							//only non restricted allowed to merge
-							acl.acl[serviceName][versionValue] = _.merge(acl.acl[serviceName][versionValue], version);
+							acl.acl[serviceName][versionValue] = _.merge(acl.acl[serviceName][versionValue], _.cloneDeep(version));
 							return versionCall();
 						}
 					}
 				}, serviceCall);
 			}, cb);
 		}
-		
+
 		function mergePackageAclAllEnv(oneAcl, cb) {
 			//first object
 			if (!acl.acl_all_env) {
-				acl.acl_all_env = oneAcl.acl_all_env;
+				acl.acl_all_env = _.cloneDeep(oneAcl.acl_all_env);
 				return cb();
 			}
 			async.eachOf(oneAcl.acl_all_env, function (environment, envName, envCall) {
 				if (!acl.acl_all_env[envName]) {
-					acl.acl_all_env[envName] = environment;
+					acl.acl_all_env[envName] = _.cloneDeep(environment);
 					return envCall();
 				}
 				async.eachOf(environment, function (service, serviceName, serviceCall) {
 					if (!acl.acl_all_env[envName][serviceName]) {
-						acl.acl_all_env[envName][serviceName] = service;
+						acl.acl_all_env[envName][serviceName] = _.cloneDeep(service);
 						return serviceCall();
 					}
 					async.eachOf(service, function (version, versionValue, versionCall) {
 						if (!acl.acl_all_env[envName][serviceName][versionValue]) {
-							acl.acl_all_env[envName][serviceName][versionValue] = version;
+							acl.acl_all_env[envName][serviceName][versionValue] = _.cloneDeep(version);
 							return serviceCall();
 						}
 						if (version.apisPermission === "restricted") {
 							if (acl.acl_all_env[envName][serviceName][versionValue].apisPermission && acl.acl_all_env[envName][serviceName][versionValue].apisPermission === "restricted") {
 								//only restricted allowed to merge
-								acl.acl_all_env[envName][serviceName][versionValue] = _.merge(acl.acl_all_env[envName][serviceName][versionValue], version);
+								acl.acl_all_env[envName][serviceName][versionValue] = _.merge(acl.acl_all_env[envName][serviceName][versionValue], _.cloneDeep(version));
 								return versionCall();
 							} else {
-								acl.acl_all_env[envName][serviceName][versionValue] = version;
+								acl.acl_all_env[envName][serviceName][versionValue] = _.cloneDeep(version);
 								return versionCall();
 							}
 						} else {
@@ -106,7 +106,7 @@ module.exports = {
 								return versionCall();
 							} else {
 								//only non restricted allowed to merge
-								acl.acl_all_env[envName][serviceName][versionValue] = _.merge(acl.acl_all_env[envName][serviceName][versionValue], version);
+								acl.acl_all_env[envName][serviceName][versionValue] = _.merge(acl.acl_all_env[envName][serviceName][versionValue], _.cloneDeep(version));
 								return versionCall();
 							}
 						}
