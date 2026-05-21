@@ -32,7 +32,7 @@ describe("Unit test for: mw - cache", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};
@@ -49,7 +49,7 @@ describe("Unit test for: mw - cache", () => {
 				method: 'PUT',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};
@@ -66,7 +66,7 @@ describe("Unit test for: mw - cache", () => {
 				method: 'DELETE',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};
@@ -85,7 +85,7 @@ describe("Unit test for: mw - cache", () => {
 				method: 'GET',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};
@@ -102,13 +102,15 @@ describe("Unit test for: mw - cache", () => {
 				method: 'GET',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'unconfigured', path: '/test' } },
+					controller: { serviceParams: { name: 'unconfigured', serviceInfo: ['', 'unconfigured', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									cache: {
-										other: { enabled: true, apis: { 'GET /test': { enabled: true } } }
+										services: {
+											other: { enabled: true, apis: { 'GET /test': { enabled: true } } }
+										}
 									}
 								}
 							}
@@ -129,13 +131,15 @@ describe("Unit test for: mw - cache", () => {
 				method: 'GET',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									cache: {
-										test: { enabled: false, apis: { 'GET /test': { enabled: true } } }
+										services: {
+											test: { enabled: false, apis: { 'GET /test': { enabled: true } } }
+										}
 									}
 								}
 							}
@@ -156,13 +160,15 @@ describe("Unit test for: mw - cache", () => {
 				method: 'GET',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/other' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'other'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									cache: {
-										test: { enabled: true, apis: { 'GET /test': { enabled: true } } }
+										services: {
+											test: { enabled: true, apis: { 'GET /test': { enabled: true } } }
+										}
 									}
 								}
 							}
@@ -183,13 +189,15 @@ describe("Unit test for: mw - cache", () => {
 				method: 'GET',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									cache: {
-										test: { enabled: true, apis: { 'GET /test': { enabled: false } } }
+										services: {
+											test: { enabled: true, apis: { 'GET /test': { enabled: false } } }
+										}
 									}
 								}
 							}
@@ -213,7 +221,7 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-cache-miss' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
@@ -221,7 +229,9 @@ describe("Unit test for: mw - cache", () => {
 									cache: {
 										model: 'memory',
 										defaultTTL: 60000,
-										test: { enabled: true, apis: { 'GET /test': { enabled: true, ttl: 30000 } } }
+										services: {
+											test: { enabled: true, apis: { 'GET /test': { enabled: true, ttl: 30000 } } }
+										}
 									}
 								}
 							}
@@ -254,14 +264,16 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-param-cache' },
-					controller: { serviceParams: { name: 'test', path: '/users/123' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'users', '123'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									cache: {
 										model: 'memory',
-										test: { enabled: true, apis: { 'GET /users/:id': { enabled: true, ttl: 30000 } } }
+										services: {
+											test: { enabled: true, apis: { 'GET /users/:id': { enabled: true, ttl: 30000 } } }
+										}
 									}
 								}
 							}
@@ -294,7 +306,7 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-default-ttl' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
@@ -302,7 +314,9 @@ describe("Unit test for: mw - cache", () => {
 									cache: {
 										model: 'memory',
 										defaultTTL: 300000,
-										test: { enabled: true, apis: { 'GET /test': { enabled: true } } }
+										services: {
+											test: { enabled: true, apis: { 'GET /test': { enabled: true } } }
+										}
 									}
 								}
 							}
@@ -331,14 +345,16 @@ describe("Unit test for: mw - cache", () => {
 				query: { page: '1', limit: '10' },
 				soajs: {
 					tenant: { id: 'tenant-query' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									cache: {
 										model: 'memory',
-										test: { enabled: true, apis: { 'GET /test': { enabled: true, ttl: 30000 } } }
+										services: {
+											test: { enabled: true, apis: { 'GET /test': { enabled: true, ttl: 30000 } } }
+										}
 									}
 								}
 							}
@@ -365,14 +381,16 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-empty-query' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									cache: {
 										model: 'memory',
-										test: { enabled: true, apis: { 'GET /test': { enabled: true, ttl: 30000 } } }
+										services: {
+											test: { enabled: true, apis: { 'GET /test': { enabled: true, ttl: 30000 } } }
+										}
 									}
 								}
 							}
@@ -411,7 +429,7 @@ describe("Unit test for: mw - cache", () => {
 			let req = {
 				method: 'GET',
 				soajs: {
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};

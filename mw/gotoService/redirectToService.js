@@ -315,7 +315,21 @@ module.exports = (configuration) => {
 			let resContentType = "";
 			const extraOptions = {};
 
-			if (monitor && !monitor_service_blacklist && monitor.req_response) {
+			// Cache response capture
+			let cacheContext = req.soajs.cacheContext;
+			let cacheResponseChunks = [];
+			let cacheResponseStatusCode = 200;
+			let cacheResponseHeaders = {};
+
+			// Idempotency response capture
+			let idempotencyContext = req.soajs.idempotencyContext;
+			let idempotencyResponseChunks = [];
+			let idempotencyResponseStatusCode = 200;
+			let idempotencyResponseHeaders = {};
+
+			// Set up events for monitoring, caching, and/or idempotency
+			let needsEvents = (monitor && !monitor_service_blacklist && monitor.req_response) || cacheContext || idempotencyContext;
+			if (needsEvents) {
 				const MAX_RESPONSE_SIZE = process.env.SOAJS_MAX_RESPONSE_SIZE || 10 * 1024 * 1024; // 10MB default
 				let responseSize = 0;
 				let responseExceeded = false;
@@ -330,35 +344,78 @@ module.exports = (configuration) => {
 								isStream = resContentType.match(/stream/i);
 							}
 						}
-						monitoObj.time.res_start = new Date().getTime();
+						if (monitor && !monitor_service_blacklist && monitor.req_response) {
+							monitoObj.time.res_start = new Date().getTime();
+						}
 					},
 					"data": (chunk) => {
-						if (!isStream && allowedContentType) {
-							responseSize += chunk.length;
-							if (responseSize > MAX_RESPONSE_SIZE) {
-								if (!responseExceeded) {
-									responseExceeded = true;
-									monitoObj.response = "{\"error\": \"Response body exceeds maximum size limit\"}";
+						// Capture for caching
+						if (cacheContext) {
+							cacheResponseChunks.push(chunk);
+						}
+						// Capture for idempotency
+						if (idempotencyContext) {
+							idempotencyResponseChunks.push(chunk);
+						}
+						// Capture for monitoring
+						if (monitor && !monitor_service_blacklist && monitor.req_response) {
+							if (!isStream && allowedContentType) {
+								responseSize += chunk.length;
+								if (responseSize > MAX_RESPONSE_SIZE) {
+									if (!responseExceeded) {
+										responseExceeded = true;
+										monitoObj.response = "{\"error\": \"Response body exceeds maximum size limit\"}";
+									}
+								} else if (!responseExceeded) {
+									if (!monitoObj.response) {
+										monitoObj.response = chunk;
+									} else {
+										monitoObj.response += chunk;
+									}
 								}
-							} else if (!responseExceeded) {
-								if (!monitoObj.response) {
-									monitoObj.response = chunk;
-								} else {
-									monitoObj.response += chunk;
-								}
+							} else {
+								monitoObj.response = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";
 							}
-						} else {
-							monitoObj.response = "{\"contentType\": \"is stream or not allowed\", \"value': \"" + resContentType + "\"}";
 						}
 					},
 					"fetchProxReq": (proxyReq) => {
 						req.soajs.controller.redirectedRequest = proxyReq;
+					},
+					"statusCode": (statusCode, headers) => {
+						if (cacheContext) {
+							cacheResponseStatusCode = statusCode;
+							cacheResponseHeaders = headers || {};
+						}
+						if (idempotencyContext) {
+							idempotencyResponseStatusCode = statusCode;
+							idempotencyResponseHeaders = headers || {};
+						}
 					}
 				};
 			}
 
 			proxyRequestMonitor(req, res, requestOptions, extraOptions)
 				.then(() => {
+					// Save to cache if applicable
+					if (cacheContext && cacheResponseStatusCode >= 200 && cacheResponseStatusCode < 300) {
+						let cacheBody = Buffer.concat(cacheResponseChunks).toString('utf8');
+						let cacheData = {
+							statusCode: cacheResponseStatusCode,
+							headers: cacheResponseHeaders,
+							body: cacheBody
+						};
+						cacheContext.model.set(cacheContext.key, cacheData, cacheContext.ttl);
+					}
+					// Complete idempotency if applicable
+					if (idempotencyContext) {
+						let idempotencyBody = Buffer.concat(idempotencyResponseChunks).toString('utf8');
+						let idempotencyData = {
+							statusCode: idempotencyResponseStatusCode,
+							headers: idempotencyResponseHeaders,
+							body: idempotencyBody
+						};
+						idempotencyContext.model.complete(idempotencyContext.key, idempotencyData, idempotencyContext.ttl);
+					}
 					if (monitor && !monitor_service_blacklist && monitor.req_response) {
 						monitoObj.time.res_end = new Date().getTime();
 						log_monitor(monitoObj);
@@ -369,6 +426,10 @@ module.exports = (configuration) => {
 					if (req.soajs.controller.redirectedRequest) {
 						req.soajs.controller.redirectedRequest.destroy();
 						req.soajs.controller.redirectedRequest = null;
+					}
+					// Unlock idempotency on error
+					if (idempotencyContext) {
+						idempotencyContext.model.unlock(idempotencyContext.key);
 					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						req.soajs.controllerResponse(core.error.getError(135));

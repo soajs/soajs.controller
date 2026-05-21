@@ -32,7 +32,7 @@ describe("Unit test for: mw - idempotency", () => {
 				headers: {},
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};
@@ -52,7 +52,7 @@ describe("Unit test for: mw - idempotency", () => {
 				headers: { 'idempotency-key': 'not-a-valid-uuid' },
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} },
 					controllerResponse: (data) => {
 						responseData = data;
@@ -78,7 +78,7 @@ describe("Unit test for: mw - idempotency", () => {
 				headers: { 'idempotency-key': 'a1b2c3d4-e5f6-1789-abcd-ef0123456789' }, // v1 UUID
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} },
 					controllerResponse: (data) => {
 						responseData = data;
@@ -106,7 +106,7 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};
@@ -124,13 +124,15 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'GET',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									idempotency: {
-										test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										services: {
+											test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										}
 									}
 								}
 							}
@@ -152,13 +154,15 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'unconfigured', path: '/test' } },
+					controller: { serviceParams: { name: 'unconfigured', serviceInfo: ['', 'unconfigured', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									idempotency: {
-										other: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										services: {
+											other: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										}
 									}
 								}
 							}
@@ -180,13 +184,15 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									idempotency: {
-										test: { enabled: false, ttl: 60000, apis: ['POST /test'] }
+										services: {
+											test: { enabled: false, ttl: 60000, apis: ['POST /test'] }
+										}
 									}
 								}
 							}
@@ -208,13 +214,15 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/other' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'other'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									idempotency: {
-										test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										services: {
+											test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										}
 									}
 								}
 							}
@@ -238,14 +246,16 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: 'tenant-new' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									idempotency: {
 										model: 'memory',
-										test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										services: {
+											test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										}
 									}
 								}
 							}
@@ -272,14 +282,16 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'PUT',
 				soajs: {
 					tenant: { id: 'tenant-param' },
-					controller: { serviceParams: { name: 'test', path: '/users/123/update' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'users', '123', 'update'] } },
 					registry: {
 						custom: {
 							gateway: {
 								value: {
 									idempotency: {
 										model: 'memory',
-										test: { enabled: true, ttl: 60000, apis: ['PUT /users/:id/update'] }
+										services: {
+											test: { enabled: true, ttl: 60000, apis: ['PUT /users/:id/update'] }
+										}
 									}
 								}
 							}
@@ -308,7 +320,7 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};
@@ -326,7 +338,7 @@ describe("Unit test for: mw - idempotency", () => {
 				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
-					controller: { serviceParams: { name: 'test', path: '/test' } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
 					registry: { custom: {} }
 				}
 			};

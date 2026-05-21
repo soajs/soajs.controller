@@ -80,7 +80,9 @@ module.exports = function (configuration) {
 		}
 
 		const serviceName = req.soajs.controller.serviceParams.name;
-		const apiPath = req.soajs.controller.serviceParams.path;
+		// Strip service prefix from pathname to get API path (e.g., /console/registry -> /registry)
+		const serviceInfo = req.soajs.controller.serviceParams.serviceInfo;
+		const apiPath = "/" + serviceInfo.slice(2).join("/");
 		const method = req.method.toUpperCase();
 
 		if (method === 'GET') {
@@ -92,7 +94,7 @@ module.exports = function (configuration) {
 			return next();
 		}
 
-		const serviceConfig = idempotencyConfig[serviceName];
+		const serviceConfig = idempotencyConfig.services && idempotencyConfig.services[serviceName];
 		if (!serviceConfig || !serviceConfig.enabled) {
 			return next();
 		}
@@ -144,50 +146,14 @@ module.exports = function (configuration) {
 					return;
 				}
 
-				let responseData = {
-					statusCode: 200,
-					headers: {},
-					body: ''
+				// Store idempotency context for gotoService to use
+				req.soajs.idempotencyContext = {
+					key: key,
+					ttl: ttl,
+					modelType: modelType,
+					model: model[modelType],
+					log: configuration.log
 				};
-				let bodyChunks = [];
-
-				const originalWriteHead = res.writeHead.bind(res);
-				const originalWrite = res.write.bind(res);
-				const originalEnd = res.end.bind(res);
-
-				res.writeHead = function (statusCode, headers) {
-					responseData.statusCode = statusCode;
-					if (headers) {
-						responseData.headers = { ...headers };
-					}
-					return originalWriteHead(statusCode, headers);
-				};
-
-				res.write = function (chunk, encoding, callback) {
-					if (chunk) {
-						bodyChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-					}
-					return originalWrite(chunk, encoding, callback);
-				};
-
-				res.end = function (chunk, encoding, callback) {
-					if (chunk) {
-						bodyChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-					}
-					responseData.body = Buffer.concat(bodyChunks).toString('utf8');
-
-					model[modelType].complete(key, responseData, ttl).catch((err) => {
-						configuration.log.error('Idempotency complete error:', err);
-					});
-
-					return originalEnd(chunk, encoding, callback);
-				};
-
-				res.on('error', () => {
-					model[modelType].unlock(key).catch((err) => {
-						configuration.log.error('Idempotency unlock error:', err);
-					});
-				});
 
 				next();
 			} catch (err) {
@@ -200,3 +166,6 @@ module.exports = function (configuration) {
 		processIdempotency();
 	};
 };
+
+// Export model for external use
+module.exports.model = model;

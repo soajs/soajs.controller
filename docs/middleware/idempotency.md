@@ -59,22 +59,24 @@ The Idempotency middleware prevents duplicate write operations by tracking reque
 {
   "idempotency": {
     "model": "memory",                    // Storage: "memory" or "mongo"
-    "av": {                               // Service name
-      "enabled": true,                    // Enable for this service
-      "ttl": 60000,                       // Time-to-live in ms (default: 60s)
-      "apis": [                           // APIs to protect
-        "POST /av/calls",
-        "PUT /av/call/p2p/ended",
-        "PUT /av/call/p2p/rejected"
-      ]
-    },
-    "payment": {
-      "enabled": true,
-      "ttl": 120000,
-      "apis": [
-        "POST /payment/charge",
-        "POST /payment/refund"
-      ]
+    "services": {                         // Service configurations
+      "av": {                             // Service name
+        "enabled": true,                  // Enable for this service
+        "ttl": 60000,                     // Time-to-live in ms (default: 60s)
+        "apis": [                         // APIs to protect
+          "POST /calls",
+          "PUT /call/p2p/ended",
+          "PUT /call/p2p/rejected"
+        ]
+      },
+      "payment": {
+        "enabled": true,
+        "ttl": 120000,
+        "apis": [
+          "POST /charge",
+          "POST /refund"
+        ]
+      }
     }
   }
 }
@@ -83,9 +85,9 @@ The Idempotency middleware prevents duplicate write operations by tracking reque
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `model` | string | `"memory"` | Storage backend: `"memory"` or `"mongo"` |
-| `[service].enabled` | boolean | `false` | Enable idempotency for this service |
-| `[service].ttl` | number | `60000` | Key expiration time in milliseconds |
-| `[service].apis` | string[] | `[]` | API patterns to protect (e.g., `"POST /path"`) |
+| `services.[name].enabled` | boolean | `false` | Enable idempotency for this service |
+| `services.[name].ttl` | number | `60000` | Key expiration time in milliseconds |
+| `services.[name].apis` | string[] | `[]` | API patterns to protect (e.g., `"POST /path"`) |
 
 ## API Pattern Matching
 

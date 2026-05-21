@@ -56,33 +56,35 @@ The Cache middleware provides response caching for GET APIs with per-API TTL con
   "cache": {
     "model": "memory",                    // Storage: "memory" or "mongo"
     "defaultTTL": 300000,                 // Default TTL: 5 minutes
-    "av": {                               // Service name
-      "enabled": true,                    // Enable caching for this service
-      "apis": {
-        "GET /av/calls": {
-          "enabled": true,
-          "ttl": 30000                    // 30 seconds
-        },
-        "GET /av/call/:id": {
-          "enabled": true,
-          "ttl": 60000                    // 60 seconds
-        },
-        "GET /av/users": {
-          "enabled": true
-          // Uses defaultTTL (300000ms)
+    "services": {                         // Service configurations
+      "av": {                             // Service name
+        "enabled": true,                  // Enable caching for this service
+        "apis": {
+          "GET /calls": {
+            "enabled": true,
+            "ttl": 30000                  // 30 seconds
+          },
+          "GET /call/:id": {
+            "enabled": true,
+            "ttl": 60000                  // 60 seconds
+          },
+          "GET /users": {
+            "enabled": true
+            // Uses defaultTTL (300000ms)
+          }
         }
-      }
-    },
-    "catalog": {
-      "enabled": true,
-      "apis": {
-        "GET /catalog/products": {
-          "enabled": true,
-          "ttl": 600000                   // 10 minutes
-        },
-        "GET /catalog/categories": {
-          "enabled": true,
-          "ttl": 3600000                  // 1 hour
+      },
+      "catalog": {
+        "enabled": true,
+        "apis": {
+          "GET /products": {
+            "enabled": true,
+            "ttl": 600000                 // 10 minutes
+          },
+          "GET /categories": {
+            "enabled": true,
+            "ttl": 3600000                // 1 hour
+          }
         }
       }
     }
@@ -94,10 +96,10 @@ The Cache middleware provides response caching for GET APIs with per-API TTL con
 |-------|------|---------|-------------|
 | `model` | string | `"memory"` | Storage backend: `"memory"` or `"mongo"` |
 | `defaultTTL` | number | `300000` | Default cache TTL in milliseconds (5 min) |
-| `[service].enabled` | boolean | `false` | Enable caching for this service |
-| `[service].apis` | object | `{}` | API-specific cache configuration |
-| `[service].apis[api].enabled` | boolean | `false` | Enable caching for this API |
-| `[service].apis[api].ttl` | number | `defaultTTL` | Cache TTL for this API |
+| `services.[name].enabled` | boolean | `false` | Enable caching for this service |
+| `services.[name].apis` | object | `{}` | API-specific cache configuration |
+| `services.[name].apis[api].enabled` | boolean | `false` | Enable caching for this API |
+| `services.[name].apis[api].ttl` | number | `defaultTTL` | Cache TTL for this API |
 
 ## API Pattern Matching
 

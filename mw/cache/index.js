@@ -65,6 +65,7 @@ function matchesApi(method, path, apis) {
 	return null;
 }
 
+// Export model for use by gotoService
 module.exports = function (configuration) {
 	model.memory.init(configuration.log);
 	model.mongo.init(configuration.log, configuration.gatewayDB);
@@ -79,7 +80,9 @@ module.exports = function (configuration) {
 		}
 
 		const serviceName = req.soajs.controller.serviceParams.name;
-		const apiPath = req.soajs.controller.serviceParams.path;
+		// Strip service prefix from pathname to get API path (e.g., /marketplace/items -> /items)
+		const serviceInfo = req.soajs.controller.serviceParams.serviceInfo;
+		const apiPath = "/" + serviceInfo.slice(2).join("/");
 		const method = req.method.toUpperCase();
 
 		const cacheConfig = get(["soajs", "registry", "custom", "gateway", "value", "cache"], req);
@@ -87,7 +90,7 @@ module.exports = function (configuration) {
 			return next();
 		}
 
-		const serviceConfig = cacheConfig[serviceName];
+		const serviceConfig = cacheConfig.services && cacheConfig.services[serviceName];
 		if (!serviceConfig || !serviceConfig.enabled) {
 			return next();
 		}
@@ -122,52 +125,16 @@ module.exports = function (configuration) {
 					return;
 				}
 
+				// Store cache context for gotoService to use
+				req.soajs.cacheContext = {
+					key: key,
+					ttl: ttl,
+					modelType: modelType,
+					model: model[modelType],
+					log: configuration.log
+				};
+
 				res.setHeader('X-Cache', 'MISS');
-
-				let responseData = {
-					statusCode: 200,
-					headers: {},
-					body: ''
-				};
-				let bodyChunks = [];
-
-				const originalWriteHead = res.writeHead.bind(res);
-				const originalWrite = res.write.bind(res);
-				const originalEnd = res.end.bind(res);
-
-				res.writeHead = function (statusCode, headers) {
-					responseData.statusCode = statusCode;
-					if (headers) {
-						const filteredHeaders = { ...headers };
-						delete filteredHeaders['X-Cache'];
-						delete filteredHeaders['X-Cache-Age'];
-						responseData.headers = filteredHeaders;
-					}
-					return originalWriteHead(statusCode, headers);
-				};
-
-				res.write = function (chunk, encoding, callback) {
-					if (chunk) {
-						bodyChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-					}
-					return originalWrite(chunk, encoding, callback);
-				};
-
-				res.end = function (chunk, encoding, callback) {
-					if (chunk) {
-						bodyChunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-					}
-					responseData.body = Buffer.concat(bodyChunks).toString('utf8');
-
-					if (responseData.statusCode >= 200 && responseData.statusCode < 300) {
-						model[modelType].set(key, responseData, ttl).catch((err) => {
-							configuration.log.error('Cache set error:', err);
-						});
-					}
-
-					return originalEnd(chunk, encoding, callback);
-				};
-
 				next();
 			} catch (err) {
 				configuration.log.error('Cache error:', err);
@@ -178,3 +145,6 @@ module.exports = function (configuration) {
 		processCache();
 	};
 };
+
+// Export model for external use
+module.exports.model = model;
