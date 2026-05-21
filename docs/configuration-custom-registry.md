@@ -16,6 +16,13 @@ registry.custom
 │       │   ├── model               # Throttling storage backend
 │       │   ├── ip2ban              # Banned IP addresses
 │       │   └── throttling          # Service-level rate limiting
+│       ├── idempotency             # Idempotency key configuration
+│       │   ├── model               # Storage backend (memory/mongo)
+│       │   └── [service]           # Per-service idempotency config
+│       ├── cache                   # GET response caching
+│       │   ├── model               # Storage backend (memory/mongo)
+│       │   ├── defaultTTL          # Default cache TTL
+│       │   └── [service]           # Per-service cache config
 │       ├── maintenanceMode         # Gateway maintenance mode
 │       ├── lastSeen                # User activity tracking
 │       └── gotoService
@@ -122,7 +129,119 @@ Configures rate limiting strategies and storage backend.
 
 ---
 
-## 4. Multi-Tenant IP Whitelist
+## 4. Idempotency
+
+**Path:** `registry.custom.gateway.value.idempotency`
+
+**Middleware:** `mw/idempotency/index.js`
+
+Prevents duplicate write operations by tracking requests via `Idempotency-Key` headers. When a client retries a request with the same key, the cached response is returned without re-executing the operation.
+
+```javascript
+{
+  "idempotency": {
+    "model": "memory",                    // Storage: "memory" or "mongo"
+    "av": {                               // Service name
+      "enabled": true,                    // Enable for this service
+      "ttl": 60000,                       // Key expiration (ms)
+      "apis": [                           // APIs to protect
+        "POST /av/calls",
+        "PUT /av/call/p2p/ended",
+        "PUT /av/call/p2p/rejected"
+      ]
+    },
+    "payment": {
+      "enabled": true,
+      "ttl": 120000,
+      "apis": [
+        "POST /payment/charge",
+        "POST /payment/refund"
+      ]
+    }
+  }
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `model` | string | `"memory"` | Storage backend: `"memory"` or `"mongo"` |
+| `[service].enabled` | boolean | `false` | Enable idempotency for this service |
+| `[service].ttl` | number | `60000` | Key expiration time in milliseconds |
+| `[service].apis` | string[] | `[]` | API patterns to protect (e.g., `"POST /path"`) |
+
+**Client Usage:**
+```http
+POST /av/calls HTTP/1.1
+Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+```
+
+**Error Codes:**
+- `180` (400): Invalid Idempotency-Key format (not UUID v4)
+- `181` (409): Request with this key is still being processed
+
+---
+
+## 5. Response Caching
+
+**Path:** `registry.custom.gateway.value.cache`
+
+**Middleware:** `mw/cache/index.js`
+
+Caches GET API responses with per-API TTL configuration. Returns `X-Cache: HIT` or `X-Cache: MISS` headers.
+
+```javascript
+{
+  "cache": {
+    "model": "memory",                    // Storage: "memory" or "mongo"
+    "defaultTTL": 300000,                 // Default TTL: 5 minutes
+    "av": {                               // Service name
+      "enabled": true,                    // Enable caching for this service
+      "apis": {
+        "GET /av/calls": {
+          "enabled": true,
+          "ttl": 30000                    // 30 seconds
+        },
+        "GET /av/call/:id": {
+          "enabled": true,
+          "ttl": 60000                    // 60 seconds
+        }
+      }
+    },
+    "catalog": {
+      "enabled": true,
+      "apis": {
+        "GET /catalog/products": {
+          "enabled": true,
+          "ttl": 600000                   // 10 minutes
+        }
+      }
+    }
+  }
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `model` | string | `"memory"` | Storage backend: `"memory"` or `"mongo"` |
+| `defaultTTL` | number | `300000` | Default cache TTL in milliseconds |
+| `[service].enabled` | boolean | `false` | Enable caching for this service |
+| `[service].apis` | object | `{}` | API-specific cache configuration |
+| `[service].apis[api].enabled` | boolean | `false` | Enable caching for this API |
+| `[service].apis[api].ttl` | number | `defaultTTL` | Cache TTL for this specific API |
+
+**Response Headers:**
+- `X-Cache: HIT` - Response served from cache
+- `X-Cache: MISS` - Response fetched from backend
+- `X-Cache-Age: <seconds>` - Time since cached (on HIT)
+
+**Notes:**
+- Only GET requests are cached
+- Only 2xx responses are cached
+- Cache key includes tenant ID, service name, path, and query hash
+
+---
+
+## 6. Multi-Tenant IP Whitelist
 
 **Path:** `registry.custom.gateway.value.mt.whitelist`
 
@@ -150,7 +269,7 @@ Allows specific IP ranges to bypass ACL and/or OAuth checks.
 
 ---
 
-## 5. User Activity Tracking (Last Seen)
+## 7. User Activity Tracking (Last Seen)
 
 **Path:** `registry.custom.gateway.value.lastSeen`
 
@@ -180,7 +299,7 @@ Tracks user activity by notifying a service (typically URAC) of user access.
 
 ---
 
-## 6. Request Monitoring
+## 8. Request Monitoring
 
 **Path:** `registry.custom.gateway.value.gotoService.monitor`
 
@@ -208,7 +327,7 @@ Controls which services are monitored for metrics collection.
 
 ---
 
-## 7. Request Timeout Renewal
+## 9. Request Timeout Renewal
 
 **Path:** `registry.custom.gateway.value.gotoService.renewReqMonitorOff`
 
@@ -230,7 +349,7 @@ Disables the heartbeat renewal mechanism for long-running requests.
 
 ---
 
-## 8. OAuth Roaming (Cross-Environment)
+## 10. OAuth Roaming (Cross-Environment)
 
 **Path:** `registry.custom.oauth.value.roaming`
 
@@ -260,7 +379,7 @@ Enables cross-environment access for specific services with IP-based whitelistin
 
 ---
 
-## 9. PIN Login Wrapper
+## 11. PIN Login Wrapper
 
 **Path:** `registry.custom.oauth.value.pinWrapper`
 
@@ -284,7 +403,7 @@ Defines a custom PIN-based login endpoint that bypasses standard OAuth flow.
 
 ---
 
-## 10. PIN Login API Whitelist
+## 12. PIN Login API Whitelist
 
 **Path:** `registry.custom.oauth.value.pinWhitelist`
 
@@ -359,6 +478,25 @@ Whitelists specific APIs that can be accessed when a user is PIN-locked (during 
         }
       }
     },
+    "idempotency": {
+      "model": "mongo",
+      "payment": {
+        "enabled": true,
+        "ttl": 120000,
+        "apis": ["POST /payment/charge", "POST /payment/refund"]
+      }
+    },
+    "cache": {
+      "model": "mongo",
+      "defaultTTL": 300000,
+      "catalog": {
+        "enabled": true,
+        "apis": {
+          "GET /catalog/products": { "enabled": true, "ttl": 600000 },
+          "GET /catalog/categories": { "enabled": true, "ttl": 3600000 }
+        }
+      }
+    },
     "lastSeen": {
       "active": true,
       "serviceName": "urac",
@@ -417,5 +555,7 @@ Custom registry configurations are processed in this order:
 | 4 | gotoService/preRedirect | `gotoService.renewReqMonitorOff` |
 | 5 | gotoService/redirectToService | `gotoService.monitor` |
 | 6 | mt (security checks) | `mt.whitelist`, `oauth.value.pinWrapper`, `oauth.value.pinWhitelist` |
-| 7 | traffic | `traffic.model`, `traffic.throttling` |
-| 8 | lastSeen | `lastSeen` |
+| 7 | idempotency | `idempotency.model`, `idempotency.[service]` |
+| 8 | traffic | `traffic.model`, `traffic.throttling` |
+| 9 | cache | `cache.model`, `cache.defaultTTL`, `cache.[service]` |
+| 10 | lastSeen | `lastSeen` |

@@ -47,13 +47,25 @@ The complete request lifecycle through the SOAJS Controller Gateway.
        │                                                                  │
        ▼                                                                  │
 ┌──────────────┐                                                          │
-│ 7. Traffic   │ Rate limiting with configurable                          │
+│ 7.Idempotency│ Check Idempotency-Key header                             │
+│   Check      │ Return cached response or lock key                       │
+└──────┬───────┘                                                          │
+       │                                                                  │
+       ▼                                                                  │
+┌──────────────┐                                                          │
+│ 8. Traffic   │ Rate limiting with configurable                          │
 │   Control    │ strategies and storage backends                          │
 └──────┬───────┘                                                          │
        │                                                                  │
        ▼                                                                  │
+┌──────────────┐                                                          │
+│ 9. Response  │ Check cache for GET requests                             │
+│   Caching    │ Return cached response or proceed                        │
+└──────┬───────┘                                                          │
+       │                                                                  │
+       ▼                                                                  │
 ┌──────────────────────────────────────────────────────────────────┬──────┘
-│ 8. PROXY TO SERVICE                                              │
+│ 10. PROXY TO SERVICE                                             │
 │                                                                  │
 │  ┌─────────────────┐    ┌─────────────────┐    ┌──────────────┐  │
 │  │  Resolve Host   │───▶│  Build Request  │───▶│  HTTP Proxy  │  │
@@ -120,14 +132,33 @@ The complete request lifecycle through the SOAJS Controller Gateway.
 - ACL enforcement
 - OAuth token validation
 
-### 7. Traffic Control
+### 7. Idempotency Check
+
+**Middleware:** `mw/idempotency/index.js`
+
+- Checks for `Idempotency-Key` header (UUID v4)
+- Returns cached response for completed requests
+- Returns 409 Conflict for in-flight requests
+- Locks key and proceeds for new requests
+- Stores response after completion
+
+### 8. Traffic Control
 
 **Middleware:** `mw/traffic/index.js`
 
 - Rate limiting per strategy
 - Response headers (X-RateLimit-*)
 
-### 8. Proxy to Service
+### 9. Response Caching
+
+**Middleware:** `mw/cache/index.js`
+
+- Caches GET API responses
+- Returns cached response on cache hit
+- Adds X-Cache and X-Cache-Age headers
+- Stores response after backend call
+
+### 10. Proxy to Service
 
 **Middleware:** `mw/gotoService/*`
 

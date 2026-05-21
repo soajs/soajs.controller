@@ -34,6 +34,10 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/response/index.js");
         require("./mw/soajs/index.js");
         require("./mw/traffic/index.js");
+        require("./mw/idempotency/index.js");
+        require("./mw/idempotency/memory.js");
+        require("./mw/cache/index.js");
+        require("./mw/cache/memory.js");
         require("./mw/lastSeen/index.js");
 
         require("./utilities/utils.js");

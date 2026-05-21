@@ -37,6 +37,8 @@ const keyACL_mw = require("../mw/keyACL/index");
 const gotoService_mw = require("../mw/gotoService/index");
 const mt_mw = require("../mw/mt/index");
 const traffic_mw = require("../mw/traffic/index");
+const idempotency_mw = require("../mw/idempotency/index");
+const cache_mw = require("../mw/cache/index");
 const lastSeen_mw = require("../mw/lastSeen/index");
 const ip2ban_mw = require("../mw/ip2ban/index");
 
@@ -175,10 +177,22 @@ Controller.prototype.init = function (callback) {
 					}));
 					log.info("SOAJS MT middleware initialization done.");
 
+					app.use(idempotency_mw({
+						"log": log,
+						"gatewayDB": registry.coreDB.gateway || registry.coreDB.provision
+					}));
+					log.info("Idempotency middleware initialization done.");
+
 					app.use(traffic_mw({
 						"log": log,
 						"gatewayDB": registry.coreDB.gateway || registry.coreDB.provision
 					}));
+
+					app.use(cache_mw({
+						"log": log,
+						"gatewayDB": registry.coreDB.gateway || registry.coreDB.provision
+					}));
+					log.info("Cache middleware initialization done.");
 
 					app.use(lastSeen_mw());
 
