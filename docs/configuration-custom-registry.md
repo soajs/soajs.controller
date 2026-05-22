@@ -18,11 +18,13 @@ registry.custom
 │       │   └── throttling          # Service-level rate limiting
 │       ├── idempotency             # Idempotency key configuration
 │       │   ├── model               # Storage backend (memory/mongo)
-│       │   └── [service]           # Per-service idempotency config
+│       │   └── services            # Per-service idempotency config
+│       │       └── [service]       # Service-specific settings
 │       ├── cache                   # GET response caching
 │       │   ├── model               # Storage backend (memory/mongo)
 │       │   ├── defaultTTL          # Default cache TTL
-│       │   └── [service]           # Per-service cache config
+│       │   └── services            # Per-service cache config
+│       │       └── [service]       # Service-specific settings
 │       ├── maintenanceMode         # Gateway maintenance mode
 │       ├── lastSeen                # User activity tracking
 │       └── gotoService
@@ -141,22 +143,24 @@ Prevents duplicate write operations by tracking requests via `Idempotency-Key` h
 {
   "idempotency": {
     "model": "memory",                    // Storage: "memory" or "mongo"
-    "av": {                               // Service name
-      "enabled": true,                    // Enable for this service
-      "ttl": 60000,                       // Key expiration (ms)
-      "apis": [                           // APIs to protect
-        "POST /av/calls",
-        "PUT /av/call/p2p/ended",
-        "PUT /av/call/p2p/rejected"
-      ]
-    },
-    "payment": {
-      "enabled": true,
-      "ttl": 120000,
-      "apis": [
-        "POST /payment/charge",
-        "POST /payment/refund"
-      ]
+    "services": {                         // Per-service configuration
+      "av": {                             // Service name
+        "enabled": true,                  // Enable for this service
+        "ttl": 60000,                     // Key expiration (ms)
+        "apis": [                         // APIs to protect
+          "POST /calls",
+          "PUT /call/p2p/ended",
+          "PUT /call/p2p/rejected"
+        ]
+      },
+      "payment": {
+        "enabled": true,
+        "ttl": 120000,
+        "apis": [
+          "POST /charge",
+          "POST /refund"
+        ]
+      }
     }
   }
 }
@@ -165,9 +169,9 @@ Prevents duplicate write operations by tracking requests via `Idempotency-Key` h
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `model` | string | `"memory"` | Storage backend: `"memory"` or `"mongo"` |
-| `[service].enabled` | boolean | `false` | Enable idempotency for this service |
-| `[service].ttl` | number | `60000` | Key expiration time in milliseconds |
-| `[service].apis` | string[] | `[]` | API patterns to protect (e.g., `"POST /path"`) |
+| `services.[name].enabled` | boolean | `false` | Enable idempotency for this service |
+| `services.[name].ttl` | number | `60000` | Key expiration time in milliseconds |
+| `services.[name].apis` | string[] | `[]` | API patterns to protect (e.g., `"POST /path"`) |
 
 **Client Usage:**
 ```http
@@ -194,25 +198,27 @@ Caches GET API responses with per-API TTL configuration. Returns `X-Cache: HIT` 
   "cache": {
     "model": "memory",                    // Storage: "memory" or "mongo"
     "defaultTTL": 300000,                 // Default TTL: 5 minutes
-    "av": {                               // Service name
-      "enabled": true,                    // Enable caching for this service
-      "apis": {
-        "GET /av/calls": {
-          "enabled": true,
-          "ttl": 30000                    // 30 seconds
-        },
-        "GET /av/call/:id": {
-          "enabled": true,
-          "ttl": 60000                    // 60 seconds
+    "services": {                         // Per-service configuration
+      "av": {                             // Service name
+        "enabled": true,                  // Enable caching for this service
+        "apis": {
+          "GET /calls": {
+            "enabled": true,
+            "ttl": 30000                  // 30 seconds
+          },
+          "GET /call/:id": {
+            "enabled": true,
+            "ttl": 60000                  // 60 seconds
+          }
         }
-      }
-    },
-    "catalog": {
-      "enabled": true,
-      "apis": {
-        "GET /catalog/products": {
-          "enabled": true,
-          "ttl": 600000                   // 10 minutes
+      },
+      "catalog": {
+        "enabled": true,
+        "apis": {
+          "GET /products": {
+            "enabled": true,
+            "ttl": 600000                 // 10 minutes
+          }
         }
       }
     }
@@ -224,10 +230,10 @@ Caches GET API responses with per-API TTL configuration. Returns `X-Cache: HIT` 
 |-------|------|---------|-------------|
 | `model` | string | `"memory"` | Storage backend: `"memory"` or `"mongo"` |
 | `defaultTTL` | number | `300000` | Default cache TTL in milliseconds |
-| `[service].enabled` | boolean | `false` | Enable caching for this service |
-| `[service].apis` | object | `{}` | API-specific cache configuration |
-| `[service].apis[api].enabled` | boolean | `false` | Enable caching for this API |
-| `[service].apis[api].ttl` | number | `defaultTTL` | Cache TTL for this specific API |
+| `services.[name].enabled` | boolean | `false` | Enable caching for this service |
+| `services.[name].apis` | object | `{}` | API-specific cache configuration |
+| `services.[name].apis[api].enabled` | boolean | `false` | Enable caching for this API |
+| `services.[name].apis[api].ttl` | number | `defaultTTL` | Cache TTL for this specific API |
 
 **Response Headers:**
 - `X-Cache: HIT` - Response served from cache
@@ -480,20 +486,24 @@ Whitelists specific APIs that can be accessed when a user is PIN-locked (during 
     },
     "idempotency": {
       "model": "mongo",
-      "payment": {
-        "enabled": true,
-        "ttl": 120000,
-        "apis": ["POST /payment/charge", "POST /payment/refund"]
+      "services": {
+        "payment": {
+          "enabled": true,
+          "ttl": 120000,
+          "apis": ["POST /charge", "POST /refund"]
+        }
       }
     },
     "cache": {
       "model": "mongo",
       "defaultTTL": 300000,
-      "catalog": {
-        "enabled": true,
-        "apis": {
-          "GET /catalog/products": { "enabled": true, "ttl": 600000 },
-          "GET /catalog/categories": { "enabled": true, "ttl": 3600000 }
+      "services": {
+        "catalog": {
+          "enabled": true,
+          "apis": {
+            "GET /products": { "enabled": true, "ttl": 600000 },
+            "GET /categories": { "enabled": true, "ttl": 3600000 }
+          }
         }
       }
     },
@@ -555,7 +565,7 @@ Custom registry configurations are processed in this order:
 | 4 | gotoService/preRedirect | `gotoService.renewReqMonitorOff` |
 | 5 | gotoService/redirectToService | `gotoService.monitor` |
 | 6 | mt (security checks) | `mt.whitelist`, `oauth.value.pinWrapper`, `oauth.value.pinWhitelist` |
-| 7 | idempotency | `idempotency.model`, `idempotency.[service]` |
+| 7 | idempotency | `idempotency.model`, `idempotency.services.[name]` |
 | 8 | traffic | `traffic.model`, `traffic.throttling` |
-| 9 | cache | `cache.model`, `cache.defaultTTL`, `cache.[service]` |
+| 9 | cache | `cache.model`, `cache.defaultTTL`, `cache.services.[name]` |
 | 10 | lastSeen | `lastSeen` |
