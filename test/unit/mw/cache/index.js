@@ -221,7 +221,7 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-cache-miss' },
-					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'], isAPIPublic: true } },
 					registry: {
 						custom: {
 							gateway: {
@@ -264,7 +264,7 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-param-cache' },
-					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'users', '123'] } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'users', '123'], isAPIPublic: true } },
 					registry: {
 						custom: {
 							gateway: {
@@ -306,7 +306,7 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-default-ttl' },
-					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'], isAPIPublic: true } },
 					registry: {
 						custom: {
 							gateway: {
@@ -345,7 +345,7 @@ describe("Unit test for: mw - cache", () => {
 				query: { page: '1', limit: '10' },
 				soajs: {
 					tenant: { id: 'tenant-query' },
-					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'], isAPIPublic: true } },
 					registry: {
 						custom: {
 							gateway: {
@@ -381,7 +381,7 @@ describe("Unit test for: mw - cache", () => {
 				query: {},
 				soajs: {
 					tenant: { id: 'tenant-empty-query' },
-					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'], isAPIPublic: true } },
 					registry: {
 						custom: {
 							gateway: {
@@ -453,6 +453,123 @@ describe("Unit test for: mw - cache", () => {
 			let functionMw = mw(mockConfig);
 			functionMw(req, res, (error) => {
 				assert.ifError(error);
+				done();
+			});
+		});
+	});
+
+	describe("scope handling (public vs private)", () => {
+		let noopRes = {
+			setHeader: function() {},
+			writeHead: function() { return this; },
+			write: function() { return true; },
+			end: function() {}
+		};
+
+		function buildReq(serviceParamsExtra, uracDriver, apiConfig) {
+			return {
+				method: 'GET',
+				query: {},
+				soajs: {
+					tenant: { id: 'tenant-scope' },
+					uracDriver: uracDriver,
+					controller: {
+						serviceParams: Object.assign({ name: 'test', serviceInfo: ['', 'test', 'test'] }, serviceParamsExtra)
+					},
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									cache: {
+										model: 'memory',
+										services: {
+											test: { enabled: true, apis: { 'GET /test': Object.assign({ enabled: true, ttl: 30000 }, apiConfig) } }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+		}
+
+		it("public API: should cache scoped to tenant only (no user in key)", (done) => {
+			let req = buildReq({ isAPIPublic: true }, { id: 'user-1' }, {});
+			let functionMw = mw(mockConfig);
+			functionMw(req, noopRes, (error) => {
+				assert.ifError(error);
+				assert.ok(req.soajs.cacheContext, 'cacheContext should be set on MISS');
+				assert.strictEqual(req.soajs.cacheContext.key.l1, 'tenant-scope');
+				assert.strictEqual(req.soajs.cacheContext.key.l2.indexOf(':u:'), -1, 'public key must not contain user part');
+				done();
+			});
+		});
+
+		it("private API: should default to tenant_user scope (user in key)", (done) => {
+			let req = buildReq({ isAPIPublic: false }, { id: 'user-1' }, {});
+			let functionMw = mw(mockConfig);
+			functionMw(req, noopRes, (error) => {
+				assert.ifError(error);
+				assert.ok(req.soajs.cacheContext, 'cacheContext should be set on MISS');
+				assert.notStrictEqual(req.soajs.cacheContext.key.l2.indexOf(':u:user-1'), -1, 'private key must contain user part');
+				done();
+			});
+		});
+
+		it("private API: different users get different cache keys", (done) => {
+			let functionMw = mw(mockConfig);
+			let reqA = buildReq({ isAPIPublic: false }, { id: 'user-A' }, {});
+			let reqB = buildReq({ isAPIPublic: false }, { id: 'user-B' }, {});
+			functionMw(reqA, noopRes, (errA) => {
+				assert.ifError(errA);
+				functionMw(reqB, noopRes, (errB) => {
+					assert.ifError(errB);
+					assert.notStrictEqual(reqA.soajs.cacheContext.key.l2, reqB.soajs.cacheContext.key.l2, 'different users must not share a key');
+					done();
+				});
+			});
+		});
+
+		it("private API without resolved user: should skip caching (no cacheContext)", (done) => {
+			let req = buildReq({ isAPIPublic: false }, null, {});
+			let functionMw = mw(mockConfig);
+			functionMw(req, noopRes, (error) => {
+				assert.ifError(error);
+				assert.strictEqual(req.soajs.cacheContext, undefined, 'must not set cacheContext when user is unresolved');
+				done();
+			});
+		});
+
+		it("scope override: private API forced to tenant scope", (done) => {
+			let req = buildReq({ isAPIPublic: false }, { id: 'user-1' }, { scope: 'tenant' });
+			let functionMw = mw(mockConfig);
+			functionMw(req, noopRes, (error) => {
+				assert.ifError(error);
+				assert.ok(req.soajs.cacheContext, 'cacheContext should be set on MISS');
+				assert.strictEqual(req.soajs.cacheContext.key.l2.indexOf(':u:'), -1, 'overridden tenant scope must not contain user part');
+				done();
+			});
+		});
+
+		it("scope override: public API forced to tenant_user scope", (done) => {
+			let req = buildReq({ isAPIPublic: true }, { id: 'user-1' }, { scope: 'tenant_user' });
+			let functionMw = mw(mockConfig);
+			functionMw(req, noopRes, (error) => {
+				assert.ifError(error);
+				assert.ok(req.soajs.cacheContext, 'cacheContext should be set on MISS');
+				assert.notStrictEqual(req.soajs.cacheContext.key.l2.indexOf(':u:user-1'), -1, 'overridden tenant_user scope must contain user part');
+				done();
+			});
+		});
+
+		it("invalid scope: should fall back to default (private -> tenant_user)", (done) => {
+			let req = buildReq({ isAPIPublic: false }, { id: 'user-1' }, { scope: 'bogus' });
+			let functionMw = mw(mockConfig);
+			functionMw(req, noopRes, (error) => {
+				assert.ifError(error);
+				assert.ok(req.soajs.cacheContext, 'cacheContext should be set on MISS');
+				assert.notStrictEqual(req.soajs.cacheContext.key.l2.indexOf(':u:user-1'), -1, 'invalid scope must fall back to tenant_user for private API');
 				done();
 			});
 		});

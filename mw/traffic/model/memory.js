@@ -25,6 +25,10 @@ let model = {
         cleanupInterval = setInterval(() => {
             model.cleanupExpiredEntries();
         }, CLEANUP_INTERVAL);
+        // Do not keep the event loop alive solely for the cleanup timer.
+        if (cleanupInterval.unref) {
+            cleanupInterval.unref();
+        }
     },
 
     'cleanupExpiredEntries': () => {

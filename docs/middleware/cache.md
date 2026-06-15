@@ -71,6 +71,10 @@ The Cache middleware provides response caching for GET APIs with per-API TTL con
           "GET /users": {
             "enabled": true
             // Uses defaultTTL (300000ms)
+          },
+          "GET /profile": {
+            "enabled": true,
+            "scope": "tenant_user"        // Cache per tenant + logged-in user
           }
         }
       },
@@ -100,6 +104,27 @@ The Cache middleware provides response caching for GET APIs with per-API TTL con
 | `services.[name].apis` | object | `{}` | API-specific cache configuration |
 | `services.[name].apis[api].enabled` | boolean | `false` | Enable caching for this API |
 | `services.[name].apis[api].ttl` | number | `defaultTTL` | Cache TTL for this API |
+| `services.[name].apis[api].scope` | string | inferred | Cache scope: `"tenant"` or `"tenant_user"`. Defaults to `"tenant"` for public APIs and `"tenant_user"` for private APIs. |
+
+## Caching Scope (Public vs Private APIs)
+
+The cache key dimension depends on whether the API is **public** (no `access_token` required) or **private** (requires an `access_token`):
+
+- **Public API** → the response is the same for the whole tenant, so it is cached per **tenant** (`scope: "tenant"`). The cache key contains the tenant id only.
+- **Private API** → the response can differ per logged-in user, so it is cached per **tenant + user** (`scope: "tenant_user"`). The cache key also includes the user id, preventing one user from receiving another user's cached response.
+
+The gateway determines public vs private automatically from `req.soajs.controller.serviceParams.isAPIPublic` and resolves the default scope accordingly. You can override the scope per API with the `scope` field.
+
+| Scope | Cache key dimension | Default for |
+|-------|---------------------|-------------|
+| `tenant` | tenant id | Public APIs |
+| `tenant_user` | tenant id + user id | Private APIs |
+
+### Safety Behavior
+
+If an API resolves to `tenant_user` scope but **no logged-in user can be resolved** (no URAC user on the request), the response is **not cached**. This prevents a user-scoped entry from being stored without a user identity and served to the wrong user. A misconfiguration therefore causes a cache miss, never a data leak.
+
+An unrecognized `scope` value is ignored (with a warning) and falls back to the inferred default.
 
 ## API Pattern Matching
 
@@ -116,9 +141,16 @@ APIs are matched using `GET /path` format with support for path parameters:
 ## Cache Key Structure
 
 ```javascript
+// Public API (scope: "tenant")
 {
   "l1": "tenant_id",
   "l2": "serviceName:GET:/path:queryHash"
+}
+
+// Private API (scope: "tenant_user")
+{
+  "l1": "tenant_id",
+  "l2": "serviceName:GET:/path:queryHash:u:user_id"
 }
 ```
 
@@ -126,6 +158,7 @@ APIs are matched using `GET /path` format with support for path parameters:
 - **serviceName**: The target service name
 - **path**: The API path
 - **queryHash**: MD5 hash of sorted query parameters
+- **user_id**: The logged-in user id (only for `tenant_user` scope), isolating cache per user within the tenant
 
 ### Query Parameter Handling
 
@@ -199,7 +232,9 @@ Content-Type: application/json
 ## Usage Notes
 
 - Only GET requests are cached
-- Cache is tenant-isolated
+- Cache is tenant-isolated; private APIs are additionally user-isolated (`tenant_user` scope)
+- Public APIs default to `tenant` scope, private APIs default to `tenant_user` scope
+- Private (`tenant_user`) requests without a resolved user are not cached (safety)
 - Query parameters affect cache key
 - Only 2xx responses are cached
 - Headers like `X-Cache` are not stored in cache
@@ -226,12 +261,15 @@ Content-Type: application/json
 }
 ```
 
-### User-Specific Data
+### User-Specific Data (Private API)
 
 ```javascript
-// Cache key includes tenant ID, so each tenant has separate cache
+// Private API: cache key includes tenant ID AND user ID,
+// so each user within a tenant has a separate cache entry.
+// "tenant_user" is the default scope for private APIs, shown here explicitly.
 "GET /users/profile": {
   "enabled": true,
-  "ttl": 60000    // 1 minute
+  "ttl": 60000,        // 1 minute
+  "scope": "tenant_user"
 }
 ```
