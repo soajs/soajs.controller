@@ -106,11 +106,36 @@ module.exports = function (configuration) {
 			return next();
 		}
 
+		// Determine caching scope.
+		// Public APIs (no access_token required) return the same response for the whole
+		// tenant, so they are cached per tenant ("tenant"). Private APIs may return a
+		// different response per logged-in user, so they must be cached per tenant + user
+		// ("tenant_user") to avoid serving one user's response to another.
+		// Scope can be overridden per API in the custom registry via apiConfig.scope.
+		// Default: public -> "tenant", private -> "tenant_user".
+		const isAPIPublic = req.soajs.controller.serviceParams.isAPIPublic;
+		const userId = req.soajs.uracDriver && req.soajs.uracDriver.id;
+
+		let scope = apiConfig.scope;
+		if (scope !== 'tenant' && scope !== 'tenant_user') {
+			if (scope) {
+				configuration.log.warn('Cache: Unknown scope [' + scope + '] for API [' + method + ' ' + apiPath + ']. It can only be [tenant || tenant_user]. Falling back to default.');
+			}
+			scope = isAPIPublic ? 'tenant' : 'tenant_user';
+		}
+
+		// Safety: a user-scoped entry without a resolved user would leak across users.
+		// Skip caching rather than risk serving the wrong user's response.
+		if (scope === 'tenant_user' && !userId) {
+			return next();
+		}
+
 		const ttl = apiConfig.ttl || cacheConfig.defaultTTL || 300000;
 		const queryHash = hashQuery(req.query);
+		const userPart = (scope === 'tenant_user') ? `:u:${userId}` : '';
 		const key = {
 			'l1': req.soajs.tenant.id,
-			'l2': `${serviceName}:GET:${apiPath}:${queryHash}`
+			'l2': `${serviceName}:GET:${apiPath}:${queryHash}${userPart}`
 		};
 
 		const processCache = async () => {
