@@ -59,6 +59,7 @@ The Idempotency middleware prevents duplicate write operations by tracking reque
 {
   "idempotency": {
     "model": "memory",                    // Storage: "memory" or "mongo"
+    "enforce": false,                     // Global default for enforcement (optional)
     "services": {                         // Service configurations
       "av": {                             // Service name
         "enabled": true,                  // Enable for this service
@@ -71,6 +72,7 @@ The Idempotency middleware prevents duplicate write operations by tracking reque
       },
       "payment": {
         "enabled": true,
+        "enforce": true,                  // Require Idempotency-Key on matched APIs
         "ttl": 120000,
         "apis": [
           "POST /charge",
@@ -85,9 +87,17 @@ The Idempotency middleware prevents duplicate write operations by tracking reque
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `model` | string | `"memory"` | Storage backend: `"memory"` or `"mongo"` |
+| `enforce` | boolean | `false` | Global default enforcement (overridden per service) |
 | `services.[name].enabled` | boolean | `false` | Enable idempotency for this service |
+| `services.[name].enforce` | boolean | *(global)* | Require `Idempotency-Key` on matched APIs; overrides the global `enforce`. If unset, falls back to the global default |
 | `services.[name].ttl` | number | `60000` | Key expiration time in milliseconds |
 | `services.[name].apis` | string[] | `[]` | API patterns to protect (e.g., `"POST /path"`) |
+
+## Enforcement
+
+By default, requests without an `Idempotency-Key` header pass through untouched (backwards compatible). When `enforce` is enabled, a matched, non-GET API **requires** the header — a missing key returns **428 Precondition Required** (code `182`).
+
+Resolution order: `services.[name].enforce` takes precedence when set to a boolean; otherwise the top-level `enforce` applies. Enforcement never affects GET requests, unconfigured/disabled services, or APIs outside the configured `apis` list.
 
 ## API Pattern Matching
 
@@ -181,6 +191,26 @@ Content-Type: application/json
 }
 ```
 
+### Enforced (Missing Key)
+
+Returned when the matched API has enforcement enabled and no `Idempotency-Key` header is provided.
+
+```
+HTTP/1.1 428 Precondition Required
+Content-Type: application/json
+
+{
+  "result": false,
+  "errors": {
+    "codes": [182],
+    "details": [{
+      "code": 182,
+      "message": "Idempotency-Key header is required for this API."
+    }]
+  }
+}
+```
+
 ## Key Structure
 
 ```javascript
@@ -198,6 +228,7 @@ Keys are isolated per tenant to prevent cross-tenant collisions.
 |------|-------------|-------------|
 | 180 | 400 | Invalid Idempotency-Key format (not UUID v4) |
 | 181 | 409 | Request with this key is still being processed |
+| 182 | 428 | Idempotency-Key header required (enforcement enabled) |
 
 ## Usage Notes
 
