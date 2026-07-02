@@ -103,9 +103,7 @@ module.exports = function (configuration) {
 
 		// Request targets an idempotency-enabled and matched API. Resolve enforcement:
 		// service-level 'enforce' overrides the global default.
-		const enforce = (typeof serviceConfig.enforce === 'boolean')
-			? serviceConfig.enforce
-			: (idempotencyConfig.enforce === true);
+		const enforce = (typeof serviceConfig.enforce === 'boolean') ? serviceConfig.enforce : (idempotencyConfig.enforce === true);
 
 		if (!idempotencyKey) {
 			if (enforce) {
