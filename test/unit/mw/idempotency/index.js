@@ -30,6 +30,7 @@ describe("Unit test for: mw - idempotency", () => {
 		it("should call next() when no Idempotency-Key header", (done) => {
 			let req = {
 				headers: {},
+				method: 'POST',
 				soajs: {
 					tenant: { id: '123' },
 					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
@@ -305,6 +306,244 @@ describe("Unit test for: mw - idempotency", () => {
 				end: function() {},
 				on: function() {}
 			};
+			let functionMw = mw(mockConfig);
+			functionMw(req, res, (error) => {
+				assert.ifError(error);
+				done();
+			});
+		});
+	});
+
+	describe("enforcement", () => {
+		it("should return 428 when enforced and no key on matched API", (done) => {
+			let responseData = null;
+			let req = {
+				headers: {},
+				method: 'POST',
+				soajs: {
+					tenant: { id: '123' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										services: {
+											test: { enabled: true, enforce: true, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					},
+					controllerResponse: (data) => {
+						responseData = data;
+					}
+				}
+			};
+			let res = {};
+			let functionMw = mw(mockConfig);
+			functionMw(req, res, () => {
+				assert.fail('Should not call next');
+			});
+			setTimeout(() => {
+				assert.notStrictEqual(responseData, null);
+				assert.strictEqual(responseData.status, 428);
+				assert.strictEqual(responseData.code, 182);
+				done();
+			}, 10);
+		});
+
+		it("should call next() when enforced and key is present", (done) => {
+			let req = {
+				headers: { 'idempotency-key': '550e8400-e29b-41d4-a716-446655440010' },
+				method: 'POST',
+				soajs: {
+					tenant: { id: 'tenant-enforce' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										model: 'memory',
+										services: {
+											test: { enabled: true, enforce: true, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+			let res = {
+				writeHead: function() { return this; },
+				write: function() { return true; },
+				end: function() {},
+				on: function() {}
+			};
+			let functionMw = mw(mockConfig);
+			functionMw(req, res, (error) => {
+				assert.ifError(error);
+				done();
+			});
+		});
+
+		it("should call next() when not enforced and no key (backwards compatible)", (done) => {
+			let req = {
+				headers: {},
+				method: 'POST',
+				soajs: {
+					tenant: { id: '123' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										services: {
+											test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+			let res = {};
+			let functionMw = mw(mockConfig);
+			functionMw(req, res, (error) => {
+				assert.ifError(error);
+				done();
+			});
+		});
+
+		it("should return 428 when global enforce is set and service has no override", (done) => {
+			let responseData = null;
+			let req = {
+				headers: {},
+				method: 'POST',
+				soajs: {
+					tenant: { id: '123' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										enforce: true,
+										services: {
+											test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					},
+					controllerResponse: (data) => {
+						responseData = data;
+					}
+				}
+			};
+			let res = {};
+			let functionMw = mw(mockConfig);
+			functionMw(req, res, () => {
+				assert.fail('Should not call next');
+			});
+			setTimeout(() => {
+				assert.notStrictEqual(responseData, null);
+				assert.strictEqual(responseData.status, 428);
+				assert.strictEqual(responseData.code, 182);
+				done();
+			}, 10);
+		});
+
+		it("should let service enforce=false override global enforce=true", (done) => {
+			let req = {
+				headers: {},
+				method: 'POST',
+				soajs: {
+					tenant: { id: '123' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										enforce: true,
+										services: {
+											test: { enabled: true, enforce: false, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+			let res = {};
+			let functionMw = mw(mockConfig);
+			functionMw(req, res, (error) => {
+				assert.ifError(error);
+				done();
+			});
+		});
+
+		it("should not enforce on GET requests", (done) => {
+			let req = {
+				headers: {},
+				method: 'GET',
+				soajs: {
+					tenant: { id: '123' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										services: {
+											test: { enabled: true, enforce: true, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+			let res = {};
+			let functionMw = mw(mockConfig);
+			functionMw(req, res, (error) => {
+				assert.ifError(error);
+				done();
+			});
+		});
+
+		it("should not enforce when API is not in the configured list", (done) => {
+			let req = {
+				headers: {},
+				method: 'POST',
+				soajs: {
+					tenant: { id: '123' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'other'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										services: {
+											test: { enabled: true, enforce: true, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+			let res = {};
 			let functionMw = mw(mockConfig);
 			functionMw(req, res, (error) => {
 				assert.ifError(error);
