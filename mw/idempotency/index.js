@@ -62,11 +62,9 @@ module.exports = function (configuration) {
 	return (req, res, next) => {
 		const idempotencyKey = req.headers['idempotency-key'];
 
-		if (!idempotencyKey) {
-			return next();
-		}
-
-		if (!isValidUUIDv4(idempotencyKey)) {
+		// Validate format only when a key was actually provided. The decision on a
+		// missing key is deferred until we know whether the target API enforces it.
+		if (idempotencyKey && !isValidUUIDv4(idempotencyKey)) {
 			req.soajs.controllerResponse({
 				'status': 400,
 				'code': 180,
@@ -100,6 +98,22 @@ module.exports = function (configuration) {
 		}
 
 		if (serviceConfig.apis && !matchesApi(method, apiPath, serviceConfig.apis)) {
+			return next();
+		}
+
+		// Request targets an idempotency-enabled and matched API. Resolve enforcement:
+		// service-level 'enforce' overrides the global default.
+		const enforce = (typeof serviceConfig.enforce === 'boolean') ? serviceConfig.enforce : (idempotencyConfig.enforce === true);
+
+		if (!idempotencyKey) {
+			if (enforce) {
+				req.soajs.controllerResponse({
+					'status': 428,
+					'code': 182,
+					'msg': 'Idempotency-Key header is required for this API.'
+				});
+				return;
+			}
 			return next();
 		}
 
