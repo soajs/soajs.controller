@@ -34,6 +34,32 @@ module.exports = (configuration) => {
 	let jwt = require('jsonwebtoken');
 
 	/**
+	 * The deviceId check is on unless it is explicitly turned off at the custom registry.
+	 * Anything other than false leaves it on.
+	 *
+	 * req.soajs.registry.custom.gateway.value.oauth
+	 * {
+		  "oauth": {
+			"deviceIdCheck": false
+		  }
+		}
+	 *
+	 * @param req
+	 * @returns {boolean} true when the check is turned on
+	 */
+	let deviceIdCheckOn = (req) => {
+		if (req.soajs.registry &&
+			req.soajs.registry.custom &&
+			req.soajs.registry.custom.gateway &&
+			req.soajs.registry.custom.gateway.value &&
+			req.soajs.registry.custom.gateway.value.oauth &&
+			req.soajs.registry.custom.gateway.value.oauth.deviceIdCheck === false) {
+			return false;
+		}
+		return true;
+	};
+
+	/**
 	 * Matches the deviceId on the access token record against the device-id header.
 	 *
 	 * NOTE: we cannot check for agent, mobile is sending the build number
@@ -46,6 +72,9 @@ module.exports = (configuration) => {
 	 * @returns {boolean} true when the request is allowed to proceed
 	 */
 	let deviceIdMatch = (req) => {
+		if (!deviceIdCheckOn(req)) {
+			return true;
+		}
 		if (!req.oauth || !req.oauth.bearerToken || !req.oauth.bearerToken.user || !req.oauth.bearerToken.user.deviceId) {
 			return true;
 		}

@@ -27,6 +27,8 @@ registry.custom
 │       │       └── [service]       # Service-specific settings
 │       ├── maintenanceMode         # Gateway maintenance mode
 │       ├── lastSeen                # User activity tracking
+│       ├── oauth
+│       │   └── deviceIdCheck       # Turn the deviceId check off
 │       └── gotoService
 │           ├── monitor             # Request monitoring config
 │           └── renewReqMonitorOff  # Disable timeout renewal
@@ -448,6 +450,37 @@ Whitelists specific APIs that can be accessed when a user is PIN-locked (during 
 
 ---
 
+## 13. OAuth Device ID Check
+
+**Path:** `registry.custom.gateway.value.oauth.deviceIdCheck`
+
+**Middleware:** `mw/oauth/index.js`
+
+Turns off the deviceId check done when authorising an access token. The check matches
+`user.deviceId` on the access token record against the `device-id` header on every
+private API call, and denies with error 156 on mismatch.
+
+```javascript
+{
+  "oauth": {
+    "deviceIdCheck": false                   // Turn off the deviceId check
+  }
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `deviceIdCheck` | boolean | `true` | Set to `false` to turn the deviceId check off |
+
+Only the boolean `false` turns the check off. Any other value, and a missing or
+malformed entry, leaves it on.
+
+Note this is a `gateway` entry, not an `oauth` one. The `registry.custom.oauth.value.*`
+entries above are consumed by `mw/mt/utils.js` and `mw/gotoService/roaming.js`, this one
+is read by the oauth middleware itself.
+
+---
+
 ## Complete Configuration Example
 
 ```javascript
@@ -514,6 +547,9 @@ Whitelists specific APIs that can be accessed when a user is PIN-locked (during 
       "api": "/user/last/seen",
       "network": "production"
     },
+    "oauth": {
+      "deviceIdCheck": false
+    },
     "gotoService": {
       "monitor": {
         "blacklist": ["soamonitor", "urac"]
@@ -565,6 +601,7 @@ Custom registry configurations are processed in this order:
 | 4 | gotoService/preRedirect | `gotoService.renewReqMonitorOff` |
 | 5 | gotoService/redirectToService | `gotoService.monitor` |
 | 6 | mt (security checks) | `mt.whitelist`, `oauth.value.pinWrapper`, `oauth.value.pinWhitelist` |
+| 6a | oauth (called from mt) | `oauth.deviceIdCheck` |
 | 7 | idempotency | `idempotency.model`, `idempotency.services.[name]` |
 | 8 | traffic | `traffic.model`, `traffic.throttling` |
 | 9 | cache | `cache.model`, `cache.defaultTTL`, `cache.services.[name]` |
