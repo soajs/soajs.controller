@@ -99,3 +99,171 @@ describe("Unit test for: mw - oauth", () => {
         });
     });
 });
+
+describe("Unit test for: mw - oauth deviceId check", () => {
+
+    // builds a configuration whose model returns an access token carrying the given deviceId
+    let buildConfiguration = (deviceId) => {
+        let user = {"id": "1"};
+        if (deviceId !== undefined) {
+            user.deviceId = deviceId;
+        }
+        return {
+            "soajs": {
+                "param": {}
+            },
+            "serviceConfig": {
+                "oauth": {
+                    grants: ["password", "refresh_token"],
+                    debug: false,
+                    accessTokenLifetime: 7200,
+                    refreshTokenLifetime: 1209600
+                }
+            },
+            "model": {
+                "getAccessToken": (bearerToken, cb) => {
+                    return cb(null, {
+                        "token": bearerToken,
+                        "expires": new Date(new Date().getTime() + 3600000),
+                        "user": user
+                    });
+                }
+            }
+        };
+    };
+
+    // oauthType 2 so that the access token is fetched from the model
+    let buildReq = (headerDeviceId) => {
+        return {
+            "soajs": {
+                "log": {
+                    "debug": () => {
+                    }
+                },
+                "tenantOauth": {
+                    "type": 2
+                },
+                "servicesConfig": {},
+                "registry": {
+                    "serviceConfig": {
+                        "oauth": {
+                            "type": 2
+                        }
+                    }
+                }
+            },
+            "query": {},
+            "body": {},
+            "get": (what) => {
+                if ('Authorization' === what) {
+                    return "Bearer anAccessToken";
+                }
+                if ('device-id' === what) {
+                    return headerDeviceId;
+                }
+                return undefined;
+            }
+        };
+    };
+    let res = {};
+
+    it("test oauth MW - deviceId matches", (done) => {
+        let functionMw = mw(buildConfiguration("2222222222"));
+        let req = buildReq("2222222222");
+        functionMw(req, res, (error) => {
+            assert.ifError(error);
+            assert.ok(req.oauth.bearerToken);
+            done();
+        });
+    });
+
+    it("test oauth MW - deviceId does not match", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = buildReq("4444444444");
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
+
+    it("test oauth MW - deviceId on the token but no header", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = buildReq(undefined);
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
+
+    it("test oauth MW - no deviceId on the token, check is skipped", (done) => {
+        let functionMw = mw(buildConfiguration(undefined));
+        let req = buildReq("5555555555");
+        functionMw(req, res, (error) => {
+            assert.ifError(error);
+            assert.ok(req.oauth.bearerToken);
+            done();
+        });
+    });
+
+    it("test oauth MW - null deviceId on the token, check is skipped", (done) => {
+        let functionMw = mw(buildConfiguration(null));
+        let req = buildReq("5555555555");
+        functionMw(req, res, (error) => {
+            assert.ifError(error);
+            assert.ok(req.oauth.bearerToken);
+            done();
+        });
+    });
+
+    // turns the check off at registry.custom.gateway.value.oauth
+    let turnCheckOff = (req, deviceIdCheck) => {
+        req.soajs.registry.custom = {
+            "gateway": {
+                "value": {
+                    "oauth": {
+                        "deviceIdCheck": deviceIdCheck
+                    }
+                }
+            }
+        };
+        return req;
+    };
+
+    it("test oauth MW - deviceId mismatch but check turned off at registry", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = turnCheckOff(buildReq("4444444444"), false);
+        functionMw(req, res, (error) => {
+            assert.ifError(error);
+            assert.ok(req.oauth.bearerToken);
+            done();
+        });
+    });
+
+    it("test oauth MW - deviceId mismatch and check explicitly turned on at registry", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = turnCheckOff(buildReq("4444444444"), true);
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
+
+    it("test oauth MW - only false turns the check off, not a truthy value", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = turnCheckOff(buildReq("4444444444"), "false");
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
+
+    it("test oauth MW - empty custom registry leaves the check on", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = buildReq("4444444444");
+        req.soajs.registry.custom = {};
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
+});
