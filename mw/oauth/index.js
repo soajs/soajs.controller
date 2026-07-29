@@ -32,9 +32,28 @@ module.exports = (configuration) => {
 	});
 	
 	let jwt = require('jsonwebtoken');
-	
+
+	/**
+	 * Matches the deviceId on the access token record against the device-id header.
+	 *
+	 * NOTE: we cannot check for agent, mobile is sending the build number
+	 *       (ie: "democav/142 CFNetwork/3826.400.120 Darwin/24.3.0") which changes on every build.
+	 *       we check deviceId instead. tokens with no deviceId (created before deviceId was
+	 *       introduced, or by a client that does not send the header) are not checked, they get
+	 *       checked once the client logs in again.
+	 *
+	 * @param req
+	 * @returns {boolean} true when the request is allowed to proceed
+	 */
+	let deviceIdMatch = (req) => {
+		if (!req.oauth || !req.oauth.bearerToken || !req.oauth.bearerToken.user || !req.oauth.bearerToken.user.deviceId) {
+			return true;
+		}
+		return req.oauth.bearerToken.user.deviceId === req.get('device-id');
+	};
+
 	return (req, res, next) => {
-		
+
 		let oauthType = 2;
 		let tenantOauth = req.soajs.tenantOauth;
 		if (tenantOauth && Object.hasOwnProperty.call(tenantOauth, 'type')) {
@@ -45,7 +64,18 @@ module.exports = (configuration) => {
 		
 		//0=oauth0, 2=oauth2
 		if (2 === oauthType) {
-			oauthObj.authorise()(req, res, next);
+			//NOTE: authorise() sets req.oauth.bearerToken to the token record it fetched from the
+			//		model, the deviceId check is done on it here to avoid fetching the token again.
+			oauthObj.authorise()(req, res, (error) => {
+				if (error) {
+					return next(error);
+				}
+				if (!deviceIdMatch(req)) {
+					req.soajs.log.debug("Access denied, deviceId mismatch [deviceId: " + req.get('device-id') + "]");
+					return next(156);
+				}
+				return next();
+			});
 		} else {
 			let algorithms = req.soajs.registry.serviceConfig.oauth.algorithms || ["HS256"];
 			let audience = req.soajs.registry.serviceConfig.oauth.audience || "";
