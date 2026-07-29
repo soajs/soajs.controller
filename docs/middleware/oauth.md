@@ -60,8 +60,35 @@ Uses oauth2-server library for token validation.
   │    bearerToken: user,   │
   │    type: 2              │
   │  }                      │
-  └─────────────────────────┘
+  └────────┬────────────────┘
+           │
+           ▼
+  ┌─────────────────────────┐
+  │  deviceId check         │ token user.deviceId vs device-id header
+  └────────┬────────────────┘
+           │
+           ├─── Mismatch ──▶ Error 156
+           │
+           ▼
+       next()
 ```
+
+#### deviceId check
+
+The access token record carries `user.deviceId`, set at login from the `device-id`
+header and carried forward across refreshes. It is matched against the `device-id`
+header on every private API call. The check runs on the record `authorise()` already
+fetched, so it costs no extra database call.
+
+The agent cannot be used for this, mobile sends the build number in the user-agent
+(ie: `democav/142 CFNetwork/3826.400.120 Darwin/24.3.0`) which changes on every build.
+
+Tokens with no `deviceId` are not checked. This covers tokens created before deviceId
+was introduced and clients that do not send the header at all, both get checked once
+the client logs in again with the header. A client that sends `device-id` on login but
+omits it on API calls is denied, the header has to be sent consistently.
+
+This check is only available for type 2, a type 0 JWT carries no stored token record.
 
 ### Type 0: JWT
 
@@ -155,6 +182,7 @@ Default OAuth service configuration:
 | Code | Description |
 |------|-------------|
 | 143 | Invalid or missing JWT token |
+| 156 | Device forbidden, the deviceId on the token does not match the device-id header |
 | OAuth2Error | Various OAuth2 errors (invalid_token, expired, etc.) |
 
 ## Properties Set
