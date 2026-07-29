@@ -214,4 +214,56 @@ describe("Unit test for: mw - oauth deviceId check", () => {
             done();
         });
     });
+
+    // turns the check off at registry.custom.gateway.value.oauth
+    let turnCheckOff = (req, deviceIdCheck) => {
+        req.soajs.registry.custom = {
+            "gateway": {
+                "value": {
+                    "oauth": {
+                        "deviceIdCheck": deviceIdCheck
+                    }
+                }
+            }
+        };
+        return req;
+    };
+
+    it("test oauth MW - deviceId mismatch but check turned off at registry", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = turnCheckOff(buildReq("4444444444"), false);
+        functionMw(req, res, (error) => {
+            assert.ifError(error);
+            assert.ok(req.oauth.bearerToken);
+            done();
+        });
+    });
+
+    it("test oauth MW - deviceId mismatch and check explicitly turned on at registry", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = turnCheckOff(buildReq("4444444444"), true);
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
+
+    it("test oauth MW - only false turns the check off, not a truthy value", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = turnCheckOff(buildReq("4444444444"), "false");
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
+
+    it("test oauth MW - empty custom registry leaves the check on", (done) => {
+        let functionMw = mw(buildConfiguration("3333333333"));
+        let req = buildReq("4444444444");
+        req.soajs.registry.custom = {};
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 156);
+            done();
+        });
+    });
 });

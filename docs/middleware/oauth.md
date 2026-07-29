@@ -90,6 +90,23 @@ omits it on API calls is denied, the header has to be sent consistently.
 
 This check is only available for type 2, a type 0 JWT carries no stored token record.
 
+##### Turning it off
+
+The check is on by default. To turn it off for an environment, set `deviceIdCheck` to
+`false` under the `gateway` custom registry entry:
+
+```json
+{
+  "oauth": {
+    "deviceIdCheck": false
+  }
+}
+```
+
+Read from `registry.custom.gateway.value.oauth.deviceIdCheck`. Only the boolean `false`
+turns it off, any other value leaves it on, so a missing or malformed entry keeps the
+check running.
+
 ### Type 0: JWT
 
 Uses jsonwebtoken library for JWT validation.
