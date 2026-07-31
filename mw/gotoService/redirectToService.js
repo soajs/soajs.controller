@@ -225,7 +225,7 @@ module.exports = (configuration) => {
 			if (monitor && !monitor_service_blacklist && monitor.req_info) {
 				monitoObj.port = req.soajs.controller.serviceParams.registry.port;
 				monitoObj.url = req.soajs.controller.serviceParams.url;
-				monitoObj.host = req.host;
+				monitoObj.host = obj.host;
 			}
 			if (monitor && !monitor_service_blacklist && monitor.req_header) {
 				monitoObj.headers = req.headers;
