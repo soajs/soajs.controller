@@ -28,14 +28,16 @@ module.exports = (req, res, core, cb) => {
 		return req.soajs.controllerResponse(core.error.getError(131));
 	}
 	let nextStep = function (host, port, fullURI) {
-		req.soajs.log.info(JSON.stringify({
-			"serviceName": restServiceParams.name,
-			"host": host,
-			"version": restServiceParams.version,
-			"url": restServiceParams.url,
-			"port": restServiceParams.registry.port,
-			"header": req.headers
-		}));
+		if (req.soajs.log.info()) {
+			req.soajs.log.info(JSON.stringify({
+				"serviceName": restServiceParams.name,
+				"host": host,
+				"version": restServiceParams.version,
+				"url": restServiceParams.url,
+				"port": restServiceParams.registry.port,
+				"header": req.headers
+			}));
+		}
 
 		let requestTOR = restServiceParams.registry.requestTimeoutRenewal || config.requestTimeoutRenewal;
 		let requestTO = restServiceParams.registry.requestTimeout || config.requestTimeout;

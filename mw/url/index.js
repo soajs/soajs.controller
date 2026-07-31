@@ -64,7 +64,9 @@ module.exports = (configuration) => {
 				!req.soajs.registry.services[req.soajs.controller.serviceParams.service_n]
 			)) {
 			req.soajs.log.fatal("Service [" + req.soajs.controller.serviceParams.service_n + "] URL [" + req.url + "] couldn't be matched to a service or the service entry in registry is missing [port || hosts]");
-			req.soajs.log.warn(JSON.stringify({ "url": req.url, "headers": req.headers }));
+			if (req.soajs.log.warn()) {
+				req.soajs.log.warn(JSON.stringify({ "url": req.url, "headers": req.headers }));
+			}
 			return req.soajs.controllerResponse(core.error.getError(130));
 		}
 
