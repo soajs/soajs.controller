@@ -11,6 +11,72 @@
 const coreModules = require("soajs.core.modules");
 let core = coreModules.core;
 
+//NOTE: credentials that must never reach the logs, they are masked in the query string
+const SENSITIVE_QS = /([?&](?:access_token|refresh_token|key)=)[^&]*/gi;
+
+/**
+ * Mask credentials in a url query string
+ *
+ * @param url
+ * @returns {string|null}
+ */
+function redactUrl(url) {
+    return url ? url.replace(SENSITIVE_QS, '$1***') : null;
+}
+
+/**
+ * Build a compact and redacted context for an error response.
+ * NOTE: headers are never included, they carry access_token, key, authorization and soajsinjectobj.
+ *
+ * @param err
+ * @param req
+ * @returns {Object}
+ */
+function errorContext(err, req) {
+    let soajs = req.soajs || {};
+    let serviceParams = (soajs.controller && soajs.controller.serviceParams) || {};
+    let tenant = soajs.tenant || {};
+
+    let code = null;
+    let msg = null;
+    if (typeof err === "number") {
+        code = err;
+        msg = core.error.generate(err).message;
+    } else if (err && typeof err === "object") {
+        code = err.code || err.status || null;
+        msg = err.msg || err.message || null;
+    }
+
+    let context = {
+        "code": code,
+        "msg": msg,
+        "method": req.method,
+        "service": serviceParams.name || serviceParams.service_n || null,
+        "version": serviceParams.version || null,
+        "api": (serviceParams.parsedUrl && serviceParams.parsedUrl.pathname) || null,
+        "url": redactUrl(req.url),
+        "ip": req.getClientIP ? req.getClientIP() : null,
+        "ua": req.getClientUserAgent ? req.getClientUserAgent() : null
+    };
+    if (tenant.id) {
+        context.tenant = { "id": tenant.id, "code": tenant.code };
+    }
+    //NOTE: iKey only, the eKey is the credential the client authenticates with
+    if (tenant.key && tenant.key.iKey) {
+        context.iKey = tenant.key.iKey;
+    }
+    if (tenant.application) {
+        context.application = {
+            "product": tenant.application.product,
+            "package": tenant.application.package
+        };
+    }
+    if (soajs.uracDriver && soajs.uracDriver.username) {
+        context.username = soajs.uracDriver.username;
+    }
+    return context;
+}
+
 //-------------------------- ERROR Handling MW - service & controller
 /**
  *
@@ -77,7 +143,13 @@ function controllerClientErrorHandler(err, req, res, next) {
  */
 function controllerErrorHandler(err, req, res, next) {
 
-    req.soajs.log.warn(JSON.stringify({ "url": req.url, "headers": req.headers }));
+    if (req.soajs.log.error()) {
+        req.soajs.log.error(JSON.stringify(errorContext(err, req)));
+    }
+    //NOTE: the full header dump stays at warn, it is a debugging aid and it is not redacted
+    if (req.soajs.log.warn()) {
+        req.soajs.log.warn(JSON.stringify({ "url": req.url, "headers": req.headers }));
+    }
 
     if (err.code && err.msg) {
         err.status = err.status || 500;
