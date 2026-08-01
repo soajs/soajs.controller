@@ -26,7 +26,7 @@ let fetchControllerHosts = function (core, log, next) {
 	registry = registryModule.get();
 	registryModule.loadOtherEnvControllerHosts(gatewayServiceName, function (error, hosts) {
 		if (error) {
-			log.warn("Failed to load controller hosts. reusing from previous load. Reason: " + error.message);
+			log.error("Failed to load controller hosts. reusing from previous load. Reason: " + error.message);
 		} else {
 			controllerHosts = hosts;
 		}
@@ -107,7 +107,7 @@ let awareness_healthCheck = function (core, log) {
 					// });
 				}, function (err) {
 					if (err) {
-						log.warn('Unable to build awareness ENV structure for controllers: ' + err);
+						log.error('Unable to build awareness ENV structure for controllers: ' + err);
 					}
 				});
 		}

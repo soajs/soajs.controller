@@ -11,6 +11,7 @@
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 const memory = require('./model/memory.js');
 const mongo = require('./model/mongo.js');
+const { logOnce } = require('../../lib/logOnce.js');
 
 let model = { memory, mongo };
 
@@ -119,7 +120,8 @@ module.exports = function (configuration) {
 
 		const modelType = idempotencyConfig.model || 'memory';
 		if (!model[modelType]) {
-			configuration.log.warn('Idempotency: Unknown model [' + modelType + ']. It can only be [memory || mongo]');
+			logOnce(configuration.log, "error", "idempotency_model_" + modelType,
+				'Idempotency: Unknown model [' + modelType + ']. It can only be [memory || mongo]. Idempotency is off.');
 			return next();
 		}
 

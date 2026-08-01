@@ -12,6 +12,7 @@
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 const memory = require('./model/memory.js');
 const mongo = require('./model/mongo.js');
+const { logOnce } = require('../../lib/logOnce.js');
 
 let model = {
 	memory, mongo
@@ -175,7 +176,8 @@ module.exports = function (configuration) {
 				if (trafficModel) {
 					throttling.model = trafficModel;
 					if (!model[throttling.model]) {
-						req.soajs.log.warn('Throttling:', 'Unkown model [' + throttling.model + ']. It can only be [memory || mongo]');
+						logOnce(req.soajs.log, "error", "throttling_model_" + throttling.model,
+							'Throttling: Unknown model [' + throttling.model + ']. It can only be [memory || mongo]. Throttling is off.');
 						return next();
 					}
 				}

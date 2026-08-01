@@ -81,7 +81,8 @@ function flushMonitorBuffer() {
 				}
 			})
 			.catch((error) => {
-				req.soajs.log.debug('Monitor buffer flush failed: ' + error.message);
+				//NOTE: the buffer was already cleared, these items are lost
+				req.soajs.log.error('Monitor buffer flush failed, ' + itemsToSend.length + ' items lost: ' + error.message);
 			});
 	});
 }

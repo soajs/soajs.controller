@@ -74,7 +74,7 @@ Controller.prototype.init = function (callback) {
 			let log = core.getLogger(_self.soajs.param.init.serviceName, registry.serviceConfig.logger);
 			if (service.fetched) {
 				if (!service.fetched.result) {
-					log.warn("Unable to find the service host ip. The service will NOT be registered for awareness.");
+					log.error("Unable to find the service host ip. The service will NOT be registered for awareness.");
 					log.info("IPs found: ", service.fetched.extra.ips);
 					log.warn("The default service IP has been used [" + service.ip + "]");
 				} else {
@@ -316,7 +316,7 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 								});
 							});
 						} else {
-							log.warn("Unable to register host IP [" + service.ip + "] for service [" + _self.soajs.param.init.serviceName + "@" + _self.soajs.param.init.serviceVersion + "]");
+							log.error("Unable to register host IP [" + service.ip + "] for service [" + _self.soajs.param.init.serviceName + "@" + _self.soajs.param.init.serviceVersion + "]");
 						}
 					});
 				}

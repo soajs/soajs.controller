@@ -145,7 +145,7 @@ let awareness_healthCheck = function (core, log) {
 
 					let stopLoggingAfter = registry.serviceConfig.awareness.maxLogCount;
 					if (statusObj.downCount <= stopLoggingAfter) {
-						log.warn("Self Awareness health check for service [" + sObj.name + "] for host [" + sObj.host + "] is NOT healthy");
+						log.error("Self Awareness health check for service [" + sObj.name + "] for host [" + sObj.host + "] is NOT healthy");
 					}
 					if (serviceAwarenessObj[sObj.name].healthy[sObj.version].indexOf(sObj.host) !== -1) {
 						//TODO: if we guarantee uniqueness we will not need the for loop
@@ -192,7 +192,7 @@ let awareness_healthCheck = function (core, log) {
 			}
 		}, function (err) {
 			if (err) {
-				log.warn('Unable to build awareness structure for services: ' + err);
+				log.error('Unable to build awareness structure for services: ' + err);
 			}
 		});
 	setTimeout(() => {

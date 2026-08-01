@@ -10,6 +10,7 @@ describe("Starting Gateway Unit test", () => {
         require("./lib/apiPathParam2apiRegExp.js");
         require("./lib/http.js");
         require("./lib/ip.js");
+        require("./lib/logOnce.js");
         require("./lib/param.js");
         require("./lib/parseURL.js");
 

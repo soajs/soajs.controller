@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 const memory = require('./model/memory.js');
 const mongo = require('./model/mongo.js');
+const { logOnce } = require('../../lib/logOnce.js');
 
 let model = { memory, mongo };
 
@@ -102,7 +103,8 @@ module.exports = function (configuration) {
 
 		const modelType = cacheConfig.model || 'memory';
 		if (!model[modelType]) {
-			configuration.log.warn('Cache: Unknown model [' + modelType + ']. It can only be [memory || mongo]');
+			logOnce(configuration.log, "error", "cache_model_" + modelType,
+				'Cache: Unknown model [' + modelType + ']. It can only be [memory || mongo]. Caching is off.');
 			return next();
 		}
 
@@ -119,7 +121,8 @@ module.exports = function (configuration) {
 		let scope = apiConfig.scope;
 		if (scope !== 'tenant' && scope !== 'tenant_user') {
 			if (scope) {
-				configuration.log.warn('Cache: Unknown scope [' + scope + '] for API [' + method + ' ' + apiPath + ']. It can only be [tenant || tenant_user]. Falling back to default.');
+				logOnce(configuration.log, "error", "cache_scope_" + scope + "_" + method + "_" + apiPath,
+					'Cache: Unknown scope [' + scope + '] for API [' + method + ' ' + apiPath + ']. It can only be [tenant || tenant_user]. Falling back to default.');
 			}
 			scope = isAPIPublic ? 'tenant' : 'tenant_user';
 		}
