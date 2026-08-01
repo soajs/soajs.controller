@@ -109,6 +109,43 @@ describe("Testing utilities", () => {
 		});
 	});
 
+	it("logErrors - no longer duplicates what the error context reports", (done) => {
+		// the full chain: logErrors -> controllerClientErrorHandler -> controllerErrorHandler
+		let r = makeReq(true);
+		let oauthErr = new Error("The access token provided is invalid.");
+		oauthErr.name = "OAuth2Error";
+		oauthErr.code = 401;
+
+		utils.logErrors(oauthErr, r, res, (e1) => {
+			utils.controllerClientErrorHandler(e1, r, res, (e2) => {
+				utils.controllerErrorHandler(e2, r, res, null);
+			});
+		});
+
+		assert.strictEqual(logged.error.length, 1, "expected exactly one error line for one failure");
+		let ctx = JSON.parse(logged.error[0]);
+		assert.strictEqual(ctx.code, 401);
+		assert.strictEqual(ctx.msg, "The access token provided is invalid.");
+		done();
+	});
+
+	it("logErrors - keeps the underlying cause when it becomes a generic 164", (done) => {
+		// an error with neither code nor msg is replaced by 164, so the context line
+		// cannot report the original. logErrors must still record it.
+		let r = makeReq(true);
+		utils.logErrors({ "message": "socket hang up" }, r, res, (e1) => {
+			utils.controllerClientErrorHandler(e1, r, res, (e2) => {
+				utils.controllerErrorHandler(e2, r, res, null);
+			});
+		});
+
+		assert.strictEqual(logged.error.length, 2);
+		assert.strictEqual(logged.error[0], "socket hang up", "underlying cause must survive");
+		let ctx = JSON.parse(logged.error[1]);
+		assert.strictEqual(ctx.code, 164);
+		done();
+	});
+
 	it("logErrors - string error", (done) => {
 		utils.logErrors("error", req, res, (error) => {
 			done();

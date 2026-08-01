@@ -190,8 +190,7 @@ let utils = {
 						let block = getCachedNetmask(addr);
 						return block && block.contains(ip);
 					} catch (err) {
-						obj.req.soajs.log.error('IP whitelist security configuration failed: ', addr);
-						obj.req.soajs.log.error(err);
+						obj.req.soajs.log.error('IP whitelist security configuration failed for [' + addr + ']: ' + (err.message || err));
 					}
 					return false;
 				}));
@@ -320,8 +319,7 @@ let utils = {
 					let block = getCachedNetmask(addr);
 					return block && block.contains(ip);
 				} catch (err) {
-					obj.req.soajs.log.error('Geographic security configuration failed: ', addr);
-					obj.req.soajs.log.error(err.message);
+					obj.req.soajs.log.error('Geographic security configuration failed for [' + addr + ']: ' + (err.message || err));
 				}
 				return false;
 			}));

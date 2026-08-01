@@ -22,10 +22,18 @@ let model = {
 		if (!model.mongo) {
 			model.mongo = new Mongo(dbConfiguration);
 			model.mongo.createIndex(idempotency_store, { 'l1': 1, 'l2': 1 }, { unique: true }, (err, index) => {
-				log.debug("Idempotency index: " + index + " created with error: " + err);
+				if (err) {
+					log.error("Idempotency index creation failed: " + err.message);
+				} else {
+					log.debug("Idempotency index created: " + index);
+				}
 			});
 			model.mongo.createIndex(idempotency_store, { 'expiresAt': 1 }, { expireAfterSeconds: 0 }, (err, index) => {
-				log.debug("Idempotency TTL index: " + index + " created with error: " + err);
+				if (err) {
+					log.error("Idempotency TTL index creation failed: " + err.message);
+				} else {
+					log.debug("Idempotency TTL index created: " + index);
+				}
 			});
 		}
 	},
