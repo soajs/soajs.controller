@@ -22,10 +22,18 @@ let model = {
 		if (!model.mongo) {
 			model.mongo = new Mongo(dbConfiguration);
 			model.mongo.createIndex(cache_store, { 'l1': 1, 'l2': 1 }, { unique: true }, (err, index) => {
-				log.debug("Cache index: " + index + " created with error: " + err);
+				if (err) {
+					log.error("Cache index creation failed: " + err.message);
+				} else {
+					log.debug("Cache index created: " + index);
+				}
 			});
 			model.mongo.createIndex(cache_store, { 'expiresAt': 1 }, { expireAfterSeconds: 0 }, (err, index) => {
-				log.debug("Cache TTL index: " + index + " created with error: " + err);
+				if (err) {
+					log.error("Cache TTL index creation failed: " + err.message);
+				} else {
+					log.debug("Cache TTL index created: " + index);
+				}
 			});
 		}
 	},

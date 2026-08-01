@@ -23,7 +23,11 @@ let model = {
         if (!model.mongo) {
             model.mongo = new Mongo(dbConfiguration);
             model.mongo.createIndex(throttling_monitor, { 'l1': 1, 'l2': 1 }, {}, (err, index) => {
-                log.debug("Index: " + index + " created with error: " + err);
+                if (err) {
+                    log.error("Throttling index creation failed: " + err.message);
+                } else {
+                    log.debug("Throttling index created: " + index);
+                }
             });
         }
     },

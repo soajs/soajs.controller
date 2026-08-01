@@ -86,13 +86,15 @@ function errorContext(err, req) {
  * @param next
  */
 function logErrors(err, req, res, next) {
+    //NOTE: every error routed here reaches controllerErrorHandler, which logs a
+    //      structured context carrying the code and the message. The cases below
+    //      only log what that context cannot reproduce, which is the underlying
+    //      cause of an error that gets replaced by the generic 164.
     if (typeof err === "number") {
-        req.soajs.log.error(core.error.generate(err).message);
         return next(err);
     }
     if (typeof err === "object") {
         if (err.code && err.message) {
-            req.soajs.log.error(err.message);
             if (err.name === "OAuth2Error") {
                 return next({ "code": err.code, "status": err.code, "msg": err.message });
             } else {
@@ -100,15 +102,12 @@ function logErrors(err, req, res, next) {
             }
         } else if (err.code && err.msg) {
             err.message = err.msg;
-            req.soajs.log.error(err.message);
             return next(err);
         } else {
             req.soajs.log.error(err.message || err);
-            req.soajs.log.error(core.error.generate(164).message);
         }
     } else {
         req.soajs.log.error(err);
-        req.soajs.log.error(core.error.generate(164).message);
     }
 
     return next(core.error.getError(164));
