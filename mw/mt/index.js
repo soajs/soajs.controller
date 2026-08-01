@@ -330,7 +330,9 @@ module.exports = (configuration) => {
 															return callback();
 														});
 													} else {
-														req.soajs.log.debug(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "]");
+														//NOTE: the peer is dropped from the injected address book, the calling
+														//		service will behave as if it was never configured
+														req.soajs.log.error(serviceName + " interConnect failed for [" + item.name + "@" + item.version + "], peer dropped from awareness");
 														return callback();
 													}
 												});

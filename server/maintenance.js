@@ -145,7 +145,7 @@ let reloadRegistry = (parsedUrl, core, log, param, serviceIp, cb) => {
 	}, function (err, reg) {
 		let response = maintenanceResponse(parsedUrl, param);
 		if (err) {
-			log.warn("Failed to load registry. reusing from previous load. Reason: " + err.message);
+			log.error("Failed to load registry. reusing from previous load. Reason: " + err.message);
 		} else {
 			response.result = true;
 			response.data = cloneAndFilterRegistry(reg);
@@ -236,7 +236,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 							infoObj = body;
 						}
 						if (!soajsLib.version.validate(infoObj.version)) {
-							log.warn("Failed to register service for [" + infoObj.name + "@" + infoObj.version + "] version should be of format [1.1]");
+							log.error("Failed to register service for [" + infoObj.name + "@" + infoObj.version + "] version should be of format [1.1]");
 							// res.writeHead(200, {'Content-Type': 'application/json'});
 							return res.end(JSON.stringify(response));
 						}
@@ -287,7 +287,7 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 									response.result = true;
 									response.data = data;
 								} else {
-									log.warn("Failed to register service for [" + infoObj.name + "] " + err.message);
+									log.error("Failed to register service for [" + infoObj.name + "] " + err.message);
 								}
 								return res.end(JSON.stringify(response));
 							});
