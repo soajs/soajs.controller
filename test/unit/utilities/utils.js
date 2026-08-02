@@ -146,6 +146,19 @@ describe("Testing utilities", () => {
 		done();
 	});
 
+	it("errorContext - falls back to service_n and service_v before gotoService resolves them", (done) => {
+		// key and keyACL run before gotoService, so serviceParams carries only the
+		// raw service_n / service_v at that point
+		let r = makeReq(true);
+		r.soajs.controller.serviceParams = { "service_n": "urac", "service_v": "3" };
+		utils.controllerErrorHandler(154, r, res, null);
+
+		let ctx = JSON.parse(logged.error[0]);
+		assert.strictEqual(ctx.service, "urac");
+		assert.strictEqual(ctx.version, "3");
+		done();
+	});
+
 	it("logErrors - string error", (done) => {
 		utils.logErrors("error", req, res, (error) => {
 			done();

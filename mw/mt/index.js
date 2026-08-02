@@ -48,7 +48,7 @@ module.exports = (configuration) => {
 				serviceInfo = req.soajs.controller.serviceParams.registry.versions[req.soajs.controller.serviceParams.version];
 			}
 			if (!serviceInfo) {
-				req.soajs.log.error("Problem accessing service [" + req.soajs.controller.serviceParams.name + "], API [" + req.soajs.controller.serviceParams.path + "] & version [" + req.soajs.controller.serviceParams.version + "]");
+				//NOTE: the error context already reports the service, the api and the version
 				return next(133);
 			}
 			let oauth = true;
@@ -160,11 +160,15 @@ module.exports = (configuration) => {
 								//if this is controller route: /key/permission/get, ignore async waterfall response
 								if (url_keyACL) {
 									if (!req.soajs.uracDriver) {
+										if (err && err.name === "OAuth2Error") {
+											//NOTE: the code and the message travel with the error, the
+											//		error context reports both with full attribution
+											return next(err);
+										}
+										//NOTE: the cause is replaced by 158 below, so it is only
+										//		recoverable from here
 										if (err && err.message) {
 											req.soajs.log.error(err.message);
-										}
-										if (err && err.name === "OAuth2Error") {
-											return next(err);
 										}
 										//doesn't work if you are not logged in
 										return next(158);
@@ -180,7 +184,8 @@ module.exports = (configuration) => {
 								}
 
 								if (err) {
-									req.soajs.log.error("Problem accessing service [" + req.soajs.controller.serviceParams.name + "], API [" + req.soajs.controller.serviceParams.path + "] & version [" + req.soajs.controller.serviceParams.version + "]");
+									//NOTE: the error context already reports the service, the api and
+									//		the version alongside the code and the message
 									return next(err);
 								} else {
 									let serviceName = data.req.soajs.controller.serviceParams.name;

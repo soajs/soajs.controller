@@ -51,8 +51,10 @@ function errorContext(err, req) {
         "code": code,
         "msg": msg,
         "method": req.method,
+        //NOTE: name and version are resolved by gotoService, the service_n and service_v
+        //		fallbacks cover the middleware that runs before it, ex: key and keyACL
         "service": serviceParams.name || serviceParams.service_n || null,
-        "version": serviceParams.version || null,
+        "version": serviceParams.version || serviceParams.service_v || null,
         "api": (serviceParams.parsedUrl && serviceParams.parsedUrl.pathname) || null,
         "url": redactUrl(req.url),
         "ip": req.getClientIP ? req.getClientIP() : null,
