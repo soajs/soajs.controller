@@ -292,10 +292,23 @@ Tracks user activity by notifying a service (typically URAC) of user access.
     "serviceName": "urac",                   // Service to notify
     "serviceVersion": "3",                   // Service version
     "api": "/user/last/seen",                // API endpoint
-    "network": "internal"                    // Optional network identifier
+    "network": "internal",                   // Optional network identifier
+    "include": {                             // Optional whitelist, omit for all requests
+      "connectspaces": true
+    },
+    "targets": [                             // Optional extra APIs, same event
+      {
+        "serviceName": "authenticator",
+        "serviceVersion": "1",
+        "api": "/my/device/network",
+        "method": "put"
+      }
+    ]
   }
 }
 ```
+
+See `docs/middleware/lastSeen.md` for the `include` matching rules and the target fields.
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|

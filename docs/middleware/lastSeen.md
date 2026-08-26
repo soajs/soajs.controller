@@ -69,7 +69,18 @@ Located in `registry.custom.gateway.value.lastSeen`:
     "serviceName": "urac",               // Target service
     "serviceVersion": "3",               // Service version
     "api": "/user/last/seen",            // API endpoint
-    "network": "internal"                // Optional network identifier
+    "network": "internal",               // Optional network identifier
+    "include": {                         // Optional whitelist, omit to trigger on everything
+      "connectspaces": true
+    },
+    "targets": [                         // Optional extra APIs notified on the same event
+      {
+        "serviceName": "authenticator",
+        "serviceVersion": "1",
+        "api": "/my/device/network",
+        "method": "put"
+      }
+    ]
   }
 }
 ```
@@ -81,6 +92,40 @@ Located in `registry.custom.gateway.value.lastSeen`:
 | `serviceVersion` | string | `"3"` | Service version |
 | `api` | string | `"/user/last/seen"` | API endpoint |
 | `network` | string | - | Network identifier in request body |
+| `include` | object | - | Whitelist of services and APIs, omit to trigger on every request |
+| `targets` | array | - | Extra APIs notified on the same event |
+
+### include
+
+Decides whether a request counts as activity. Omitting it triggers on every request.
+
+| Form | Meaning |
+|------|---------|
+| service missing from `include` | never triggers |
+| `"service": true` | every API, every method |
+| `"service": {"apis": {"/path": true}}` | that API, every method |
+| `"service": {"apis": {"/path": ["get","put"]}}` | that API, listed methods only |
+| `"apis": {"*": ...}` | any API, checked before the exact paths |
+
+API keys accept the service relative path (`/active`) or the full path
+(`/connectspaces/active`), and support path params (`/user/:id`).
+
+### targets
+
+Extra APIs notified whenever the main one is. They are not filtered on their own, the
+`include` above has already decided that the request counts as activity, so a target is
+notified on exactly the same set of requests.
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `serviceName` | string | required | Service to notify, must be in the registry |
+| `api` | string | required | API endpoint |
+| `serviceVersion` | string | - | Service version, resolved by awareness when absent |
+| `method` | string | `"post"` | HTTP method |
+
+Each target receives the same body and the same `soajsinjectobj` header as the main
+notification. A target that is down, unknown to the registry, or missing `serviceName`
+or `api` is skipped without affecting the others.
 
 ## Request to URAC
 

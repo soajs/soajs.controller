@@ -144,6 +144,56 @@ function isMethodMatch(methodConfig, method) {
 }
 
 /**
+ * Fire and forget the notification at one target.
+ *
+ * NOTE: the request is not awaited, a target that is down or slow must not affect
+ *       the original request, which has already been handed to the next middleware.
+ *
+ * @param req
+ * @param lastSeen the custom registry block, carries the shared body
+ * @param item {name, version, api, method}
+ */
+function notifyTarget(req, lastSeen, item) {
+    //NOTE: getHost resolves against the registry, an unknown service would throw on
+    //      the port lookup below and take the remaining targets down with it
+    if (!req.soajs.registry || !req.soajs.registry.services ||
+        !req.soajs.registry.services[item.name] || !req.soajs.registry.services[item.name].port) {
+        req.soajs.log.debug("lastSeen failed, service not in registry [" + item.name + "@" + item.version + " " + item.api + "]");
+        return;
+    }
+    req.soajs.awareness.getHost(item.name, item.version, (host) => {
+        if (!host) {
+            req.soajs.log.debug("lastSeen failed with no host for [" + item.name + "@" + item.version + " " + item.api + "]");
+            return;
+        }
+        item.host = host;
+        item.port = req.soajs.registry.services[item.name].port;
+
+        let options = {
+            "uri": "http://" + item.host + ":" + item.port + item.api,
+            "json": true,
+            "method": item.method || "POST"
+        };
+        if (lastSeen.network) {
+            options.body = { "network": lastSeen.network };
+        }
+        if (req.headers && req.headers.soajsinjectobj) {
+            options.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
+        }
+        httpRequest(options)
+            .then(() => { })
+            .catch(({ error, body }) => {
+                if (error) {
+                    req.soajs.log.debug("lastSeen failed for [" + item.name + "@" + item.version + " " + item.api + "]");
+                    req.soajs.log.debug("lastSeen " + error.message);
+                } else {
+                    req.soajs.log.debug("lastSeen ", body);
+                }
+            });
+    });
+}
+
+/**
  *
  * @param configuration
  * @returns {Function}
@@ -180,39 +230,29 @@ module.exports = () => {
                 if (uracObj) {
                     userId = uracObj._id;
                 }
-                if (userId) {
-                    req.soajs.awareness.getHost(item.name, item.version, (host) => {
-                        if (host) {
-                            item.host = host;
-                            item.port = req.soajs.registry.services[item.name].port;
-
-                            let options = {
-                                "uri": "http://" + item.host + ":" + item.port + item.api,
-                                "json": true,
-                                "method": "POST"
-                            };
-                            if (lastSeen.network) {
-                                options.body = { "network": lastSeen.network };
-                            }
-                            if (req.headers && req.headers.soajsinjectobj) {
-                                options.headers = { "soajsinjectobj": req.headers.soajsinjectobj };
-                            }
-                            httpRequest(options)
-                                .then(() => { })
-                                .catch(({ error, body }) => {
-                                    if (error) {
-                                        req.soajs.log.debug("lastSeen failed for [" + item.name + "@" + item.version + " " + item.api + "]");
-                                        req.soajs.log.debug("lastSeen " + error.message);
-                                    } else {
-                                        req.soajs.log.debug("lastSeen ", body);
-                                    }
-                                });
-                        } else {
-                            req.soajs.log.debug("lastSeen failed with no host for [" + item.name + "@" + item.version + " " + item.api + "]");
-                        }
-                    });
-                } else {
+                if (!userId) {
                     req.soajs.log.debug("lastSeen failed with no userId for [" + item.name + "@" + item.version + " " + item.api + "]");
+                    return;
+                }
+
+                notifyTarget(req, lastSeen, item);
+
+                //NOTE: additional targets are notified on the same event, they are not
+                //      filtered on their own, the include above already decided that this
+                //      request counts as activity
+                if (Array.isArray(lastSeen.targets)) {
+                    lastSeen.targets.forEach((target) => {
+                        if (!target || !target.serviceName || !target.api) {
+                            req.soajs.log.debug("lastSeen target skipped, serviceName and api are required");
+                            return;
+                        }
+                        notifyTarget(req, lastSeen, {
+                            "name": target.serviceName,
+                            "version": target.serviceVersion || null,
+                            "api": target.api,
+                            "method": target.method
+                        });
+                    });
                 }
             }
         }
