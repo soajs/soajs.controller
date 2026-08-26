@@ -1009,4 +1009,172 @@ describe("Unit test for: mw - lastSeen", () => {
 
     });
 
+    describe("extra targets tests", () => {
+
+        let buildReq = (lastSeen) => {
+            return {
+                method: "GET",
+                getClientIP: () => {
+                    return "127.0.0.1";
+                },
+                soajs: {
+                    log: {
+                        debug: () => {
+                        },
+                        error: () => {
+                        }
+                    },
+                    uracDriver: {
+                        getProfile: () => {
+                            return { _id: "1111111111" };
+                        }
+                    },
+                    awareness: {
+                        getHost: (name, version, cb) => {
+                            return cb(name + ".fake");
+                        }
+                    },
+                    controller: {
+                        serviceParams: {
+                            name: "connectspaces",
+                            path: "/active",
+                            parsedUrl: { pathname: "/connectspaces/active" }
+                        }
+                    },
+                    registry: {
+                        services: {
+                            urac: { port: 4001 },
+                            authenticator: { port: 4002 }
+                        },
+                        custom: {
+                            gateway: {
+                                value: { lastSeen: lastSeen }
+                            }
+                        }
+                    }
+                }
+            };
+        };
+
+        it("notifies the extra target alongside urac, honouring its method", (done) => {
+            let req = buildReq({
+                active: true,
+                network: "YAYA",
+                targets: [{
+                    serviceName: "authenticator",
+                    serviceVersion: "1",
+                    api: "/my/device/network",
+                    method: "put"
+                }]
+            });
+            const uracScope = nock('http://urac.fake:4001')
+                .post('/user/last/seen', "{\"network\":\"YAYA\"}")
+                .reply(200, { result: true });
+            const authScope = nock('http://authenticator.fake:4002')
+                .put('/my/device/network', "{\"network\":\"YAYA\"}")
+                .reply(200, { result: true });
+
+            let functionMw = mw({});
+            functionMw(req, {}, (error) => {
+                assert.ifError(error);
+            });
+            setTimeout(() => {
+                assert.strictEqual(uracScope.isDone(), true, "urac was not notified");
+                assert.strictEqual(authScope.isDone(), true, "the extra target was not notified");
+                done();
+            }, 100);
+        });
+
+        it("defaults the extra target to post when no method is set", (done) => {
+            let req = buildReq({
+                active: true,
+                targets: [{
+                    serviceName: "authenticator",
+                    serviceVersion: "1",
+                    api: "/my/device/network"
+                }]
+            });
+            nock('http://urac.fake:4001').post('/user/last/seen').reply(200, { result: true });
+            const authScope = nock('http://authenticator.fake:4002')
+                .post('/my/device/network')
+                .reply(200, { result: true });
+
+            let functionMw = mw({});
+            functionMw(req, {}, () => {
+            });
+            setTimeout(() => {
+                assert.strictEqual(authScope.isDone(), true, "the extra target was not posted to");
+                done();
+            }, 100);
+        });
+
+        it("still notifies urac when a target names a service that is not in the registry", (done) => {
+            let req = buildReq({
+                active: true,
+                targets: [{
+                    serviceName: "doesnotexist",
+                    serviceVersion: "1",
+                    api: "/nope"
+                }]
+            });
+            const uracScope = nock('http://urac.fake:4001')
+                .post('/user/last/seen')
+                .reply(200, { result: true });
+
+            let functionMw = mw({});
+            assert.doesNotThrow(() => {
+                functionMw(req, {}, () => {
+                });
+            });
+            setTimeout(() => {
+                assert.strictEqual(uracScope.isDone(), true, "urac was not notified");
+                done();
+            }, 100);
+        });
+
+        it("skips a malformed target and still notifies urac", (done) => {
+            let req = buildReq({
+                active: true,
+                targets: [{ serviceVersion: "1" }, null]
+            });
+            const uracScope = nock('http://urac.fake:4001')
+                .post('/user/last/seen')
+                .reply(200, { result: true });
+
+            let functionMw = mw({});
+            functionMw(req, {}, () => {
+            });
+            setTimeout(() => {
+                assert.strictEqual(uracScope.isDone(), true, "urac was not notified");
+                done();
+            }, 100);
+        });
+
+        it("does not notify any target when the include filter excludes the request", (done) => {
+            let req = buildReq({
+                active: true,
+                include: { "someotherservice": true },
+                targets: [{
+                    serviceName: "authenticator",
+                    serviceVersion: "1",
+                    api: "/my/device/network",
+                    method: "put"
+                }]
+            });
+            const uracScope = nock('http://urac.fake:4001').post('/user/last/seen').reply(200, {});
+            const authScope = nock('http://authenticator.fake:4002').put('/my/device/network').reply(200, {});
+
+            let functionMw = mw({});
+            functionMw(req, {}, () => {
+            });
+            setTimeout(() => {
+                assert.strictEqual(uracScope.isDone(), false, "urac should have been skipped");
+                assert.strictEqual(authScope.isDone(), false, "the extra target should have been skipped");
+                nock.cleanAll();
+                done();
+            }, 100);
+        });
+
+    });
+
 });
