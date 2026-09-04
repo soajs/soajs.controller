@@ -14,6 +14,9 @@ const utils = require("./utils");
 
 
 const { encodeHeaderValue } = require("../../lib/header.js");
+const { resolveMembership } = require("../../lib/membership.js");
+
+const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
 /**
  *
@@ -265,6 +268,15 @@ module.exports = (configuration) => {
 														"code": uracObj.tenant.code
 													}
 												};
+
+												//NOTE: only the resolved name travels, never the raw per product
+												//		array, so a service cannot read a membership held for
+												//		a product this request was not made under
+												let membershipConfig = get(["soajs", "registry", "custom", "gateway", "value", "membership"], req);
+												let membership = resolveMembership(membershipConfig, keyObj.application.product, uracObj.memberships);
+												if (membership) {
+													injectObj.urac.membership = membership;
+												}
 
 												injectObj.param = injectObj.param || {};
 												injectObj.param.urac_Profile = serviceParam.urac_Profile;

@@ -27,6 +27,9 @@ registry.custom
 │       │       └── [service]       # Service-specific settings
 │       ├── maintenanceMode         # Gateway maintenance mode
 │       ├── lastSeen                # User activity tracking
+│       ├── membership              # Membership on the urac object, by product
+│       │   ├── active              # Whether membership is resolved at all
+│       │   └── [main product]      # Its sub products
 │       ├── oauth
 │       │   └── deviceIdCheck       # Turn the deviceId check off
 │       └── gotoService
@@ -494,6 +497,86 @@ is read by the oauth middleware itself.
 
 ---
 
+## 14. Membership
+
+**Path:** `registry.custom.gateway.value.membership`
+
+**Middleware:** `mw/mt/index.js`, resolved by `lib/membership.js`
+
+Puts the caller's membership on the urac object of every call, so a service can read it
+without a lookup.
+
+A membership is held per main product on the user record in the urac `users` collection,
+and only its name is stored. What the name grants is resolved from the catalog, it is
+never copied onto the user:
+
+```javascript
+{
+  "memberships": [
+    { "product": "AVAPP", "membership": "whale" }
+  ]
+}
+```
+
+The gateway already resolves both halves of the match on every call. The access token
+gives the user record, which carries `memberships`, and the API key gives the product the
+call is made under. Resolution is the match between them: if the product of the request
+is a configured main product or one of its sub products, and the user holds an entry for
+that main product, the membership name is injected.
+
+```javascript
+{
+  "membership": {
+    "active": true,                          // Resolve membership at all
+    "AVAPP": ["CLUBS", "CORPS", "SECRT", "GRPCH"]   // Main product and its sub products
+  }
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `active` | boolean | `false` | Whether the gateway resolves membership at all |
+| `[main product]` | string[] | - | A product a membership is held in, valued by the sub products that resolve to it |
+
+Every key other than `active` is read as a main product, so more than one can be
+configured and they stay independent. A main product always resolves to itself, listing
+sub products is optional.
+
+### What the service sees
+
+```javascript
+req.soajs.urac.membership     // "whale"
+```
+
+Only the resolved name travels. The raw `memberships` array is never injected, so a
+service cannot read a membership held for a product the request was not made under.
+
+### It fails closed
+
+Nothing is injected, and no service sees a membership, when any of these hold:
+
+| | |
+|---|---|
+| the block is absent, or `active` is not `true` | membership is off |
+| no main product is configured | nothing is resolvable, equivalent to off |
+| the request product is neither a main product nor a sub product | out of scope |
+| the user holds no entry for the resolved main product | no membership |
+| the service does not request urac (`urac: false`) | there is no urac object to put it on |
+
+Product codes are matched exactly. They are uppercase by convention, and normalizing
+here would hide a miscased entry in the registry rather than surface it.
+
+### Freshness
+
+The user record behind this comes from the access token when
+`serviceConfig.oauth.getUserFromToken` is on, when the login mode is `oauth`, or when
+roaming. In those cases `memberships` is a snapshot taken at login, and a membership
+changed afterwards is not seen until a new token is issued. Refreshing does not help,
+the refresh grant copies the stored user forward unchanged. Otherwise the record is
+loaded from urac per request and the membership is current.
+
+---
+
 ## Complete Configuration Example
 
 ```javascript
@@ -615,6 +698,7 @@ Custom registry configurations are processed in this order:
 | 5 | gotoService/redirectToService | `gotoService.monitor` |
 | 6 | mt (security checks) | `mt.whitelist`, `oauth.value.pinWrapper`, `oauth.value.pinWhitelist` |
 | 6a | oauth (called from mt) | `oauth.deviceIdCheck` |
+| 6b | mt (inject object) | `membership` |
 | 7 | idempotency | `idempotency.model`, `idempotency.services.[name]` |
 | 8 | traffic | `traffic.model`, `traffic.throttling` |
 | 9 | cache | `cache.model`, `cache.defaultTTL`, `cache.services.[name]` |

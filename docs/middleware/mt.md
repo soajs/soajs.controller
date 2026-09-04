@@ -515,6 +515,7 @@ The `soajsinjectobj` header contains:
     "lastName": "Doe",
     "email": "user@example.com",
     "groups": ["group1"],
+    "membership": "whale",     // If resolved, see custom registry `membership`
     "tenant": { "id": "...", "code": "..." },
     "profile": { ... },        // If urac_Profile enabled
     "acl": { ... },            // If urac_ACL enabled

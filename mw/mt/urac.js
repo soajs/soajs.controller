@@ -167,6 +167,13 @@ Urac.prototype.getProfile = function (_ALL) {
 			"tenant": _self.userRecord.tenant
 		};
 
+		//NOTE: the raw per product array. The gateway resolves the one entry that applies
+		//		to this request and injects only that, see lib/membership.js. Set only when
+		//		the record carries it, so a user with no memberships keeps the shape it had.
+		if (_self.userRecord.memberships) {
+			urac.memberships = _self.userRecord.memberships;
+		}
+
 		if (_self.userRecord.socialLogin) {
 			urac.socialLogin = {
 				"strategy": _self.userRecord.socialLogin.strategy,
