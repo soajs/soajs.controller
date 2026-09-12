@@ -70,6 +70,13 @@ Uses oauth2-server library for token validation.
            ├─── Mismatch ──▶ Error 156
            │
            ▼
+  ┌─────────────────────────┐
+  │  restrictedTo check     │ token user.restrictedTo vs the request
+  └────────┬────────────────┘
+           │
+           ├─── Mismatch ──▶ Error 147
+           │
+           ▼
        next()
 ```
 
@@ -106,6 +113,53 @@ The check is on by default. To turn it off for an environment, set `deviceIdChec
 Read from `registry.custom.gateway.value.oauth.deviceIdCheck`. Only the boolean `false`
 turns it off, any other value leaves it on, so a missing or malformed entry keeps the
 check running.
+
+#### restrictedTo check
+
+A minted token can carry a `restrictedTo` object under `user`, scoping it to where it may be
+used. It is checked on the record `authorise()` already fetched, so it costs no extra database
+call.
+
+```json
+{
+  "restrictedTo": {
+    "tenant": "<tenant id>",
+    "product": "PRODWEB"
+  }
+}
+```
+
+Only the keys present are checked. **A token with no `restrictedTo` is not checked at all**,
+so every token issued before restricted tokens existed behaves exactly as before. Each key
+takes a string or an array of strings.
+
+There is no registry switch for this check, unlike `deviceIdCheck` above. Writing a
+restriction onto a token is the opt in, and once it is there it is always enforced.
+
+| key | compared against |
+|-----|------------------|
+| `tenant` | `req.soajs.tenant.id` |
+| `product` | `req.soajs.tenant.application.product` |
+| `package` | `req.soajs.tenant.application.package` |
+| `key` | `req.soajs.tenant.key.eKey` |
+| `env` | the gateway environment, matched case insensitively |
+| `agent` | the `user-agent` request header |
+
+The first five come from the ext key on the request, which `mw/mt` resolves before oauth runs.
+So a token minted for one tenant and product is refused on any other key, which is the point.
+
+`agent` is an exact match, and this is the only place agent is ever enforced. The login and
+refresh flows do not check it, so setting it affects nothing but the token that carries it.
+Use it only on short lived tokens, a user-agent string changes whenever the browser updates.
+
+This check is only available for type 2, a type 0 JWT carries no stored token record.
+
+##### Failing closed
+
+A service with `extKeyRequired` off gives the request no key, so there is nothing to compare
+against. A token carrying `restrictedTo` is **denied** in that case rather than allowed
+through, otherwise a restricted token could escape its restriction by targeting a keyless
+service.
 
 ### Type 0: JWT
 
@@ -199,6 +253,7 @@ Default OAuth service configuration:
 | Code | Description |
 |------|-------------|
 | 143 | Invalid or missing JWT token |
+| 147 | Token restriction mismatch, the token's restrictedTo does not allow this request |
 | 156 | Device forbidden, the deviceId on the token does not match the device-id header |
 | OAuth2Error | Various OAuth2 errors (invalid_token, expired, etc.) |
 

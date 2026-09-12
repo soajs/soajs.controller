@@ -13,6 +13,10 @@
  * @param configuration
  * @returns {Function}
  */
+//NOTE: the token env is stamped the same way at soajs.core/provision/mongo.js, so the
+//		restrictedTo env constraint is compared against the identical expression.
+let regEnvironment = (process.env.SOAJS_ENV || "dev").toLowerCase();
+
 module.exports = (configuration) => {
 	
 	configuration.soajs.oauthService = configuration.soajs.param.oauthService || {};
@@ -81,6 +85,77 @@ module.exports = (configuration) => {
 		return req.oauth.bearerToken.user.deviceId === req.get('device-id');
 	};
 
+	/**
+	 * Matches one constraint, a string or an array of strings, against the request value.
+	 *
+	 * @param allowed {String|Array} what the token allows
+	 * @param actual {String} what the request carries
+	 * @param ignoreCase {Boolean} used for env, where the registry casing is not guaranteed
+	 * @returns {boolean} true when the request value is allowed
+	 */
+	let valueMatch = (allowed, actual, ignoreCase) => {
+		if (!actual) {
+			return false;
+		}
+		if (ignoreCase) {
+			let lower = actual.toLowerCase();
+			if (Array.isArray(allowed)) {
+				return allowed.some((one) => {
+					return one && one.toLowerCase() === lower;
+				});
+			}
+			return !!allowed && allowed.toLowerCase() === lower;
+		}
+		if (Array.isArray(allowed)) {
+			return allowed.includes(actual);
+		}
+		return allowed === actual;
+	};
+
+	/**
+	 * Enforces the restrictedTo object carried on the access token record.
+	 *
+	 * NOTE: only the keys present on restrictedTo are checked, a token with no restrictedTo is
+	 *		not checked at all. that is the opt in, there is no registry switch, a restriction
+	 *		written on a token is always enforced.
+	 *
+	 * NOTE: it fails closed. a restricted token reaching a service with extKeyRequired off has
+	 *		no key to be compared against, it must not gain access that way.
+	 *
+	 * @param req
+	 * @returns {boolean} true when the request is allowed to proceed
+	 */
+	let restrictedToMatch = (req) => {
+		if (!req.oauth || !req.oauth.bearerToken || !req.oauth.bearerToken.user || !req.oauth.bearerToken.user.restrictedTo) {
+			return true;
+		}
+		let restrictedTo = req.oauth.bearerToken.user.restrictedTo;
+
+		if (!req.soajs.tenant || !req.soajs.tenant.application) {
+			req.soajs.log.debug("Access denied, restricted token on a request with no key");
+			return false;
+		}
+
+		let actual = {
+			"tenant": req.soajs.tenant.id,
+			"product": req.soajs.tenant.application.product,
+			"package": req.soajs.tenant.application.package,
+			"key": req.soajs.tenant.key ? req.soajs.tenant.key.eKey : null,
+			"env": regEnvironment,
+			"agent": req.get('user-agent')
+		};
+
+		for (let field in actual) {
+			if (Object.hasOwnProperty.call(actual, field) && restrictedTo[field]) {
+				if (!valueMatch(restrictedTo[field], actual[field], "env" === field)) {
+					req.soajs.log.debug("Access denied, token restriction mismatch on [" + field + "]");
+					return false;
+				}
+			}
+		}
+		return true;
+	};
+
 	return (req, res, next) => {
 
 		let oauthType = 2;
@@ -102,6 +177,9 @@ module.exports = (configuration) => {
 				if (!deviceIdMatch(req)) {
 					req.soajs.log.debug("Access denied, deviceId mismatch [deviceId: " + req.get('device-id') + "]");
 					return next(156);
+				}
+				if (!restrictedToMatch(req)) {
+					return next(147);
 				}
 				return next();
 			});

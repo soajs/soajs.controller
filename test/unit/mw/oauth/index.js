@@ -267,3 +267,228 @@ describe("Unit test for: mw - oauth deviceId check", () => {
         });
     });
 });
+
+describe("Unit test for: mw - oauth restrictedTo check", () => {
+
+    // builds a configuration whose model returns an access token carrying the given restrictedTo
+    let buildConfiguration = (restrictedTo) => {
+        let user = {"id": "1"};
+        if (restrictedTo !== undefined) {
+            user.restrictedTo = restrictedTo;
+        }
+        return {
+            "soajs": {
+                "param": {}
+            },
+            "serviceConfig": {
+                "oauth": {
+                    grants: ["password", "refresh_token"],
+                    debug: false,
+                    accessTokenLifetime: 7200,
+                    refreshTokenLifetime: 1209600
+                }
+            },
+            "model": {
+                "getAccessToken": (bearerToken, cb) => {
+                    return cb(null, {
+                        "token": bearerToken,
+                        "expires": new Date(new Date().getTime() + 3600000),
+                        "user": user
+                    });
+                }
+            }
+        };
+    };
+
+    // oauthType 2 so that the access token is fetched from the model
+    // tenant mirrors what mw/mt sets from the ext key before oauth runs
+    let buildReq = (agent) => {
+        return {
+            "soajs": {
+                "log": {
+                    "debug": () => {
+                    }
+                },
+                "tenant": {
+                    "id": "tenantB",
+                    "key": {
+                        "eKey": "theWebAppExtKey"
+                    },
+                    "application": {
+                        "product": "PRODWEB",
+                        "package": "PRODWEB_BASIC"
+                    }
+                },
+                "tenantOauth": {
+                    "type": 2
+                },
+                "servicesConfig": {},
+                "registry": {
+                    "serviceConfig": {
+                        "oauth": {
+                            "type": 2
+                        }
+                    }
+                }
+            },
+            "query": {},
+            "body": {},
+            "get": (what) => {
+                if ('Authorization' === what) {
+                    return "Bearer anAccessToken";
+                }
+                if ('user-agent' === what) {
+                    return agent;
+                }
+                return undefined;
+            }
+        };
+    };
+    let res = {};
+
+    it("test oauth MW - no restrictedTo, token is not checked", (done) => {
+        let functionMw = mw(buildConfiguration(undefined));
+        functionMw(buildReq(), res, (error) => {
+            assert.ifError(error);
+            done();
+        });
+    });
+
+    it("test oauth MW - tenant and product match", (done) => {
+        let functionMw = mw(buildConfiguration({"tenant": "tenantB", "product": "PRODWEB"}));
+        functionMw(buildReq(), res, (error) => {
+            assert.ifError(error);
+            done();
+        });
+    });
+
+    it("test oauth MW - tenant does not match", (done) => {
+        let functionMw = mw(buildConfiguration({"tenant": "tenantA"}));
+        functionMw(buildReq(), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - product does not match", (done) => {
+        let functionMw = mw(buildConfiguration({"product": "PRODMOBILE"}));
+        functionMw(buildReq(), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - package and ext key match", (done) => {
+        let functionMw = mw(buildConfiguration({"package": "PRODWEB_BASIC", "key": "theWebAppExtKey"}));
+        functionMw(buildReq(), res, (error) => {
+            assert.ifError(error);
+            done();
+        });
+    });
+
+    it("test oauth MW - ext key does not match", (done) => {
+        let functionMw = mw(buildConfiguration({"key": "someOtherExtKey"}));
+        functionMw(buildReq(), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - array of allowed products, one matches", (done) => {
+        let functionMw = mw(buildConfiguration({"product": ["PRODMOBILE", "PRODWEB"]}));
+        functionMw(buildReq(), res, (error) => {
+            assert.ifError(error);
+            done();
+        });
+    });
+
+    it("test oauth MW - array of allowed products, none matches", (done) => {
+        let functionMw = mw(buildConfiguration({"product": ["PRODMOBILE", "PRODOTHER"]}));
+        functionMw(buildReq(), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - several constraints, the last one fails", (done) => {
+        let functionMw = mw(buildConfiguration({
+            "tenant": "tenantB",
+            "product": "PRODWEB",
+            "key": "someOtherExtKey"
+        }));
+        functionMw(buildReq(), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - env matches whatever the gateway runs as, case insensitive", (done) => {
+        let current = (process.env.SOAJS_ENV || "dev").toLowerCase();
+        let functionMw = mw(buildConfiguration({"env": current.toUpperCase()}));
+        functionMw(buildReq(), res, (error) => {
+            assert.ifError(error);
+            done();
+        });
+    });
+
+    it("test oauth MW - env does not match", (done) => {
+        let functionMw = mw(buildConfiguration({"env": "anEnvThatIsNotRunning"}));
+        functionMw(buildReq(), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - agent matches", (done) => {
+        let functionMw = mw(buildConfiguration({"agent": "Mozilla/5.0 theBrowser"}));
+        functionMw(buildReq("Mozilla/5.0 theBrowser"), res, (error) => {
+            assert.ifError(error);
+            done();
+        });
+    });
+
+    it("test oauth MW - agent does not match", (done) => {
+        let functionMw = mw(buildConfiguration({"agent": "Mozilla/5.0 theBrowser"}));
+        functionMw(buildReq("Mozilla/5.0 anotherBrowser"), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - agent constrained but request sends none, denied", (done) => {
+        let functionMw = mw(buildConfiguration({"agent": "Mozilla/5.0 theBrowser"}));
+        functionMw(buildReq(undefined), res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - fails closed when the request carries no key", (done) => {
+        let functionMw = mw(buildConfiguration({"product": "PRODWEB"}));
+        let req = buildReq();
+        delete req.soajs.tenant;
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+
+    it("test oauth MW - a restriction on the token cannot be switched off at the registry", (done) => {
+        let functionMw = mw(buildConfiguration({"tenant": "tenantA"}));
+        let req = buildReq();
+        req.soajs.registry.custom = {
+            "gateway": {
+                "value": {
+                    "oauth": {
+                        "restrictedToCheck": false,
+                        "deviceIdCheck": false
+                    }
+                }
+            }
+        };
+        functionMw(req, res, (error) => {
+            assert.deepStrictEqual(error, 147);
+            done();
+        });
+    });
+});
