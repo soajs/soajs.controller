@@ -45,7 +45,7 @@ module.exports = {
 				async.eachOfSeries(service, function (version, versionValue, versionCall) {
 					if (!acl.acl[serviceName][versionValue]) {
 						acl.acl[serviceName][versionValue] = _.cloneDeep(version);
-						return serviceCall();
+						return versionCall();
 					}
 					if (version.apisPermission === "restricted") {
 						if (acl.acl[serviceName] && acl.acl[serviceName][versionValue] && acl.acl[serviceName][versionValue].apisPermission && acl.acl[serviceName][versionValue].apisPermission === "restricted") {
@@ -89,7 +89,7 @@ module.exports = {
 					async.eachOf(service, function (version, versionValue, versionCall) {
 						if (!acl.acl_all_env[envName][serviceName][versionValue]) {
 							acl.acl_all_env[envName][serviceName][versionValue] = _.cloneDeep(version);
-							return serviceCall();
+							return versionCall();
 						}
 						if (version.apisPermission === "restricted") {
 							if (acl.acl_all_env[envName][serviceName][versionValue].apisPermission && acl.acl_all_env[envName][serviceName][versionValue].apisPermission === "restricted") {

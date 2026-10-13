@@ -804,6 +804,28 @@ describe("Unit test for: mw - mt lib", () => {
 			done();
 		});
 	});
+	it("testing mergeACLArray keeps every new version of a service", (done) => {
+		let acl = [
+			{ "acl": { "orders": { "1": { "access": true } } } },
+			{ "acl": { "orders": { "2": { "access": true }, "3": { "access": false } }, "billing": { "1": { "access": true } } } }
+		];
+		lib.mergeACLArray(acl, (err, result) => {
+			assert.deepStrictEqual(Object.keys(result.acl.orders).sort(), ["1", "2", "3"]);
+			assert.deepStrictEqual(result.acl.orders["3"], { "access": false });
+			assert.ok(result.acl.billing["1"]);
+			done();
+		});
+	});
+	it("testing mergeACLArray all env with several new versions of a service", (done) => {
+		let acl = [
+			{ "acl_all_env": { "dev": { "orders": { "1": { "access": true } } } } },
+			{ "acl_all_env": { "dev": { "orders": { "2": { "access": true }, "3": { "access": false } } } } }
+		];
+		lib.mergeACLArray(acl, (err, result) => {
+			assert.deepStrictEqual(Object.keys(result.acl_all_env.dev.orders).sort(), ["1", "2", "3"]);
+			done();
+		});
+	});
 	it("testing mergeACLArray empty array", (done) => {
 		let acl = [];
 		lib.mergeACLArray(acl, (err, result) => {
