@@ -732,7 +732,7 @@ user. The packages come from the provision cache, so urac is not read at all.
 The fallback catches an invitation made after the token was issued, the token does not
 show it yet. Everyone else gets what they got before, error 146.
 
-### It fails closed
+### When access is refused
 
 Anything but a well formed access answer is no access, and the urac driver decides:
 

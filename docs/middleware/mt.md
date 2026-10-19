@@ -301,6 +301,7 @@ access, an error or a timeout falls back to the urac driver as before.
 
 See [Custom Registry, Tenant Access Resolver](../configuration-custom-registry.md#15-tenant-access-resolver)
 for the API to build, the registry entry and the tenant profile.
+To add one step by step, see the [Tenant Access Resolver Guide](../tenant-access-resolver.md).
 
 **Roaming Support:**
 

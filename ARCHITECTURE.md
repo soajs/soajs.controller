@@ -156,6 +156,7 @@ The gateway processes requests through a sequential middleware pipeline:
 | [External Integrations](docs/external-integrations.md) | OAuth, URAC, and infrastructure integrations |
 | [Deployment Architecture](docs/deployment.md) | High availability deployment patterns |
 | [Custom Registry Configuration](docs/configuration-custom-registry.md) | Environment-specific gateway settings |
+| [Tenant Access Resolver Guide](docs/tenant-access-resolver.md) | Step by step: give a group of users access to a tenant through an API of your app |
 | [Services Config](docs/configuration-services-config.md) | Tenant key-specific configuration |
 | [Gateway Routes](docs/gateway-routes.md) | Built-in gateway routes (/soajs/acl, /soajs/proxy) |
 | [Maintenance Routes](docs/maintenance-routes.md) | Health check and admin endpoints |
