@@ -8,6 +8,7 @@
  * found in the LICENSE file at the root of this repository
  */
 
+const crypto = require('crypto');
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 const memory = require('./model/memory.js');
 const mongo = require('./model/mongo.js');
@@ -54,6 +55,21 @@ function matchesApi(method, path, apis) {
 		}
 	}
 	return false;
+}
+
+/**
+ * Release a key this request locked, only while it is still in flight and still ours
+ * @param modelObj memory or mongo
+ * @param key
+ * @param lockId
+ * @param log
+ */
+function unlock(modelObj, key, lockId, log) {
+	Promise.resolve()
+		.then(() => modelObj.unlock(key, lockId))
+		.catch((err) => {
+			log.error('Idempotency unlock:', err.message);
+		});
 }
 
 module.exports = function (configuration) {
@@ -131,6 +147,7 @@ module.exports = function (configuration) {
 			'l2': idempotencyKey
 		};
 
+		let lockId = null;
 		const processIdempotency = async () => {
 			try {
 				const existing = await model[modelType].get(key);
@@ -152,7 +169,8 @@ module.exports = function (configuration) {
 					}
 				}
 
-				const locked = await model[modelType].lock(key, ttl);
+				lockId = crypto.randomUUID();
+				const locked = await model[modelType].lock(key, ttl, lockId);
 				if (!locked) {
 					req.soajs.controllerResponse({
 						'status': 409,
@@ -163,18 +181,37 @@ module.exports = function (configuration) {
 				}
 
 				// Store idempotency context for gotoService to use
-				req.soajs.idempotencyContext = {
+				const context = {
 					key: key,
 					ttl: ttl,
+					lockId: lockId,
 					modelType: modelType,
 					model: model[modelType],
-					log: configuration.log
+					log: configuration.log,
+					proxied: false
 				};
+				req.soajs.idempotencyContext = context;
+
+				//NOTE: a request answered before it reaches the service, throttled, refused or dropped by
+				//		the client, must not keep the key in flight until the ttl, release it once the response
+				//		is over. A proxied request is completed or released by gotoService, never here.
+				let released = false;
+				const release = () => {
+					if (released || context.proxied) {
+						return;
+					}
+					released = true;
+					unlock(model[modelType], key, lockId, configuration.log);
+				};
+				res.on('finish', release);
+				res.on('close', release);
 
 				next();
 			} catch (err) {
 				configuration.log.error('Idempotency error:', err);
-				model[modelType].unlock(key).catch(() => {});
+				if (lockId) {
+					unlock(model[modelType], key, lockId, configuration.log);
+				}
 				next();
 			}
 		};
@@ -185,3 +222,4 @@ module.exports = function (configuration) {
 
 // Export model for external use
 module.exports.model = model;
+module.exports.unlock = unlock;

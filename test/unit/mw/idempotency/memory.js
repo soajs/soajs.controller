@@ -16,10 +16,12 @@ describe("Unit test for: mw - idempotency/model/memory", () => {
 	});
 
 	afterEach((done) => {
-		// Clean up between tests
-		model.unlock({ l1: 'tenant1', l2: 'key1' });
-		model.unlock({ l1: 'tenant1', l2: 'key2' });
-		model.unlock({ l1: 'tenant2', l2: 'key1' });
+		// Clean up between tests, unlock leaves completed entries in place so reset the store
+		model.init({
+			debug: () => {},
+			info: () => {},
+			error: () => {}
+		});
 		done();
 	});
 
@@ -129,6 +131,36 @@ describe("Unit test for: mw - idempotency/model/memory", () => {
 			let key = { l1: 'tenant1', l2: 'nonexistent' };
 			// Should not throw
 			model.unlock(key);
+			done();
+		});
+	});
+
+	describe("unlock only an own lock in flight", () => {
+		it("should keep a completed entry", (done) => {
+			let key = { l1: 'tenant1', l2: 'key1' };
+			model.lock(key, 60000, 'lock-a');
+			model.complete(key, { statusCode: 200 }, 60000);
+			model.unlock(key, 'lock-a');
+			let result = model.get(key);
+			assert.strictEqual(result.status, 'completed');
+			done();
+		});
+
+		it("should keep the lock of another request", (done) => {
+			let key = { l1: 'tenant1', l2: 'key1' };
+			model.lock(key, 60000, 'lock-b');
+			model.unlock(key, 'lock-a');
+			let result = model.get(key);
+			assert.strictEqual(result.status, 'in_flight');
+			assert.strictEqual(result.lockId, 'lock-b');
+			done();
+		});
+
+		it("should remove its own lock", (done) => {
+			let key = { l1: 'tenant1', l2: 'key1' };
+			model.lock(key, 60000, 'lock-a');
+			model.unlock(key, 'lock-a');
+			assert.strictEqual(model.get(key), null);
 			done();
 		});
 	});

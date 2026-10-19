@@ -40,6 +40,10 @@ describe("starting integration tests", () => {
 		// to test the tenant access resolver
 		require("./UC5-tenant-access/index.js");
 		
+		
+		// to test idempotency with the mongo model
+		require("./UC6-idempotency/index.js");
+		
 		done();
 	});
 });

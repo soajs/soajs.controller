@@ -48,7 +48,8 @@ The Idempotency middleware prevents duplicate write operations by tracking reque
            │
            ├─── Found (in_flight) ──▶ 409 Conflict (code: 181)
            │
-           └─── Not found ──▶ Lock key → Execute → Store response
+           └─── Not found ──▶ Lock key → Execute → Store response (status < 500)
+                                                 or release the key
 ```
 
 ## Configuration
@@ -140,12 +141,39 @@ Content-Type: application/json
 {"caller": "user1", "callee": "user2"}
 ```
 
+## How a Locked Key Ends
+
+The key is locked before the request goes on to throttling, caching and the proxy. How the
+request ends decides what happens to it:
+
+| The request ends with | The key | A retry with the same key |
+|---|---|---|
+| An answer of the service below 500 (2xx, 3xx, 4xx) | Completed, the answer is stored for the TTL | Gets the stored answer, the service is not called |
+| An answer of the service of 500 or more | Released | Reaches the service again |
+| A proxy error (service down, connection closed) | Released | Reaches the service again |
+| An answer of the gateway before the service: throttling (429), an error, a refusal | Released | Runs again |
+| The client disconnecting before the request reaches the service | Released | Runs again |
+| The client disconnecting while the service is answering | Follows the service answer above | |
+
+Only an answer the service actually produced is replayed. A 4xx is the service's answer to that
+request and replaying it is correct. A 5xx, a throttling refusal or any other answer of the gateway
+says nothing about the operation, so the key is released and the client's retry runs instead of
+getting the same refusal for the whole TTL.
+
+While the request is running, a duplicate with the same key gets 409, code 181.
+
+A service that can fail with a 5xx after part of the work is done must protect that work itself,
+the retry reaches it again.
+
+The release only removes a key still in flight and locked by that request: never a completed
+one, and never a lock taken by a retry after the TTL of the first ran out.
+
 ## Response Scenarios
 
 ### New Request (First Time)
 
 ```
-Request processed normally, response cached
+Request processed normally, a service answer below 500 is stored
 ```
 
 ### Replay (Completed)
@@ -235,6 +263,7 @@ Keys are isolated per tenant to prevent cross-tenant collisions.
 - Only applies to non-GET requests (POST, PUT, DELETE, PATCH)
 - GET requests always pass through (idempotent by nature)
 - Keys expire after TTL (default 60 seconds)
+- A key is never left in flight by a request that does not reach the service, see [How a Locked Key Ends](#how-a-locked-key-ends)
 - Clients should generate a new UUID for each unique operation
 - Same UUID = same operation (for retries)
 - MongoDB backend required for horizontal scaling
