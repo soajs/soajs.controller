@@ -90,6 +90,9 @@ describe("Integration for Usecase 6 - idempotency", function () {
 	}
 
 	before((done) => {
+		//NOTE: the unit tests run in the same process and connect the idempotency mongo model to a dummy
+		//		database, the model connects only once, drop it so the gateway connects it to the real one
+		helper.requireModule('./mw/idempotency/model/mongo').mongo = null;
 		startService(calls, (servers) => {
 			mockServers = servers;
 			c.init((_registry, _log, _service, _server, _serverMaintenance) => {
