@@ -18,6 +18,7 @@ The maintenance server runs on a separate port from the main gateway to allow in
 | `/loadProvision` | GET | Reload provision/tenant data |
 | `/reloadRegistry` | GET | Reload environment registry |
 | `/awarenessStat` | GET | Get service awareness statistics |
+| `/cache/invalidate` | POST | Remove cached GET responses a service knows are out of date |
 
 ---
 
@@ -223,6 +224,36 @@ curl http://localhost:5000/awarenessStat
 - To check service health status
 - To debug routing issues
 - To monitor cluster state
+
+---
+
+## 5. Cache Invalidation (`/cache/invalidate`)
+
+**Endpoint:** `POST /cache/invalidate`
+
+**Purpose:** Lets a service remove cached GET responses as soon as it knows they changed, instead of
+waiting for their TTL. Needs the mongo cache model.
+
+### Request
+
+```bash
+curl -X POST http://localhost:5000/cache/invalidate \
+  -H "Content-Type: application/json" \
+  -d '{"tenant": "5c0e74ba9acc3c5a84a51259", "service": "spaces", "api": "GET /spaces", "user": "5c8d0c505653de3985aa2001"}'
+```
+
+### Response
+
+```json
+{
+  "result": true,
+  "ts": 1792430000000,
+  "service": { "service": "soajs.controller", "version": "4.3.20", "type": "rest", "route": "/cache/invalidate" },
+  "data": { "removed": 3 }
+}
+```
+
+What each field matches, and the error cases, are in [Cache, Invalidation](middleware/cache.md#invalidation).
 
 ---
 

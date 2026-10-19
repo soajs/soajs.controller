@@ -9,6 +9,22 @@ let prod = {
 	"scope": {
 		"acl": {
 			"dev": {
+				"spaces": {
+					"1": {
+						"access": true,
+						"get": [
+							{
+								"group": "Spaces group",
+								"apis": {
+									"/spaces": {},
+									"/space/:id": {},
+									"/slow": {},
+									"/catalog": {}
+								}
+							}
+						]
+					}
+				},
 				"idempotent": {
 					"1": {
 						"access": true,
@@ -217,6 +233,14 @@ let prod = {
 			"locked": true,
 			"acl": {
 				"dev": {
+					"spaces": [
+						{
+							"version": "1",
+							"get": [
+								"Spaces group"
+							]
+						}
+					],
 					"idempotent": [
 						{
 							"version": "1",

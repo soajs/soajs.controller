@@ -16,17 +16,28 @@ const { logOnce } = require('../../lib/logOnce.js');
 
 let model = { memory, mongo };
 
+//NOTE: the access token is how the caller is identified, not what is asked for. Kept in, every token
+//		gets its own entry and a tenant scoped api is never shared, the user is already in the key of a
+//		tenant_user entry.
+const QUERY_PARAMS_NOT_IN_KEY = ['access_token'];
+
 function hashQuery(query) {
-	if (!query || Object.keys(query).length === 0) {
+	if (!query) {
 		return '';
 	}
-	const sortedQuery = Object.keys(query).sort().reduce((obj, key) => {
+	const params = Object.keys(query).filter((key) => !QUERY_PARAMS_NOT_IN_KEY.includes(key));
+	if (params.length === 0) {
+		return '';
+	}
+	const sortedQuery = params.sort().reduce((obj, key) => {
 		obj[key] = query[key];
 		return obj;
 	}, {});
 	return crypto.createHash('md5').update(JSON.stringify(sortedQuery)).digest('hex');
 }
 
+//NOTE: returns the entry name as written in the configuration with its config, an invalidation names
+//		the api the same way
 function matchesApi(method, path, apis) {
 	if (!apis || typeof apis !== 'object') {
 		return null;
@@ -34,7 +45,7 @@ function matchesApi(method, path, apis) {
 	const requestSignature = `${method} ${path}`;
 
 	if (apis[requestSignature]) {
-		return apis[requestSignature];
+		return { 'name': requestSignature, 'config': apis[requestSignature] };
 	}
 
 	for (const api in apis) {
@@ -59,7 +70,7 @@ function matchesApi(method, path, apis) {
 				}
 			}
 			if (matches) {
-				return apis[api];
+				return { 'name': api, 'config': apis[api] };
 			}
 		}
 	}
@@ -96,7 +107,8 @@ module.exports = function (configuration) {
 			return next();
 		}
 
-		const apiConfig = matchesApi(method, apiPath, serviceConfig.apis);
+		const matchedApi = matchesApi(method, apiPath, serviceConfig.apis);
+		const apiConfig = matchedApi ? matchedApi.config : null;
 		if (!apiConfig || !apiConfig.enabled) {
 			return next();
 		}
@@ -141,6 +153,7 @@ module.exports = function (configuration) {
 			'l2': `${serviceName}:GET:${apiPath}:${queryHash}${userPart}`
 		};
 
+		const startedAt = Date.now();
 		const processCache = async () => {
 			try {
 				const cached = await model[modelType].get(key);
@@ -157,6 +170,12 @@ module.exports = function (configuration) {
 				req.soajs.cacheContext = {
 					key: key,
 					ttl: ttl,
+					meta: {
+						service: serviceName,
+						api: matchedApi.name,
+						user: (scope === 'tenant_user') ? String(userId) : null,
+						startedAt: startedAt
+					},
 					modelType: modelType,
 					model: model[modelType],
 					log: configuration.log

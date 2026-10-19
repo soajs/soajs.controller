@@ -575,4 +575,126 @@ describe("Unit test for: mw - cache", () => {
 		});
 	});
 
+	describe("what an invalidation matches on", () => {
+		let noopRes = {
+			setHeader: function() {},
+			writeHead: function() { return this; },
+			write: function() { return true; },
+			end: function() {}
+		};
+
+		function buildReq(path, isAPIPublic, apis) {
+			return {
+				method: 'GET',
+				query: { page: '2' },
+				soajs: {
+					tenant: { id: 'tenant-meta' },
+					uracDriver: { id: 'user-7' },
+					controller: {
+						serviceParams: { name: 'spaces', serviceInfo: ['', 'spaces'].concat(path.split('/').slice(1)), isAPIPublic: isAPIPublic }
+					},
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									cache: {
+										model: 'memory',
+										services: {
+											spaces: { enabled: true, apis: apis }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+		}
+
+		it("records the service, the api as configured and the user", (done) => {
+			let before = Date.now();
+			let req = buildReq('/space/42', false, { 'GET /space/:id': { enabled: true } });
+			mw(mockConfig)(req, noopRes, (error) => {
+				assert.ifError(error);
+				let meta = req.soajs.cacheContext.meta;
+				assert.strictEqual(meta.service, 'spaces');
+				assert.strictEqual(meta.api, 'GET /space/:id');
+				assert.strictEqual(meta.user, 'user-7');
+				assert.ok(meta.startedAt >= before && meta.startedAt <= Date.now());
+				done();
+			});
+		});
+
+		it("records no user for a tenant scoped api", (done) => {
+			let req = buildReq('/catalog', false, { 'GET /catalog': { enabled: true, scope: 'tenant' } });
+			mw(mockConfig)(req, noopRes, (error) => {
+				assert.ifError(error);
+				assert.strictEqual(req.soajs.cacheContext.meta.api, 'GET /catalog');
+				assert.strictEqual(req.soajs.cacheContext.meta.user, null);
+				done();
+			});
+		});
+	});
+
+	describe("the access token is not part of the key", () => {
+		let noopRes = {
+			setHeader: function() {},
+			writeHead: function() { return this; },
+			write: function() { return true; },
+			end: function() {}
+		};
+
+		function buildReq(query, userId) {
+			return {
+				method: 'GET',
+				query: query,
+				soajs: {
+					tenant: { id: 'tenant-token' },
+					uracDriver: { id: userId },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'catalog'], isAPIPublic: true } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									cache: {
+										model: 'memory',
+										services: {
+											test: { enabled: true, apis: { 'GET /catalog': { enabled: true, scope: 'tenant' } } }
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+		}
+
+		function keyOf(query, userId) {
+			return new Promise((resolve) => {
+				let req = buildReq(query, userId);
+				mw(mockConfig)(req, noopRes, () => {
+					resolve(req.soajs.cacheContext.key.l2);
+				});
+			});
+		}
+
+		it("two users with their own tokens share a tenant scoped entry", async () => {
+			let ann = await keyOf({ access_token: 'AAA', page: '1' }, 'ann');
+			let bob = await keyOf({ access_token: 'BBB', page: '1' }, 'bob');
+			assert.strictEqual(ann, bob);
+		});
+
+		it("a token alone gives the same key as no query", async () => {
+			let withToken = await keyOf({ access_token: 'AAA' }, 'ann');
+			let without = await keyOf({}, 'ann');
+			assert.strictEqual(withToken, without);
+		});
+
+		it("the other query params still make the key", async () => {
+			let one = await keyOf({ access_token: 'AAA', page: '1' }, 'ann');
+			let two = await keyOf({ access_token: 'AAA', page: '2' }, 'ann');
+			assert.notStrictEqual(one, two);
+		});
+	});
 });

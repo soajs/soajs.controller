@@ -44,6 +44,10 @@ describe("starting integration tests", () => {
 		// to test idempotency with the mongo model
 		require("./UC6-idempotency/index.js");
 		
+		
+		// to test cache invalidation with the mongo model
+		require("./UC7-cache-invalidate/index.js");
+		
 		done();
 	});
 });
