@@ -16,11 +16,20 @@ const { logOnce } = require('../../lib/logOnce.js');
 
 let model = { memory, mongo };
 
+//NOTE: the access token is how the caller is identified, not what is asked for. Kept in, every token
+//		gets its own entry and a tenant scoped api is never shared, the user is already in the key of a
+//		tenant_user entry.
+const QUERY_PARAMS_NOT_IN_KEY = ['access_token'];
+
 function hashQuery(query) {
-	if (!query || Object.keys(query).length === 0) {
+	if (!query) {
 		return '';
 	}
-	const sortedQuery = Object.keys(query).sort().reduce((obj, key) => {
+	const params = Object.keys(query).filter((key) => !QUERY_PARAMS_NOT_IN_KEY.includes(key));
+	if (params.length === 0) {
+		return '';
+	}
+	const sortedQuery = params.sort().reduce((obj, key) => {
 		obj[key] = query[key];
 		return obj;
 	}, {});

@@ -157,7 +157,7 @@ APIs are matched using `GET /path` format with support for path parameters:
 - **tenant_id**: Isolates cache per tenant
 - **serviceName**: The target service name
 - **path**: The API path
-- **queryHash**: MD5 hash of sorted query parameters
+- **queryHash**: MD5 hash of sorted query parameters, without `access_token`
 - **user_id**: The logged-in user id (only for `tenant_user` scope), isolating cache per user within the tenant
 
 ### Query Parameter Handling
@@ -168,7 +168,13 @@ Query parameters are included in the cache key via MD5 hash:
 GET /users?page=1&limit=10  → key includes hash of {"limit":"10","page":"1"}
 GET /users?limit=10&page=1  → same hash (sorted)
 GET /users                  → different key (no query hash)
+GET /users?access_token=abc → same key as GET /users
 ```
+
+`access_token` is left out: it identifies the caller, not what is asked for. With it in the key, every
+token got its own entry, so a `tenant` scoped API was never shared between users, and a user's entries
+stopped matching after each login or token refresh. The user of a `tenant_user` entry is already in the
+key.
 
 ## Storage Backends
 

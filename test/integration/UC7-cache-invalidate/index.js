@@ -167,13 +167,13 @@ describe("Integration for Usecase 7 - cache invalidation", function () {
 		assert.strictEqual((await get('/space/2', ownerToken)).cache, 'MISS');
 	});
 
-	it("a tenant scoped entry is removed without a user", async () => {
+	it("a tenant scoped entry is shared by users, and removed without a user", async () => {
 		await get('/catalog', ownerToken);
 		await settle();
-		assert.strictEqual((await get('/catalog', ownerToken)).cache, 'HIT');
+		assert.strictEqual((await get('/catalog', secondToken)).cache, 'HIT');
 		let outcome = await invalidate({ "tenant": tenantId, "service": "spaces", "api": "GET /catalog" });
 		assert.strictEqual(outcome.body.data.removed, 1);
-		assert.strictEqual((await get('/catalog', ownerToken)).cache, 'MISS');
+		assert.strictEqual((await get('/catalog', secondToken)).cache, 'MISS');
 	});
 
 	it("a request that started before the invalidation is not stored", async () => {
