@@ -27,6 +27,8 @@ function hashQuery(query) {
 	return crypto.createHash('md5').update(JSON.stringify(sortedQuery)).digest('hex');
 }
 
+//NOTE: returns the entry name as written in the configuration with its config, an invalidation names
+//		the api the same way
 function matchesApi(method, path, apis) {
 	if (!apis || typeof apis !== 'object') {
 		return null;
@@ -34,7 +36,7 @@ function matchesApi(method, path, apis) {
 	const requestSignature = `${method} ${path}`;
 
 	if (apis[requestSignature]) {
-		return apis[requestSignature];
+		return { 'name': requestSignature, 'config': apis[requestSignature] };
 	}
 
 	for (const api in apis) {
@@ -59,7 +61,7 @@ function matchesApi(method, path, apis) {
 				}
 			}
 			if (matches) {
-				return apis[api];
+				return { 'name': api, 'config': apis[api] };
 			}
 		}
 	}
@@ -96,7 +98,8 @@ module.exports = function (configuration) {
 			return next();
 		}
 
-		const apiConfig = matchesApi(method, apiPath, serviceConfig.apis);
+		const matchedApi = matchesApi(method, apiPath, serviceConfig.apis);
+		const apiConfig = matchedApi ? matchedApi.config : null;
 		if (!apiConfig || !apiConfig.enabled) {
 			return next();
 		}
@@ -141,6 +144,7 @@ module.exports = function (configuration) {
 			'l2': `${serviceName}:GET:${apiPath}:${queryHash}${userPart}`
 		};
 
+		const startedAt = Date.now();
 		const processCache = async () => {
 			try {
 				const cached = await model[modelType].get(key);
@@ -157,6 +161,12 @@ module.exports = function (configuration) {
 				req.soajs.cacheContext = {
 					key: key,
 					ttl: ttl,
+					meta: {
+						service: serviceName,
+						api: matchedApi.name,
+						user: (scope === 'tenant_user') ? String(userId) : null,
+						startedAt: startedAt
+					},
 					modelType: modelType,
 					model: model[modelType],
 					log: configuration.log

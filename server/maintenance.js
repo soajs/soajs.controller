@@ -11,6 +11,7 @@
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
 const registryModule = require("./../modules/registry");
+const cacheInvalidate = require("./../mw/cache/invalidate.js");
 
 const httpProxy = require('http-proxy');
 const http = require('http');
@@ -310,6 +311,46 @@ let Maintenance = (core, log, param, serviceIp, regEnvironment, awareness_mw, so
 				socketPath: process.env.SOAJS_SWARM_UNIX_PORT || '/var/run/docker.sock'
 			};
 			proxy.web(req, res, {target: haTarget});
+		}
+		else if (parsedUrl.pathname === '/cache/invalidate') {
+			let response = maintenanceResponse(parsedUrl, param);
+			let reply = (status, extra) => {
+				res.writeHead(status, {'Content-Type': 'application/json'});
+				return res.end(JSON.stringify(Object.assign(response, extra)));
+			};
+			if (req.method !== 'POST') {
+				return reply(405, {"error": "Use POST."});
+			}
+			let body = "";
+			let tooLarge = false;
+			req.on('data', function (chunk) {
+				body += chunk;
+				//NOTE: the body only names what to remove, anything larger is not a valid request
+				if (body.length > 16384) {
+					tooLarge = true;
+					req.destroy();
+				}
+			});
+			req.on('end', function () {
+				if (tooLarge) {
+					return;
+				}
+				let input = null;
+				try {
+					input = body ? JSON.parse(body) : null;
+				} catch (e) {
+					return reply(400, {"error": "The body is not valid JSON."});
+				}
+				cacheInvalidate(registryModule.get(), input).then((outcome) => {
+					if (outcome.status !== 200) {
+						return reply(outcome.status, {"error": outcome.error});
+					}
+					log.info("Cache invalidated for tenant [" + input.tenant + "] service [" + input.service + "]" +
+						(input.api ? " api [" + input.api + "]" : "") + (input.user ? " user [" + input.user + "]" : "") +
+						", removed [" + outcome.removed + "]");
+					return reply(200, {"result": true, "data": {"removed": outcome.removed}});
+				});
+			});
 		}
 		else if (parsedUrl.pathname === '/loadProvision') {
 			provision.loadProvision(function (loaded) {

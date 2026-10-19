@@ -411,7 +411,7 @@ module.exports = (configuration) => {
 							headers: cacheResponseHeaders,
 							body: cacheBody
 						};
-						cacheContext.model.set(cacheContext.key, cacheData, cacheContext.ttl);
+						cacheContext.model.set(cacheContext.key, cacheData, cacheContext.ttl, cacheContext.meta);
 					}
 					// Complete idempotency if applicable
 					//NOTE: only an answer of the service is replayed, a 5xx means it could not answer, release

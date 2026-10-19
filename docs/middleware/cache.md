@@ -229,6 +229,73 @@ Content-Type: application/json
 - Error responses (4xx, 5xx)
 - APIs not configured for caching
 
+## Invalidation
+
+A cached response normally lives until its TTL. A service that knows something changed can remove the
+affected entries right away by calling the gateway's maintenance port:
+
+```
+POST /cache/invalidate
+Content-Type: application/json
+
+{
+  "tenant": "5c0e74ba9acc3c5a84a51259",   // required, the tenant the GET was cached under
+  "service": "spaces",                    // required
+  "api": "GET /spaces",                   // optional, as written in the cache configuration
+  "user": "5c8d0c505653de3985aa2001"      // optional, the user id of a tenant_user entry
+}
+```
+
+```json
+{ "result": true, "data": { "removed": 3 } }
+```
+
+| Given | Removed |
+|-------|---------|
+| `tenant`, `service`, `api`, `user` | That user's entries of that api |
+| `tenant`, `service`, `api` | That api's entries for every user, and its tenant scoped entry |
+| `tenant`, `service`, `user` | That user's entries of every api of the service |
+| `tenant`, `service` | Every entry of the service in the tenant |
+
+Every cached variant of a matching entry is removed: every query string, and every value of a path
+parameter. `"api": "GET /space/:id"` removes `/space/1`, `/space/2` and so on. A `user` only matches
+`tenant_user` entries, a `tenant` scoped entry has no user.
+
+**Only the mongo model is supported.** It is the one shared by every gateway, so one call clears the
+entry everywhere. With the memory model the route answers `400`.
+
+**Example.** A service caches `GET /spaces`, the spaces a user is invited to, per user. When user A
+invites user B, the invite API removes B's list before it answers, so B's next call loads the new one:
+
+```javascript
+// at the end of the invite API, before replying
+await post("http://" + gatewayHost + ":" + maintenancePort + "/cache/invalidate", {
+	"tenant": req.soajs.tenant.id,
+	"service": "spaces",
+	"api": "GET /spaces",
+	"user": invitedUserId
+});
+```
+
+Wait for it with a short timeout. If the gateway cannot be reached, the change still stands and the
+entry expires on its TTL.
+
+**Requests already in flight.** A GET that started before the invalidation may have read the data
+before the change. Its response is still sent to the client but not stored, so it cannot put the old
+list back after the removal. Each invalidation is remembered for 15 minutes in the `cache_invalidation`
+collection for this check. It compares the time the gateway handling the GET received it with the time
+the invalidation ran, keep the gateways' clocks in sync.
+
+Entries cached before this version carry no service, api or user, an invalidation does not match them,
+they expire on their TTL.
+
+| Status | Reason |
+|--------|--------|
+| `200` | Removed, `data.removed` is the number of entries |
+| `400` | Missing `tenant` or `service`, an `api` not written as `GET /path`, a `user` that is not a string, caching not configured, or not the mongo model |
+| `405` | Not a `POST` |
+| `500` | The cache store failed or is not ready |
+
 ## Usage Notes
 
 - Only GET requests are cached

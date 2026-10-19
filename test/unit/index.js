@@ -42,6 +42,8 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/idempotency/mongo.js");
         require("./mw/cache/index.js");
         require("./mw/cache/memory.js");
+        require("./mw/cache/mongo.js");
+        require("./mw/cache/invalidate.js");
         require("./mw/lastSeen/index.js");
 
         require("./utilities/utils.js");

@@ -16,6 +16,21 @@ let doc = {
 				}
 			}
 		},
+		"cache": {
+			"model": "mongo",
+			"defaultTTL": 60000,
+			"services": {
+				"spaces": {
+					"enabled": true,
+					"apis": {
+						"GET /spaces": { "enabled": true, "scope": "tenant_user" },
+						"GET /space/:id": { "enabled": true, "scope": "tenant_user" },
+						"GET /slow": { "enabled": true, "scope": "tenant_user" },
+						"GET /catalog": { "enabled": true, "scope": "tenant" }
+					}
+				}
+			}
+		},
 		"traffic": {
 			"throttling": {
 				"idempotent": {
