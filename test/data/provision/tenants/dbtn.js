@@ -5,6 +5,12 @@ let tenant = {
     "code": "DBTN",
     "locked": true,
     "name": "Console Tenant",
+    "profile": {
+        "access": {
+            "resolver": "department",
+            "subject": "dept_1"
+        }
+    },
     "description": "This is the tenant that holds the access rights and configuration for the console users with DSBRD_GUEST as Guest default package",
     "oauth": {
         "secret": "this is a secret",

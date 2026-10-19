@@ -13,6 +13,7 @@ const coreModules = require("soajs.core.modules");
 let provision = coreModules.provision;
 
 const lib = require("./lib.js");
+const tenantAccess = require("./tenantAccess.js");
 
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
@@ -57,6 +58,31 @@ function Urac(param) {
 			_self.username = param.username;
 		}
 	}
+
+	//NOTE: a user switching to a tenant that names a resolver in its profile is decided by the resolver,
+	//		unless the token already shows an invitation to that tenant, invitations keep going through
+	//		the urac driver
+	_self.tenantAccess = null;
+	if (!_self.userRecord && _self.id && _self.bearerTokenUser && _self.soajs.tenant && !_self.soajs.tenant.roaming) {
+		let user = _self.bearerTokenUser;
+		if (user.tenant && user.tenant.id !== _self.soajs.tenant.id && !isInvited(user, _self.soajs.tenant.id)) {
+			_self.tenantAccess = tenantAccess.getResolver(_self.soajs);
+		}
+	}
+}
+
+/**
+ * Check the allowedTenants of the user from the token
+ * @param user
+ * @param tenantId
+ * @returns {boolean}
+ */
+function isInvited(user, tenantId) {
+	let allowedTenants = get(["config", "allowedTenants"], user);
+	if (!Array.isArray(allowedTenants)) {
+		return false;
+	}
+	return allowedTenants.some((item) => item && item.tenant && item.tenant.id === tenantId);
 }
 
 /**
@@ -75,20 +101,43 @@ Urac.prototype.init = function (cb) {
 		}
 	}
 	else if (_self.id) {
-		uracDriver.getRecord(_self.soajs, { id: _self.id.toString(), username: _self.username }, function (err, record) {
-			if (record) {
-				_self.userRecord = record;
-				_self.resolveACL(() => {
-					return cb(null, _self.userRecord);
-				});
-			} else {
-				if (err && err.msg) {
-					const code = err.code;
-					err = new Error(err.msg);
-					err.code = code;
+		let getRecord = () => {
+			uracDriver.getRecord(_self.soajs, { id: _self.id.toString(), username: _self.username }, function (err, record) {
+				if (record) {
+					_self.userRecord = record;
+					_self.resolveACL(() => {
+						return cb(null, _self.userRecord);
+					});
+				} else {
+					if (err && err.msg) {
+						const code = err.code;
+						err = new Error(err.msg);
+						err.code = code;
+					}
+					return cb(err, null);
 				}
-				return cb(err, null);
+			});
+		};
+		if (!_self.tenantAccess) {
+			return getRecord();
+		}
+		tenantAccess.resolve(_self.soajs, _self.bearerTokenUser, _self.tenantAccess, (result) => {
+			//NOTE: no access from the resolver falls back to the urac driver, it catches an invitation
+			//		made after the token was issued and answers everyone else as before
+			if (!result) {
+				return getRecord();
 			}
+			_self.userRecord = Object.assign({}, _self.bearerTokenUser, {
+				"tenant": {
+					"id": _self.soajs.tenant.id,
+					"code": _self.soajs.tenant.code
+				},
+				"groups": result.groups,
+				"groupsConfig": result.groupsConfig
+			});
+			_self.resolveACL(() => {
+				return cb(null, _self.userRecord);
+			});
 		});
 	} else {
 		let error = new Error('oAuth userId is not available to pull URAC profile');

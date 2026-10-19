@@ -36,6 +36,10 @@ describe("starting integration tests", () => {
 		// to test roaming
 		require("./UC3-roaming/index.js");
 		
+		
+		// to test the tenant access resolver
+		require("./UC5-tenant-access/index.js");
+		
 		done();
 	});
 });
