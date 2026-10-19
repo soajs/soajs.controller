@@ -111,6 +111,7 @@ Loads user profile from URAC for authenticated requests.
 - Resolves user groups
 - Applies user-specific ACL overrides
 - Handles network package override for user packages
+- Asks the tenant access resolver for a user switching to a tenant that names one, see [Custom Registry](configuration-custom-registry.md#15-tenant-access-resolver)
 
 ## IP Whitelist Configuration
 

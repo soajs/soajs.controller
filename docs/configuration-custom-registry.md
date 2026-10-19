@@ -4,7 +4,7 @@ Environment-specific gateway settings stored in the Core DB custom registry.
 
 ## Configuration Structure Overview
 
-These settings are accessed via `registry.custom.gateway.value.*` and `registry.custom.oauth.value.*`.
+These settings are accessed via `registry.custom.gateway.value.*`, `registry.custom.oauth.value.*` and `registry.custom.urac.value.*`.
 
 ```
 registry.custom
@@ -35,11 +35,15 @@ registry.custom
 │       └── gotoService
 │           ├── monitor             # Request monitoring config
 │           └── renewReqMonitorOff  # Disable timeout renewal
-└── oauth
+├── oauth
+│   └── value
+│       ├── roaming                 # Cross-environment access
+│       ├── pinWrapper              # PIN-based login endpoint
+│       └── pinWhitelist            # PIN login API whitelist
+└── urac
     └── value
-        ├── roaming                 # Cross-environment access
-        ├── pinWrapper              # PIN-based login endpoint
-        └── pinWhitelist            # PIN login API whitelist
+        └── tenantAccessResolvers   # APIs that grant access to a tenant
+            └── [resolver]          # One API per resolver name
 ```
 
 ---
@@ -577,6 +581,185 @@ loaded from urac per request and the membership is current.
 
 ---
 
+## 15. Tenant Access Resolver
+
+**Path:** `registry.custom.urac.value.tenantAccessResolvers`
+
+**Middleware:** `mw/mt/urac.js`, called by `mw/mt/tenantAccess.js`
+
+Gives a group of users access to a tenant without inviting each of them, for example
+every user of a department of an app. The tenant names a resolver, and the resolver is
+an API of that app that answers, per user, whether they have access and with what
+groups. Nothing is written on the users, `allowedTenants` stays untouched.
+
+Users always log in at their home tenant and then switch, by calling the gateway with
+their token and the key of the other tenant. The resolver is asked on those calls.
+
+Setting it up takes three steps:
+
+1. Build the API in a service of the app, see [The API to build](#the-api-to-build)
+2. Add the resolver to the `urac` custom registry, see [The resolver](#the-resolver)
+3. Name the resolver in the profile of each tenant, see [The tenant](#the-tenant)
+
+### The API to build
+
+Any route of a service in the registry. The gateway calls it directly, not through the
+gateway, so it does not need to be granted in any package. Keep it out of every ACL,
+its answer is trusted as is.
+
+It receives:
+
+```javascript
+// Body
+{
+  "user": {
+    "id": "5c8d0c505653de3985aa1001",
+    "username": "ann",
+    "tenant": { "id": "...", "code": "HOME" }   // Home tenant of the user
+  },
+  "tenant": {
+    "id": "...",
+    "code": "DEPT",
+    "main": { "id": "...", "code": "MAIN" }     // Only for a sub tenant
+  },
+  "subject": "dept_1"                           // From the tenant profile
+}
+```
+
+The `soajsinjectobj` header carries the tenant, the key with `commonFields` and the
+config of the resolver service, and the application of the request, so a service with
+`extKeyRequired` accepts the call. It carries no user and no ACL.
+
+It answers with a standard SOAJS response:
+
+```javascript
+// Access
+{
+  "result": true,
+  "data": {
+    "access": true,
+    "groups": ["member"],
+    "groupsConfig": {
+      "allowedPackages": { "PROD": ["PROD_USER"] }
+    }
+  }
+}
+
+// No access
+{ "result": true, "data": { "access": false } }
+```
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `access` | yes | `true` to grant access |
+| `groupsConfig.allowedPackages` | yes, with access | Packages per product, the shape urac builds from the user's groups |
+| `groups` | no | Group codes services see on the urac object, `[]` when absent |
+
+The answer is the ACL. Nothing caps it, a package the API returns is granted. Only the
+entry of the product of the key is used.
+
+It runs on every call under the tenant, keep it fast.
+
+### The resolver
+
+```javascript
+{
+  "name": "urac",
+  "value": {
+    "tenantAccessResolvers": {
+      "department": {
+        "service": "departments",
+        "version": "1",
+        "method": "post",
+        "api": "/tenant/access",
+        "timeout": 2000
+      }
+    }
+  }
+}
+```
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `service` | string | - | Service that answers, must be in the registry |
+| `version` | string | latest | Version of the service |
+| `method` | string | `post` | HTTP method |
+| `api` | string | - | Route on the service, without the service name |
+| `timeout` | number | `2000` | Milliseconds before the call counts as no access |
+
+The tenant names the resolver and the registry defines the call, so the API can move
+without touching any tenant. A tenant naming a resolver that is not defined here is
+logged as an error and treated as having none.
+
+### The tenant
+
+The tenant profile names the resolver and the subject the API should check, here the
+department:
+
+```javascript
+{
+  "profile": {
+    "access": {
+      "resolver": "department",   // A key of tenantAccessResolvers
+      "subject": "dept_1"         // Passed to the API as is
+    }
+  }
+}
+```
+
+The profile is loaded with the key, so a change applies once the key cache refreshes.
+`PUT /tenant/profile` of multitenant replaces the whole profile, whatever edits it must
+keep `access`.
+
+### When it is asked
+
+For every call made with a token under a tenant that is not the user's home tenant, in
+this order:
+
+| Order | Condition | Result |
+|-------|-----------|--------|
+| 1 | The token's `config.allowedTenants` lists the tenant | Invited, urac driver as before, the resolver is not asked |
+| 2 | The tenant profile names a resolver | The resolver is asked |
+| 3 | The resolver says no, fails or times out, or there is no resolver | urac driver as before |
+
+It is never asked for the user's home tenant, for a token issued for this tenant, for
+roaming, or for `loginMode: "oauth"` tokens.
+
+On access the gateway takes the user from the token, sets its tenant to the tenant of
+the key, its `groups` and `groupsConfig` to the answer, and builds the ACL as for any
+user. The packages come from the provision cache, so urac is not read at all.
+
+The fallback catches an invitation made after the token was issued, the token does not
+show it yet. Everyone else gets what they got before, error 146.
+
+### It fails closed
+
+Anything but a well formed access answer is no access, and the urac driver decides:
+
+| | |
+|---|---|
+| the service is not in the registry, or has no host | logged as an error |
+| non 2xx status, `result: false`, or not JSON | logged as an error |
+| no answer within `timeout` | logged as an error |
+| `access: true` without `groupsConfig.allowedPackages` | logged as an error |
+| `access` is not `true` | not logged, a normal answer |
+
+### Behaviour
+
+- **Cost.** One API call per call under the tenant, in place of the user and groups
+  reads of urac. Invited users cost what they did before.
+- **Freshness.** Nothing is cached, adding or removing a user in the app applies on
+  their next call.
+- **Outage.** While the service is down, users of the resolver get 146 under that
+  tenant, each call after waiting up to `timeout`, keep it short. Their home tenant and
+  invited users are not affected, except users invited after their token was issued,
+  who also wait for the timeout before the fallback lets them in.
+- **Invitations win.** A user both invited and covered by the resolver gets the groups
+  of the invitation. If the invitation was made after the token was issued, they get
+  the resolver's until their next login.
+
+---
+
 ## Complete Configuration Example
 
 ```javascript
@@ -681,6 +864,22 @@ loaded from urac per request and the membership is current.
     }
   }
 }
+
+// Separate URAC custom registry entry
+{
+  "_id": ObjectId("..."),
+  "name": "urac",
+  "value": {
+    "tenantAccessResolvers": {
+      "department": {
+        "service": "departments",
+        "version": "1",
+        "api": "/tenant/access",
+        "timeout": 2000
+      }
+    }
+  }
+}
 ```
 
 ---
@@ -698,7 +897,8 @@ Custom registry configurations are processed in this order:
 | 5 | gotoService/redirectToService | `gotoService.monitor` |
 | 6 | mt (security checks) | `mt.whitelist`, `oauth.value.pinWrapper`, `oauth.value.pinWhitelist` |
 | 6a | oauth (called from mt) | `oauth.deviceIdCheck` |
-| 6b | mt (inject object) | `membership` |
+| 6b | mt (uracCheck) | `urac.value.tenantAccessResolvers` |
+| 6c | mt (inject object) | `membership` |
 | 7 | idempotency | `idempotency.model`, `idempotency.services.[name]` |
 | 8 | traffic | `traffic.model`, `traffic.throttling` |
 | 9 | cache | `cache.model`, `cache.defaultTTL`, `cache.services.[name]` |

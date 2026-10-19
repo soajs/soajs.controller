@@ -285,6 +285,22 @@ PIN login is a two-factor authentication mechanism where users must enter a PIN 
 - Skipped if `obj.skipOAUTH = true` or no bearer token present
 - Creates `req.soajs.uracDriver` instance
 - Handles **roaming** across environments (e.g., dashboard token used in dev environment)
+- Asks the **tenant access resolver** when a user switches to a tenant whose profile names one
+
+**Tenant Access Resolver:**
+
+A tenant can name a resolver in its profile (`profile.access`), an API of an app that answers per
+user whether they have access to the tenant and with what groups, so a group of users, a department
+for example, gets access without being invited one by one.
+
+For a call under a tenant that is not the user's home tenant, and that the token's
+`config.allowedTenants` does not list, `mw/mt/urac.js` calls the API defined in
+`registry.custom.urac.value.tenantAccessResolvers` (`mw/mt/tenantAccess.js`). On access the user
+comes from the token with that tenant and the groups of the answer, and urac is not read. No
+access, an error or a timeout falls back to the urac driver as before.
+
+See [Custom Registry, Tenant Access Resolver](../configuration-custom-registry.md#15-tenant-access-resolver)
+for the API to build, the registry entry and the tenant profile.
 
 **Roaming Support:**
 
@@ -560,6 +576,7 @@ Service-level configuration that affects MT processing:
 
 - `mw/mt/utils.js` - Security check implementations
 - `mw/mt/urac.js` - URAC driver integration
+- `mw/mt/tenantAccess.js` - Tenant access resolver call
 
 ## Usage Notes
 
