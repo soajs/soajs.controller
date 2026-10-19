@@ -115,6 +115,15 @@ let env = {
 	            "accessTokenLifetime": 7200,
 	            "refreshTokenLifetime": 1209600
             },
+            "throttling": {
+                "idempotent_tight": {
+                    "type": 1,
+                    "window": 60000,
+                    "limit": 1,
+                    "retries": 0,
+                    "delay": 100
+                }
+            },
             "ports": {
 	            "controller": 4000,
 	            "maintenanceInc": 1001,

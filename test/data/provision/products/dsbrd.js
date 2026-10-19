@@ -9,6 +9,23 @@ let prod = {
 	"scope": {
 		"acl": {
 			"dev": {
+				"idempotent": {
+					"1": {
+						"access": true,
+						"post": [
+							{
+								"group": "Idempotent group",
+								"apis": {
+									"/ok": {},
+									"/fail": {},
+									"/bad": {},
+									"/slow": {},
+									"/throttled": {}
+								}
+							}
+						]
+					}
+				},
 				"httpmethods": {
 					"1": {
 						"access": true,
@@ -200,6 +217,14 @@ let prod = {
 			"locked": true,
 			"acl": {
 				"dev": {
+					"idempotent": [
+						{
+							"version": "1",
+							"post": [
+								"Idempotent group"
+							]
+						}
+					],
 					"httpmethods": [
 						{
 							"version": "1",

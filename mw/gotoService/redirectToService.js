@@ -11,6 +11,7 @@
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
 const { httpRequestLight, proxyRequestMonitor } = require("../../lib/request.js");
+const idempotency_mw = require("../idempotency/index.js");
 
 // Monitor buffer for batch uploads
 let monitorBuffer = [];
@@ -395,6 +396,11 @@ module.exports = (configuration) => {
 				};
 			}
 
+			//NOTE: from here the outcome of the service decides the key, the release on finish in the
+			//		idempotency middleware stands down
+			if (idempotencyContext) {
+				idempotencyContext.proxied = true;
+			}
 			proxyRequestMonitor(req, res, requestOptions, extraOptions)
 				.then(() => {
 					// Save to cache if applicable
@@ -408,14 +414,20 @@ module.exports = (configuration) => {
 						cacheContext.model.set(cacheContext.key, cacheData, cacheContext.ttl);
 					}
 					// Complete idempotency if applicable
+					//NOTE: only an answer of the service is replayed, a 5xx means it could not answer, release
+					//		the key so the retry reaches the service again
 					if (idempotencyContext) {
-						let idempotencyBody = Buffer.concat(idempotencyResponseChunks).toString('utf8');
-						let idempotencyData = {
-							statusCode: idempotencyResponseStatusCode,
-							headers: idempotencyResponseHeaders,
-							body: idempotencyBody
-						};
-						idempotencyContext.model.complete(idempotencyContext.key, idempotencyData, idempotencyContext.ttl);
+						if (idempotencyResponseStatusCode < 500) {
+							let idempotencyBody = Buffer.concat(idempotencyResponseChunks).toString('utf8');
+							let idempotencyData = {
+								statusCode: idempotencyResponseStatusCode,
+								headers: idempotencyResponseHeaders,
+								body: idempotencyBody
+							};
+							idempotencyContext.model.complete(idempotencyContext.key, idempotencyData, idempotencyContext.ttl);
+						} else {
+							idempotency_mw.unlock(idempotencyContext.model, idempotencyContext.key, idempotencyContext.lockId, req.soajs.log);
+						}
 					}
 					if (monitor && !monitor_service_blacklist && monitor.req_response) {
 						monitoObj.time.res_end = new Date().getTime();
@@ -430,7 +442,7 @@ module.exports = (configuration) => {
 					}
 					// Unlock idempotency on error
 					if (idempotencyContext) {
-						idempotencyContext.model.unlock(idempotencyContext.key);
+						idempotency_mw.unlock(idempotencyContext.model, idempotencyContext.key, idempotencyContext.lockId, req.soajs.log);
 					}
 					if (!req.soajs.controller.monitorEndingReq) {
 						req.soajs.controllerResponse(core.error.getError(135));

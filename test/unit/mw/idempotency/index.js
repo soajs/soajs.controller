@@ -590,4 +590,126 @@ describe("Unit test for: mw - idempotency", () => {
 		});
 	});
 
+	describe("release of the key when the request ends before the service", () => {
+		const EventEmitter = require('events');
+
+		function buildReq(idempotencyKey, answers) {
+			return {
+				headers: { 'idempotency-key': idempotencyKey },
+				method: 'POST',
+				soajs: {
+					tenant: { id: 'tenant-release' },
+					controller: { serviceParams: { name: 'test', serviceInfo: ['', 'test', 'test'] } },
+					registry: {
+						custom: {
+							gateway: {
+								value: {
+									idempotency: {
+										model: 'memory',
+										services: {
+											test: { enabled: true, ttl: 60000, apis: ['POST /test'] }
+										}
+									}
+								}
+							}
+						}
+					},
+					controllerResponse: (data) => {
+						answers.push(data);
+					}
+				}
+			};
+		}
+
+		function buildRes() {
+			let res = new EventEmitter();
+			res.replayed = null;
+			res.writeHead = (statusCode) => {
+				res.replayed = statusCode;
+				return res;
+			};
+			res.end = () => {
+			};
+			return res;
+		}
+
+		// Runs the middleware and resolves with "next" or the answer it gave
+		function run(functionMw, idempotencyKey) {
+			return new Promise((resolve) => {
+				let answers = [];
+				let req = buildReq(idempotencyKey, answers);
+				let res = buildRes();
+				functionMw(req, res, () => {
+					resolve({ "next": true, req, res, answers });
+				});
+				setTimeout(() => {
+					resolve({ "next": false, req, res, answers });
+				}, 20);
+			});
+		}
+
+		let functionMw = null;
+		before(() => {
+			functionMw = mw(mockConfig);
+		});
+
+		it("an answer before the service, a 429 for example, releases the key", async () => {
+			let key = '550e8400-e29b-41d4-a716-446655440101';
+			let first = await run(functionMw, key);
+			assert.strictEqual(first.next, true);
+			first.res.emit('finish');
+			await new Promise((r) => setTimeout(r, 5));
+			let retry = await run(functionMw, key);
+			assert.strictEqual(retry.next, true, JSON.stringify(retry.answers));
+		});
+
+		it("a client disconnect before the service releases the key", async () => {
+			let key = '550e8400-e29b-41d4-a716-446655440102';
+			let first = await run(functionMw, key);
+			assert.strictEqual(first.next, true);
+			first.res.emit('close');
+			await new Promise((r) => setTimeout(r, 5));
+			let retry = await run(functionMw, key);
+			assert.strictEqual(retry.next, true, JSON.stringify(retry.answers));
+		});
+
+		it("a proxied request is left to gotoService, a duplicate still gets 409/181", async () => {
+			let key = '550e8400-e29b-41d4-a716-446655440103';
+			let first = await run(functionMw, key);
+			assert.strictEqual(first.next, true);
+			first.req.soajs.idempotencyContext.proxied = true;
+			first.res.emit('finish');
+			await new Promise((r) => setTimeout(r, 5));
+			let duplicate = await run(functionMw, key);
+			assert.strictEqual(duplicate.next, false);
+			assert.strictEqual(duplicate.answers[0].status, 409);
+			assert.strictEqual(duplicate.answers[0].code, 181);
+		});
+
+		it("a completed request is replayed, finish does not remove it", async () => {
+			let key = '550e8400-e29b-41d4-a716-446655440104';
+			let first = await run(functionMw, key);
+			let context = first.req.soajs.idempotencyContext;
+			context.proxied = true;
+			context.model.complete(context.key, { statusCode: 201, headers: {}, body: '{}' }, context.ttl);
+			first.res.emit('finish');
+			first.res.emit('close');
+			await new Promise((r) => setTimeout(r, 5));
+			let retry = await run(functionMw, key);
+			assert.strictEqual(retry.next, false);
+			assert.strictEqual(retry.res.replayed, 201);
+		});
+
+		it("the release of an expired lock does not remove the lock of a later retry", async () => {
+			let key = '550e8400-e29b-41d4-a716-446655440105';
+			let first = await run(functionMw, key);
+			let context = first.req.soajs.idempotencyContext;
+			// the ttl of the first lock ran out and a retry locked the key again
+			context.model.get(context.key).expiresAt = Date.now() - 1;
+			assert.strictEqual(context.model.lock(context.key, 60000, 'lock-of-the-retry'), true);
+			first.res.emit('finish');
+			await new Promise((r) => setTimeout(r, 5));
+			assert.strictEqual(context.model.get(context.key).lockId, 'lock-of-the-retry');
+		});
+	});
 });

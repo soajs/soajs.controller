@@ -17,7 +17,10 @@ jobs:
 
     services:
       mongodb:
-        image: mongo:8
+        # TODO: back to mongo:8 once it starts on the GitHub runners again. Since 2026-10-19 mongod 8
+        #       exits on start with "Linux kernel versions 6.19 and newer has a known incompatibility
+        #       with this version of MongoDB" (https://jira.mongodb.org/browse/SERVER-121912).
+        image: mongo:7.0
         ports:
           - 27017:27017
 

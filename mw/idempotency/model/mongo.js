@@ -58,7 +58,7 @@ let model = {
 		}
 	},
 
-	'lock': async (key, ttl) => {
+	'lock': async (key, ttl, lockId) => {
 		let condition = {
 			'l1': key.l1,
 			'l2': key.l2
@@ -73,6 +73,7 @@ let model = {
 				'l1': key.l1,
 				'l2': key.l2,
 				'status': 'in_flight',
+				'lockId': lockId || null,
 				'lockedAt': new Date(),
 				'expiresAt': new Date(Date.now() + ttl)
 			};
@@ -108,11 +109,17 @@ let model = {
 		}
 	},
 
-	'unlock': async (key) => {
+	//NOTE: only a record still in flight is removed, never a completed one, and with a lockId only
+	//		the lock of that request, not one taken by a retry after the ttl
+	'unlock': async (key, lockId) => {
 		let condition = {
 			'l1': key.l1,
-			'l2': key.l2
+			'l2': key.l2,
+			'status': 'in_flight'
 		};
+		if (lockId) {
+			condition.lockId = lockId;
+		}
 		try {
 			await model.mongo.deleteOne(idempotency_store, condition);
 		} catch (e) {

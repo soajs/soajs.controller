@@ -75,7 +75,7 @@ let model = {
 		return entry;
 	},
 
-	'lock': (key, ttl) => {
+	'lock': (key, ttl, lockId) => {
 		if (!dataHolder[key.l1]) {
 			dataHolder[key.l1] = {};
 		}
@@ -85,6 +85,7 @@ let model = {
 		}
 		dataHolder[key.l1][key.l2] = {
 			'status': 'in_flight',
+			'lockId': lockId || null,
 			'lockedAt': Date.now(),
 			'expiresAt': Date.now() + ttl
 		};
@@ -103,8 +104,17 @@ let model = {
 		};
 	},
 
-	'unlock': (key) => {
+	//NOTE: only an entry still in flight is removed, never a completed one, and with a lockId only
+	//		the lock of that request, not one taken by a retry after the ttl
+	'unlock': (key, lockId) => {
 		if (dataHolder[key.l1] && dataHolder[key.l1][key.l2]) {
+			const entry = dataHolder[key.l1][key.l2];
+			if (entry.status !== 'in_flight') {
+				return;
+			}
+			if (lockId && entry.lockId !== lockId) {
+				return;
+			}
 			delete dataHolder[key.l1][key.l2];
 		}
 	},
