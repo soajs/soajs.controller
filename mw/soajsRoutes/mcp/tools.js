@@ -224,11 +224,10 @@ function toolName(serviceName, tool, taken) {
 }
 
 /**
- * Whether the caller's ACL allows the api: a restricted service lists its apis per method.
+ * Whether the caller's ACL allows the api: a restricted service allows only the apis it lists per
+ * method, none when it lists none.
  */
-function allowed(serviceACL, tool) {
-	let methods = ["get", "post", "put", "delete", "del"];
-	let restricted = methods.some((m) => Array.isArray(serviceACL[m]));
+function allowed(serviceACL, tool, restricted) {
 	if (!restricted) {
 		return true;
 	}
@@ -253,7 +252,7 @@ function listTools(req, configuration, config) {
 			let taken = {};
 			services.forEach((serviceName, i) => {
 				lists[i].forEach((tool) => {
-					if (tools.length >= config.maxTools || !allowed(finalACL[serviceName], tool)) {
+					if (tools.length >= config.maxTools || !allowed(finalACL[serviceName], tool, computed.restricted[serviceName])) {
 						return;
 					}
 					let name = toolName(serviceName, tool, taken);

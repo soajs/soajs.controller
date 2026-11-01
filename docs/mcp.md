@@ -36,8 +36,8 @@ after 30 seconds.
 
 The ACL the gateway computes for `/soajs/acl`: the user's ACL and packages, else the tenant
 application's, else the package's. For each service, the latest allowed version; a restricted
-service shows only the APIs its ACL lists, per method. To give agents a different list from your
-apps, give the agent its own application, key and package in the tenant.
+service shows only the APIs its ACL lists, per method, and none when it lists none. To give agents
+a different list from your apps, give the agent its own application, key and package in the tenant.
 
 A tool call is checked again by the gateway like any API call, so a tool shown by mistake is still
 refused.
