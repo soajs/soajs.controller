@@ -216,14 +216,17 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 
 	describe("allowed", () => {
 		it("a service that is not restricted allows all its apis", () => {
-			assert.ok(tools.allowed({version: "1"}, {m: "delete", v: "/x"}));
+			assert.ok(tools.allowed({version: "1"}, {m: "delete", v: "/x"}, false));
 		});
 		it("a restricted service allows the apis it lists", () => {
 			let acl = {version: "1", get: ["/users"], del: ["/user/:id"]};
-			assert.ok(tools.allowed(acl, {m: "get", v: "/users"}));
-			assert.ok(!tools.allowed(acl, {m: "get", v: "/user/:id"}));
-			assert.ok(tools.allowed(acl, {m: "delete", v: "/user/:id"}));
-			assert.ok(!tools.allowed(acl, {m: "post", v: "/users"}));
+			assert.ok(tools.allowed(acl, {m: "get", v: "/users"}, true));
+			assert.ok(!tools.allowed(acl, {m: "get", v: "/user/:id"}, true));
+			assert.ok(tools.allowed(acl, {m: "delete", v: "/user/:id"}, true));
+			assert.ok(!tools.allowed(acl, {m: "post", v: "/users"}, true));
+		});
+		it("a restricted service that lists no apis allows none", () => {
+			assert.ok(!tools.allowed({version: "1"}, {m: "get", v: "/users"}, true));
 		});
 	});
 
@@ -337,6 +340,14 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 				assert.strictEqual(list.tools[1].annotations.readOnlyHint, false);
 				return tools.listTools(makeReq({services: services()}), configuration, config);
 			}).then((list) => {
+				assert.deepStrictEqual(list.tools, []);
+				done();
+			}).catch(done);
+		});
+
+		it("listTools: a restricted service that lists no apis has no tools", (done) => {
+			let acl = {urac: {"1": {access: true, apisPermission: "restricted", post: {apis: {}}}}};
+			tools.listTools(makeReq({services: services(), acl: acl}), configuration, config).then((list) => {
 				assert.deepStrictEqual(list.tools, []);
 				done();
 			}).catch(done);
@@ -567,6 +578,17 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 			assert.deepStrictEqual(aclLib.computeACL(req).finalACL, {"urac": {"version": "2", "post": ["/z"]}});
 			req = makeReq({acl: {urac: {"1": {access: true, apisPermission: "restricted", get: [{group: "a", apis: {"/x": {}}}, {group: "b", apis: {"/y": {}, "/x": {}}}]}}}});
 			assert.deepStrictEqual(aclLib.computeACL(req).finalACL, {"urac": {"version": "1", "get": ["/x", "/y"]}});
+		});
+		it("restricted follows the latest allowed version", () => {
+			let req = makeReq({
+				acl: {
+					urac: {"1": {access: true, apisPermission: "restricted", get: {apis: {"/x": {}}}}, "2": {access: true}},
+					oauth: {"1": {access: true, apisPermission: "restricted", post: {apis: {}}}}
+				}
+			});
+			let computed = aclLib.computeACL(req);
+			assert.deepStrictEqual(computed.finalACL, {"urac": {"version": "2"}, "oauth": {"version": "1"}});
+			assert.deepStrictEqual(computed.restricted, {"urac": false, "oauth": true});
 		});
 	});
 });

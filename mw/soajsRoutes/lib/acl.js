@@ -16,10 +16,12 @@ const coreLibs = require("soajs.core.libs");
  *
  * finalACL is, per service, the latest allowed version and, for a restricted service, the allowed
  * apis per method: {"urac": {"version": "3", "get": ["/user"]}}. A service that is not restricted
- * has only its version: all its apis are allowed.
+ * has only its version: all its apis are allowed. A restricted service that lists no apis also has
+ * only its version, so restricted says, per service, whether its latest allowed version is
+ * restricted.
  *
  * @param req
- * @returns {{acl: object|null, finalACL: object|null, packages: Array|null}}
+ * @returns {{acl: object|null, finalACL: object|null, restricted: object, packages: Array|null}}
  */
 function computeACL(req) {
 	let ACL = null;
@@ -42,6 +44,7 @@ function computeACL(req) {
 		ACL = coreLibs.utils.cloneObj(req.soajs.controller.serviceParams.packObj.acl);
 	}
 	let finalACL = null;
+	let restricted = {};
 	if (ACL) {
 		finalACL = {};
 		for (let s in ACL) {
@@ -58,7 +61,8 @@ function computeACL(req) {
 						finalACL[s] = {
 							"version": v
 						};
-						if (sv.apisPermission && sv.apisPermission === "restricted") {
+						restricted[s] = !!(sv.apisPermission && sv.apisPermission === "restricted");
+						if (restricted[s]) {
 							for (let m in sv) {
 								if (sv.hasOwnProperty(m)) {
 									if (m !== "access" && m !== "apisPermission") {
@@ -91,6 +95,7 @@ function computeACL(req) {
 	return {
 		"acl": ACL,
 		"finalACL": finalACL,
+		"restricted": restricted,
 		"packages": ALLOWED_PACKAGES
 	};
 }
