@@ -64,7 +64,8 @@ function computeACL(req) {
 									if (m !== "access" && m !== "apisPermission") {
 										// {apis: {...}} or, grouped, [{group, apis: {...}}]
 										let groups = Array.isArray(sv[m]) ? sv[m] : [sv[m]];
-										groups.forEach((group) => {
+										for (let g = 0; g < groups.length; g++) {
+											let group = groups[g];
 											if (group && group.apis) {
 												for (let a in group.apis) {
 													if (group.apis.hasOwnProperty(a)) {
@@ -77,7 +78,7 @@ function computeACL(req) {
 													}
 												}
 											}
-										});
+										}
 									}
 								}
 							}
