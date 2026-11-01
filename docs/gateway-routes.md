@@ -17,6 +17,12 @@ The SOAJS Controller provides special built-in routes that are handled directly 
     │   ├── Requires: External key (header), OAuth token (query)                  │
     │   └── Returns: ACL, packages, user info, tenant info                        │
     │                                                                             │
+    │   /soajs/mcp                                                                │
+    │   ├── Method: POST                                                          │
+    │   ├── Purpose: MCP endpoint, the caller's APIs as tools for AI agents       │
+    │   ├── Requires: External key, OAuth token, mcp.enabled in custom registry   │
+    │   └── Returns: JSON-RPC answers (initialize, tools/list, tools/call)        │
+    │                                                                             │
     │   /soajs/proxy                                                              │
     │   ├── Method: Any                                                           │
     │   ├── Purpose: Proxy requests to external URLs or cross-environment         │
@@ -246,7 +252,19 @@ curl -X POST "http://api.example.com/soajs/proxy?proxyRoute=%2Fservice%2Fapi&__e
 
 ---
 
-## 3. Deprecated: `/proxy/redirect`
+## 3. MCP Route (`/soajs/mcp`)
+
+**Endpoint:** `POST /soajs/mcp`
+
+**Purpose:** AI agents connect with the Model Context Protocol and see the APIs their caller may
+use as tools; a tool call is processed as the API call it stands for. Same key, OAuth and user
+checks as `/soajs/acl`; off unless `mcp.enabled` is set in the gateway custom registry.
+
+See [MCP Endpoint](mcp.md).
+
+---
+
+## 4. Deprecated: `/proxy/redirect`
 
 **Status:** DEPRECATED
 

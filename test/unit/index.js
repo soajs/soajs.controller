@@ -37,6 +37,7 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/response/index.js");
         require("./mw/soajs/index.js");
         require("./mw/soajsRoutes/keyACL.js");
+        require("./mw/soajsRoutes/mcp.js");
         require("./mw/traffic/index.js");
         require("./mw/idempotency/index.js");
         require("./mw/idempotency/memory.js");

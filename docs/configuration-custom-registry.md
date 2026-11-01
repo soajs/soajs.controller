@@ -32,6 +32,9 @@ registry.custom
 │       │   └── [main product]      # Its sub products
 │       ├── oauth
 │       │   └── deviceIdCheck       # Turn the deviceId check off
+│       ├── mcp                     # MCP endpoint /soajs/mcp for AI agents
+│       │   ├── enabled             # true turns it on
+│       │   └── ttl, timeout, maxTools
 │       └── gotoService
 │           ├── monitor             # Request monitoring config
 │           └── renewReqMonitorOff  # Disable timeout renewal
@@ -757,6 +760,33 @@ Anything but a well formed access answer is no access, and the urac driver decid
 - **Invitations win.** A user both invited and covered by the resolver gets the groups
   of the invitation. If the invitation was made after the token was issued, they get
   the resolver's until their next login.
+
+---
+
+## 16. MCP Endpoint
+
+`registry.custom.gateway.value.mcp` turns on `POST /soajs/mcp`: AI agents see the APIs their
+caller may use as tools, and a tool call is processed as the API call it stands for.
+
+```json
+{
+  "mcp": {
+    "enabled": true,
+    "ttl": 300000,
+    "timeout": 10000,
+    "maxTools": 300
+  }
+}
+```
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `enabled` | — | `true` turns the endpoint on; otherwise it answers 404/190 |
+| `ttl` | `300000` | How long the tools of a service are cached, ms |
+| `timeout` | `10000` | Fetching tools and calling a tool, ms |
+| `maxTools` | `300` | At most this many tools in a list |
+
+See [MCP Endpoint](mcp.md).
 
 ---
 

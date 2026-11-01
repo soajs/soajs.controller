@@ -78,6 +78,35 @@ function startServer(serverConfig, callback) {
 		mReply.service.route = '/heartbeat';
 		res.json(mReply)
 	});
+	// what a soajs service answers on GET /mcp/tools, for the /soajs/mcp tests (UC8)
+	mApp.get('/mcp/tools', (req, res) => {
+		res.json({
+			'result': true,
+			'ts': Date.now(),
+			'service': {'service': serverConfig.name.toUpperCase(), 'type': 'rest', 'route': '/mcp/tools'},
+			'data': {
+				'name': serverConfig.name,
+				'version': '1',
+				'tools': [
+					{
+						'm': 'get', 'v': '/myroute', 'l': 'Route to test get', 'group': 'Integration test',
+						'inputSchema': {'type': 'object', 'properties': {'name': {'type': 'string'}}, 'required': ['name']},
+						'fields': {'name': {'in': 'query', 'path': ['name']}}
+					},
+					{
+						'm': 'post', 'v': '/myroute', 'l': 'Route to test post',
+						'inputSchema': {'type': 'object', 'properties': {'title': {'type': 'string'}}},
+						'fields': {'title': {'in': 'body', 'path': ['title']}}
+					},
+					{
+						'm': 'delete', 'v': '/myroute', 'l': 'Route to test delete',
+						'inputSchema': {'type': 'object', 'properties': {}},
+						'fields': {}
+					}
+				]
+			}
+		});
+	});
 	mApp.get('/wrench', (req, res) => {
 		mReply.service.route = '/wrench';
 		res.json(mReply)

@@ -9,6 +9,7 @@
  */
 
 const gtw_keyACL = require("./../soajsRoutes/keyACL/index.js");
+const gtw_mcp = require("./../soajsRoutes/mcp/index.js");
 
 /**
  *
@@ -20,6 +21,13 @@ module.exports = (configuration) => {
 	let core = configuration.core;
 
 	let soajs_keyACL = gtw_keyACL({
+		"provision": provision,
+		"serviceName": configuration.serviceName,
+		"serviceVersion": configuration.serviceVersion,
+		"core": core
+	});
+
+	let soajs_mcp = gtw_mcp({
 		"provision": provision,
 		"serviceName": configuration.serviceName,
 		"serviceVersion": configuration.serviceVersion,
@@ -43,8 +51,11 @@ module.exports = (configuration) => {
 
 		//check if route is soajs/acl then you also need to bypass the exctract Build Param BL
 		let url_keyACL = (serviceInfo[1] === 'soajs' && serviceInfo[2] === 'acl');
+		let url_mcp = (serviceInfo[1] === 'soajs' && serviceInfo[2] === 'mcp');
 		if (url_keyACL) {
 			return soajs_keyACL(req, res, next);
+		} else if (url_mcp) {
+			return soajs_mcp(req, res, next);
 		} else {
 			//check if proxy/redirect
 			//create proxy info object before calling extractbuildparams

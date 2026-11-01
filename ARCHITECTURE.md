@@ -158,7 +158,8 @@ The gateway processes requests through a sequential middleware pipeline:
 | [Custom Registry Configuration](docs/configuration-custom-registry.md) | Environment-specific gateway settings |
 | [Tenant Access Resolver Guide](docs/tenant-access-resolver.md) | Step by step: give a group of users access to a tenant through an API of your app |
 | [Services Config](docs/configuration-services-config.md) | Tenant key-specific configuration |
-| [Gateway Routes](docs/gateway-routes.md) | Built-in gateway routes (/soajs/acl, /soajs/proxy) |
+| [Gateway Routes](docs/gateway-routes.md) | Built-in gateway routes (/soajs/acl, /soajs/mcp, /soajs/proxy) |
+| [MCP Endpoint](docs/mcp.md) | The caller's APIs as MCP tools for AI agents |
 | [Maintenance Routes](docs/maintenance-routes.md) | Health check and admin endpoints |
 
 ---
