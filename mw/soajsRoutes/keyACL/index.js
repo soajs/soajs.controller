@@ -44,7 +44,7 @@ module.exports = (configuration) => {
 							if (finalACL[s] && finalACL[s].version) {
 								let version = coreLibs.version.getLatest(finalACL[s].version, v);
 								if (version !== v) {
-									break;
+									continue;
 								}
 							}
 							finalACL[s] = {
@@ -53,7 +53,7 @@ module.exports = (configuration) => {
 							if (sv.apisPermission && sv.apisPermission === "restricted") {
 								for (let m in sv) {
 									if (sv.hasOwnProperty(m)) {
-										if (m !== "access" || m !== "apisPermission") {
+										if (m !== "access" && m !== "apisPermission") {
 											if (sv[m].apis) {
 												for (let a in sv[m].apis) {
 													if (sv[m].apis.hasOwnProperty(a)) {
