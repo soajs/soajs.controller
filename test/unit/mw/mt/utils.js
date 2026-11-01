@@ -395,6 +395,23 @@ describe("Unit test for: mw - mt utils", () => {
 		});
 	});
 
+	["constructor/1", "toString/2", "__proto__/1", "hasOwnProperty/1 (Linux; Android 10)"].forEach((ua) => {
+		it("test securityDeviceCheck - " + ua + " is not allowed as chrome", function (done) {
+			utils.securityDeviceCheck(deviceObj(ua, {"allow": [{"family": "chrome"}]}), function (error) {
+				assert.strictEqual(error, 156);
+				done();
+			});
+		});
+
+		it("test securityDeviceCheck - " + ua + " is not denied as chrome", function (done) {
+			utils.securityDeviceCheck(deviceObj(ua, {"deny": [{"family": "chrome"}]}), function (error, obj) {
+				assert.ifError(error);
+				assert.strictEqual(obj.device, ua);
+				done();
+			});
+		});
+	});
+
 	it("test securityDeviceCheck - empty User-Agent skips device rules", function (done) {
 		utils.securityDeviceCheck(deviceObj("", {"allow": [{"family": "chrome"}], "deny": [{"family": "*"}]}), function (error, obj) {
 			assert.ifError(error);

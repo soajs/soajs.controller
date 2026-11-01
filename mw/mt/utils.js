@@ -56,6 +56,11 @@ const UA_ANDROID_FAMILIES = {"Firefox": "Firefox Mobile", "Opera": "Opera Mobile
 const UA_IOS_FAMILIES = {"Chrome": "Chrome Mobile iOS", "Firefox": "Firefox iOS", "WebKit": "Mobile Safari UI/WKWebView"};
 const UA_FAMILIES = {"Yandex": "Yandex Browser"};
 
+// Own keys only: the family comes from the caller and must not resolve to Object.prototype members
+function mapName(map, name) {
+	return Object.prototype.hasOwnProperty.call(map, name) ? map[name] : name;
+}
+
 function splitVersion(version) {
 	let parts = (version || "").split(".");
 	return {
@@ -106,25 +111,25 @@ function parseUserAgent(ua) {
 		osVersion = null;
 		if (family === "Chrome" && / Mobile /.test(ua)) {
 			family = "Chrome Mobile";
-		} else if (UA_ANDROID_FAMILIES[family]) {
-			family = UA_ANDROID_FAMILIES[family];
+		} else {
+			family = mapName(UA_ANDROID_FAMILIES, family);
 		}
-	} else if (osFamily === "iOS" && UA_IOS_FAMILIES[family]) {
+	} else if (osFamily === "iOS") {
 		if (family === "WebKit") {
 			version = osVersion;
 		}
-		family = UA_IOS_FAMILIES[family];
+		family = mapName(UA_IOS_FAMILIES, family);
 	}
-	family = UA_FAMILIES[family] || family;
+	family = mapName(UA_FAMILIES, family);
 
 	let uaObj = splitVersion(version);
-	uaObj.family = family;
+	uaObj.family = String(family);
 	if (osFamily === "Windows") {
 		// Windows versions are names: 10, 8.1, XP, Vista
 		uaObj.os = {"family": osFamily, "major": osVersion || "0", "minor": "0", "patch": "0"};
 	} else {
 		uaObj.os = splitVersion(osVersion);
-		uaObj.os.family = UA_OS_FAMILIES[osFamily] || osFamily || "Other";
+		uaObj.os.family = osFamily ? String(mapName(UA_OS_FAMILIES, osFamily)) : "Other";
 	}
 	return uaObj;
 }
