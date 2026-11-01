@@ -31,6 +31,10 @@ let doc = {
 				}
 			}
 		},
+		"mcp": {
+			"enabled": true,
+			"timeout": 3000
+		},
 		"traffic": {
 			"throttling": {
 				"idempotent": {

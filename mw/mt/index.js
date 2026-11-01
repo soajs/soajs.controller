@@ -42,7 +42,9 @@ module.exports = (configuration) => {
 		} else if (urlInfo[1] === 'soajs' && urlInfo[2] === 'proxy') {
 			proxy = true;
 		}
-		let url_keyACL = (urlInfo[1] === 'soajs' && urlInfo[2] === 'acl');
+		//NOTE: /soajs/acl and /soajs/mcp are apis of the gateway: key, oauth and urac checks only, the
+		//		route itself works with the caller's ACL
+		let url_keyACL = (urlInfo[1] === 'soajs' && (urlInfo[2] === 'acl' || urlInfo[2] === 'mcp'));
 
 		let serviceParam = {};
 		if (!proxy) {

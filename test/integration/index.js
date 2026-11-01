@@ -48,6 +48,10 @@ describe("starting integration tests", () => {
 		// to test cache invalidation with the mongo model
 		require("./UC7-cache-invalidate/index.js");
 		
+		
+		// to test the MCP endpoint /soajs/mcp
+		require("./UC8-mcp/index.js");
+		
 		done();
 	});
 });
