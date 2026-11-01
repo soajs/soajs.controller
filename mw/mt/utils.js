@@ -15,7 +15,7 @@ const coreLibs = require("soajs.core.libs");
 
 const async = require("async");
 const Netmask = require('netmask').Netmask;
-const useragent = require('useragent');
+const UAParser = require('ua-parser-js');
 const merge = require('merge');
 
 const UracDriver = require("./urac.js");
@@ -47,6 +47,91 @@ function getCachedNetmask(addr) {
 		}
 	}
 	return netmaskCache.get(addr);
+}
+
+// Device rules were written against the useragent package names; map ua-parser-js names back to them
+const UA_MAX_LENGTH = 512;
+const UA_OS_FAMILIES = {"Mac OS": "Mac OS X", "Chromium OS": "Chrome OS"};
+const UA_ANDROID_FAMILIES = {"Firefox": "Firefox Mobile", "Opera": "Opera Mobile", "Chrome WebView": "Chrome Mobile WebView"};
+const UA_IOS_FAMILIES = {"Chrome": "Chrome Mobile iOS", "Firefox": "Firefox iOS", "WebKit": "Mobile Safari UI/WKWebView"};
+const UA_FAMILIES = {"Yandex": "Yandex Browser"};
+
+// Own keys only: the family comes from the caller and must not resolve to Object.prototype members
+function mapName(map, name) {
+	return Object.prototype.hasOwnProperty.call(map, name) ? map[name] : name;
+}
+
+function splitVersion(version) {
+	let parts = (version || "").split(".");
+	return {
+		"major": parts[0] || "0",
+		"minor": parts[1] || "0",
+		"patch": parts[2] || "0"
+	};
+}
+
+/**
+ * Parses a User-Agent into {family, major, minor, patch, os: {family, major, minor, patch}}
+ *
+ * @param {String} ua
+ * @returns {Object}
+ */
+function parseUserAgent(ua) {
+	ua = String(ua).substring(0, UA_MAX_LENGTH);
+	let result = new UAParser(ua).getResult();
+	let family = result.browser.name;
+	let version = result.browser.version;
+	let osFamily = result.os.name;
+	let osVersion = result.os.version;
+	let match;
+
+	if (!family) {
+		// ua-parser-js guesses iOS from Darwin/CFNetwork without a version
+		if (osFamily === "iOS" && !osVersion) {
+			osFamily = null;
+		}
+		// non browser clients: curl/8.4.0, MyApp/142 CFNetwork/...
+		match = /^Mozilla\//.test(ua) ? null : /^([^\/\s]+)\/([\d.]+)/.exec(ua);
+		family = match ? match[1] : "Other";
+		version = match ? match[2] : null;
+	}
+	if (family === "Edge") {
+		if (/ Edg(A)?\//.test(ua)) {
+			match = /Chrome\/([\d.]+)/.exec(ua);
+			family = "Chrome";
+			version = match ? match[1] : null;
+		} else if (/ EdgiOS\//.test(ua)) {
+			match = /Version\/([\d.]+)/.exec(ua);
+			family = "Mobile Safari";
+			version = match ? match[1] : null;
+		}
+	}
+	if (osFamily === "Android") {
+		// useragent reported every Android version as 0.0.0, keep that so os version rules do not change
+		osVersion = null;
+		if (family === "Chrome" && / Mobile /.test(ua)) {
+			family = "Chrome Mobile";
+		} else {
+			family = mapName(UA_ANDROID_FAMILIES, family);
+		}
+	} else if (osFamily === "iOS") {
+		if (family === "WebKit") {
+			version = osVersion;
+		}
+		family = mapName(UA_IOS_FAMILIES, family);
+	}
+	family = mapName(UA_FAMILIES, family);
+
+	let uaObj = splitVersion(version);
+	uaObj.family = String(family);
+	if (osFamily === "Windows") {
+		// Windows versions are names: 10, 8.1, XP, Vista
+		uaObj.os = {"family": osFamily, "major": osVersion || "0", "minor": "0", "patch": "0"};
+	} else {
+		uaObj.os = splitVersion(osVersion);
+		uaObj.os.family = osFamily ? String(mapName(UA_OS_FAMILIES, osFamily)) : "Other";
+	}
+	return uaObj;
 }
 
 let sensitiveEnvCodes = ["dashboard"];
@@ -381,7 +466,7 @@ let utils = {
 		};
 
 		let checkAccess = (deviceAccessArr, ua) => {
-			let uaObj = useragent.lookup(ua);
+			let uaObj = parseUserAgent(ua);
 			//if (uaObj && uaObj.family && uaObj.os && uaObj.os.family) {
 			if (uaObj && uaObj.family) {
 				return (deviceAccessArr.some(function (da) {
