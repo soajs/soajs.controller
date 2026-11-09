@@ -63,6 +63,54 @@ Off unless enabled, in the `gateway` custom registry (`registry.custom.gateway.v
 | `ttl` | `300000` | How long the tools of a service are cached, ms |
 | `timeout` | `10000` | Fetching tools and calling a tool, ms |
 | `maxTools` | `300` | At most this many tools in a list |
+| `auth` | — | The authorization flow, see below; without it, clients send the key and token themselves |
+
+### Authorization (`mcp.auth`)
+
+With `auth`, an MCP client connects with only the URL and the MCP authorization flow (OAuth 2.1,
+PKCE). The gateway is the protected resource; the authorization server (consent page, codes, tokens)
+is yours, named by its endpoints.
+
+```json
+"auth": {
+  "byProduct": {
+    "AGENTS": {
+      "authorization_endpoint": "https://portal.example.com/agents/authorize",
+      "token_endpoint": "https://api.example.com/agents/oauth/token?key=<key>",
+      "registration_endpoint": "https://api.example.com/agents/oauth/register?key=<key>"
+    }
+  },
+  "byHost": {
+    "api.client.example.com": { "authorization_endpoint": "...", "token_endpoint": "...", "registration_endpoint": "..." }
+  },
+  "default": { "authorization_endpoint": "...", "token_endpoint": "...", "registration_endpoint": "..." }
+}
+```
+
+- **Which endpoints:**
+  - `byProduct`, by the product of the key on the request (header or `?key=`);
+  - else `byHost`, by the host the request came in on (`X-Forwarded-Host`, else `Host`);
+  - else `default`.
+  - An entry needs `authorization_endpoint` and `token_endpoint`; `registration_endpoint` is optional.
+- **No token, or an unknown or expired one:** HTTP 401 with
+  `WWW-Authenticate: Bearer resource_metadata="<origin>/.well-known/oauth-protected-resource/soajs/mcp"`,
+  plus `?key=` when the client's URL had one. If nothing matches the request, the answer is as without
+  `auth`.
+- **`GET /.well-known/oauth-protected-resource[/soajs/mcp]`:** `resource`, `authorization_servers`
+  (the issuer `<origin>/soajs/mcp/auth/<product/CODE|host|default>`) and `bearer_methods_supported`.
+- **`GET /.well-known/oauth-authorization-server/<issuer path>`** (also `openid-configuration`):
+  - the issuer and the entry's endpoints;
+  - `code` with PKCE `S256`;
+  - grant `authorization_code`;
+  - token endpoint auth `none`.
+- **The key from the token.** A client sends no key header. When the token is restricted to one key
+  (`user.restrictedTo.key`):
+  - `/soajs/mcp` without a key uses that key;
+  - with a key of the same product (a product URL), the token's key replaces it;
+  - a key of another product is kept, and the token is refused on it (147).
+- **The issued token:** the token endpoint should return one restricted to the agent's tenant,
+  product, package and key, e.g. from soajs.oauth `POST /restricted/token/guest`. The gateway then
+  checks it on every call like any restricted token.
 
 ## Protocol
 
@@ -91,8 +139,20 @@ streaming. `GET` answers 405.
 
 The arguments are split back into the path, the query string and the body, and the call goes to
 `http://127.0.0.1:<gateway port>/<service>/v<version><path>` with the caller's `key`,
-`authorization` / `access_token`, `device-id`, `user-agent`, `accept-language` and
-`idempotency-key` headers and `x-forwarded-for`.
+`authorization` / `access_token`, `device-id`, `user-agent` and `accept-language` headers and
+`x-forwarded-for`.
+
+**Idempotency.** An `Idempotency-Key` header on the MCP request is not forwarded: it is the same for
+every call of a connection, so the API would answer every later call with the first call's response.
+Instead:
+
+- A tool whose API has idempotency on (`registry.custom.gateway.value.idempotency`, by service and
+  API) takes an optional `_idempotencyKey` argument: a UUID v4 that the agent sends again when it
+  retries the same call, so the call runs once. A value that isn't a UUID v4 is a tool error, and
+  nothing is called.
+- A POST, PUT or DELETE without one gets a new key, so an API that requires a key works, and two
+  calls are never taken for one.
+- An API with its own `_idempotencyKey` field keeps it as a field.
 
 - **Success:** `content` has the response `data` as JSON text, `structuredContent` the same when it
   is an object.
@@ -136,5 +196,6 @@ URL.
 | File | Role |
 |------|------|
 | `mw/soajsRoutes/mcp/index.js` | The route: JSON-RPC handling |
-| `mw/soajsRoutes/mcp/tools.js` | Tools: fetch, cache, ACL filter, naming, the call |
+| `mw/soajsRoutes/mcp/tools.js` | Tools: fetch, cache, ACL filter, naming, idempotency, the call |
+| `mw/soajsRoutes/mcp/auth.js` | Authorization: the 401, the well-known metadata, the key from the token |
 | `mw/soajsRoutes/lib/acl.js` | The ACL computation shared with `/soajs/acl` |

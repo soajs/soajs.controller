@@ -33,6 +33,7 @@ const awareness_mw = require('../mw/awareness/index');
 const awarenessEnv_mw = require("../mw/awarenessEnv/index");
 const url_mw = require("../mw/url/index");
 const key_mw = require("../mw/key/index");
+const mcpAuth_mw = require("../mw/soajsRoutes/mcp/auth");
 const keyACL_mw = require("../mw/keyACL/index");
 const gotoService_mw = require("../mw/gotoService/index");
 const mt_mw = require("../mw/mt/index");
@@ -96,6 +97,9 @@ Controller.prototype.init = function (callback) {
 			app.use(ip2ban_mw());
 			app.use(maintenanceMode_mw()); //NOTE: this is for global maintenance mode
 
+			//NOTE: before the url mw, which knows no service named .well-known
+			app.use(mcpAuth_mw.wellKnown({ "provision": provision }));
+
 			app.use(url_mw({ "core": core }));
 			
 			log.info("Loading Provision ...");
@@ -140,6 +144,9 @@ Controller.prototype.init = function (callback) {
 					// app.use(enhancer_mw());
 
 					// app.use(url_mw({ "core": core }));
+
+					//NOTE: before the key mw, a token restricted to one key brings the key of /soajs/mcp
+					app.use(mcpAuth_mw.authorize({ "provision": provision }));
 
 					app.use(key_mw({ "provision": provision, "regEnvironment": regEnvironment }));
 
