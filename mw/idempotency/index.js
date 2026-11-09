@@ -222,4 +222,6 @@ module.exports = function (configuration) {
 
 // Export model for external use
 module.exports.model = model;
+module.exports.matchesApi = matchesApi;
+module.exports.isValidUUIDv4 = isValidUUIDv4;
 module.exports.unlock = unlock;

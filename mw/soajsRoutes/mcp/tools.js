@@ -18,10 +18,12 @@
  */
 
 const http = require("http");
+const crypto = require("crypto");
 const yaml = require("js-yaml");
 const coreLibs = require("soajs.core.libs");
 
 const aclLib = require("../lib/acl.js");
+const idempotency = require("../../idempotency/index.js");
 
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
@@ -37,7 +39,13 @@ const NAME_MAX = 64;
 // service@version -> {expires, tools}
 let cache = {};
 
-const HEADERS_TO_FORWARD = ['key', 'authorization', 'access_token', 'device-id', 'user-agent', 'accept-language', 'idempotency-key'];
+//NOTE: no idempotency-key, a header on the mcp request is the same for every tool call of the
+//		connection, the api would replay the first answer to every later call. A tool call carries
+//		its own key, see IDEMPOTENCY_ARG.
+const HEADERS_TO_FORWARD = ['key', 'authorization', 'access_token', 'device-id', 'user-agent', 'accept-language'];
+
+// the argument a tool call gives its idempotency key in, on the tools whose api has idempotency on
+const IDEMPOTENCY_ARG = "_idempotencyKey";
 
 /**
  * The mcp configuration: registry.custom.gateway.value.mcp
@@ -236,6 +244,33 @@ function allowed(serviceACL, tool, restricted) {
 }
 
 /**
+ * Whether the gateway applies idempotency to the api of a tool, as mw/idempotency decides it for
+ * the api call: registry.custom.gateway.value.idempotency, by service and api. A get never.
+ */
+function idempotent(req, serviceName, tool) {
+	if (tool.m === "get") {
+		return false;
+	}
+	let services = get(["soajs", "registry", "custom", "gateway", "value", "idempotency", "services"], req);
+	let serviceConfig = services ? services[serviceName] : null;
+	if (!serviceConfig || !serviceConfig.enabled) {
+		return false;
+	}
+	if (serviceConfig.apis && !idempotency.matchesApi(tool.m.toUpperCase(), tool.v, serviceConfig.apis)) {
+		return false;
+	}
+	return true;
+}
+
+/**
+ * Whether a tool call can carry its idempotency key in IDEMPOTENCY_ARG: not a get, and not an
+ * api with a field of that name.
+ */
+function takesIdempotencyArg(tool) {
+	return tool.m !== "get" && !Object.hasOwnProperty.call(tool.fields || {}, IDEMPOTENCY_ARG);
+}
+
+/**
  * The tools the caller may use.
  *
  * @returns Promise<{tools: Array, index: object}> tools in the MCP format, index by name of
@@ -258,6 +293,16 @@ function listTools(req, configuration, config) {
 					let name = toolName(serviceName, tool, taken);
 					let description = tool.l || (tool.m.toUpperCase() + " " + tool.v);
 					let inputSchema = (tool.inputSchema && tool.inputSchema.type === "object") ? tool.inputSchema : {"type": "object", "properties": {}};
+					if (takesIdempotencyArg(tool) && idempotent(req, serviceName, tool)) {
+						//NOTE: copies, the tool is shared through the cache
+						let properties = Object.assign({}, inputSchema.properties || {});
+						properties[IDEMPOTENCY_ARG] = {
+							"type": "string",
+							"format": "uuid",
+							"description": "Optional UUID v4. Send the same value when retrying this exact call, so it runs once."
+						};
+						inputSchema = Object.assign({}, inputSchema, {"properties": properties});
+					}
 					tools.push({
 						"name": name,
 						"title": description,
@@ -371,6 +416,22 @@ function callTool(req, configuration, config, entry, args) {
 			headers[h] = req.headers[h];
 		}
 	});
+	if (takesIdempotencyArg(entry.tool)) {
+		//NOTE: a write without a key gets a new one: an api that requires a key works, and two
+		//		calls are never taken for one. Only a key the agent sends again makes a retry run once.
+		let given = (args && typeof args === "object" && !Array.isArray(args)) ? args[IDEMPOTENCY_ARG] : undefined;
+		if (given !== undefined && given !== null && given !== "") {
+			if (typeof given !== "string" || !idempotency.isValidUUIDv4(given)) {
+				return Promise.resolve({
+					"content": [{"type": "text", "text": IDEMPOTENCY_ARG + " must be a UUID v4."}],
+					"isError": true
+				});
+			}
+			headers["idempotency-key"] = given;
+		} else {
+			headers["idempotency-key"] = crypto.randomUUID();
+		}
+	}
 	if (!headers.access_token && req.query && req.query.access_token) {
 		headers.access_token = req.query.access_token;
 	}
@@ -427,6 +488,8 @@ module.exports = {
 	serviceTools,
 	toolName,
 	allowed,
+	idempotent,
+	takesIdempotencyArg,
 	listTools,
 	buildCall,
 	callTool,

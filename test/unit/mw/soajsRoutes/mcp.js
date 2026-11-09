@@ -230,6 +230,24 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 		});
 	});
 
+	describe("idempotent", () => {
+		let reqWith = (idempotency) => {
+			let req = makeReq();
+			req.soajs.registry.custom.gateway.value.idempotency = idempotency;
+			return req;
+		};
+		it("off without configuration, for a get, a disabled service or an api not listed", () => {
+			assert.strictEqual(tools.idempotent(makeReq(), "urac", coreTools[1]), false);
+			assert.strictEqual(tools.idempotent(reqWith({services: {urac: {enabled: true}}}), "urac", coreTools[0]), false);
+			assert.strictEqual(tools.idempotent(reqWith({services: {urac: {enabled: false}}}), "urac", coreTools[1]), false);
+			assert.strictEqual(tools.idempotent(reqWith({services: {urac: {enabled: true, apis: ["DELETE /user/:id"]}}}), "urac", coreTools[1]), false);
+		});
+		it("on for every write of an enabled service, or the apis it lists", () => {
+			assert.strictEqual(tools.idempotent(reqWith({services: {urac: {enabled: true}}}), "urac", coreTools[1]), true);
+			assert.strictEqual(tools.idempotent(reqWith({services: {urac: {enabled: true, apis: ["POST /user/:id"]}}}), "urac", coreTools[1]), true);
+		});
+	});
+
 	describe("buildCall", () => {
 		it("path params, query and nested body", () => {
 			let call = tools.buildCall(coreTools[1], {id: "a b/c", name: "Ann", other: 1});
@@ -345,6 +363,24 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 			}).catch(done);
 		});
 
+		it("listTools: the tools whose api has idempotency on take _idempotencyKey, the cache is not changed", (done) => {
+			let req = makeReq({services: services(), acl: {urac: {"1": {access: true}}}});
+			req.soajs.registry.custom.gateway.value.idempotency = {services: {urac: {enabled: true, apis: ["POST /user/:id"]}}};
+			tools.listTools(req, configuration, config).then((list) => {
+				let byRoute = {};
+				list.tools.forEach((t) => {
+					byRoute[t.description.split("[urac: ")[1]] = t;
+				});
+				let post = byRoute["POST /user/:id]"];
+				assert.deepStrictEqual(post.inputSchema.properties._idempotencyKey.type, "string");
+				assert.deepStrictEqual(post.inputSchema.required, ["id"]);
+				assert.ok(!byRoute["DELETE /user/:id]"].inputSchema.properties._idempotencyKey);
+				assert.ok(!byRoute["GET /users]"].inputSchema.properties._idempotencyKey);
+				assert.ok(!coreTools[1].inputSchema.properties._idempotencyKey);
+				done();
+			}).catch(done);
+		});
+
 		it("listTools: a restricted service that lists no apis has no tools", (done) => {
 			let acl = {urac: {"1": {access: true, apisPermission: "restricted", post: {apis: {}}}}};
 			tools.listTools(makeReq({services: services(), acl: acl}), configuration, config).then((list) => {
@@ -390,7 +426,9 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 					assert.strictEqual(received.headers.authorization, "Bearer abc");
 					assert.strictEqual(received.headers.access_token, "tok");
 					assert.strictEqual(received.headers["device-id"], "d1");
-					assert.strictEqual(received.headers["idempotency-key"], "k1");
+					// the mcp request's own key is not forwarded, a write gets a new one
+					assert.notStrictEqual(received.headers["idempotency-key"], "k1");
+					assert.ok(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(received.headers["idempotency-key"]));
 					assert.strictEqual(received.headers["x-forwarded-for"], "10.0.0.5");
 					assert.ok(!received.headers.cookie);
 					assert.deepStrictEqual(result, {
@@ -398,6 +436,41 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 						"isError": false,
 						"structuredContent": {"updated": true}
 					});
+					done();
+				}).catch(done);
+			});
+
+			it("idempotency: a key the agent gives is sent, a bad one is refused, a get has none", (done) => {
+				reply = {status: 200, body: {result: true, data: {}}};
+				let key = "3b241101-e2bb-4255-8caf-4136c566a962";
+				received = null;
+				tools.callTool(makeReq({gatewayPort: gatewayPort}), configuration, config, entry, {id: "u1", _idempotencyKey: key}).then(() => {
+					assert.strictEqual(received.headers["idempotency-key"], key);
+					// the key is not an api field, it is not in the body
+					assert.strictEqual(received.body, "");
+					received = null;
+					return tools.callTool(makeReq({gatewayPort: gatewayPort}), configuration, config, entry, {id: "u1", _idempotencyKey: "k1"});
+				}).then((result) => {
+					assert.deepStrictEqual(result, {"content": [{"type": "text", "text": "_idempotencyKey must be a UUID v4."}], "isError": true});
+					assert.strictEqual(received, null);
+					return tools.callTool(makeReq({gatewayPort: gatewayPort, headers: {"idempotency-key": key}}), configuration, config, {service: "urac", version: "1", tool: coreTools[0]}, {});
+				}).then(() => {
+					assert.ok(!received.headers["idempotency-key"]);
+					done();
+				}).catch(done);
+			});
+
+			it("idempotency: an api with its own _idempotencyKey field keeps it", (done) => {
+				reply = {status: 200, body: {result: true, data: {}}};
+				let tool = {
+					"m": "post", "v": "/thing", "l": "Thing",
+					"inputSchema": {"type": "object", "properties": {"_idempotencyKey": {"type": "string"}}},
+					"fields": {"_idempotencyKey": {"in": "body", "path": ["_idempotencyKey"]}}
+				};
+				tools.callTool(makeReq({gatewayPort: gatewayPort}), configuration, config, {service: "urac", version: "1", tool: tool}, {_idempotencyKey: "mine"}).then((result) => {
+					assert.strictEqual(result.isError, false);
+					assert.ok(!received.headers["idempotency-key"]);
+					assert.deepStrictEqual(JSON.parse(received.body), {_idempotencyKey: "mine"});
 					done();
 				}).catch(done);
 			});
