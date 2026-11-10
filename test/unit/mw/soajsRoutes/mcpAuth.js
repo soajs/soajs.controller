@@ -276,5 +276,27 @@ describe("Unit test for: mw - soajsRoutes mcp auth", () => {
 			req.socket = {encrypted: false};
 			assert.strictEqual(auth.requestOrigin(req), "http://api.connect.example");
 		});
+		it("requestOrigin: auth.scheme wins over the forwarded proto, the host stays", () => {
+			let req = makeReq({headers: {"x-forwarded-proto": "http"}, mcp: {enabled: true, auth: Object.assign({scheme: "https"}, AUTH)}});
+			assert.strictEqual(auth.requestOrigin(req), "https://api.connect.example");
+			req = makeReq({headers: {"x-forwarded-proto": "http"}, mcp: {enabled: true, auth: Object.assign({scheme: "ftp"}, AUTH)}});
+			assert.strictEqual(auth.requestOrigin(req), "http://api.connect.example");
+		});
+		it("auth.scheme in the metadata and the 401", (done) => {
+			let mcp = {enabled: true, auth: Object.assign({scheme: "https"}, AUTH)};
+			let mw = auth.wellKnown({provision: provision});
+			run(mw, makeReq({method: "GET", url: "/.well-known/oauth-protected-resource", mcp: mcp, headers: {"x-forwarded-proto": "http"}}), (answer) => {
+				assert.strictEqual(answer.body.resource, "https://api.connect.example/soajs/mcp");
+				assert.deepStrictEqual(answer.body.authorization_servers, ["https://api.connect.example/soajs/mcp/auth/default"]);
+				run(mw, makeReq({method: "GET", url: "/.well-known/oauth-authorization-server/soajs/mcp/auth/default", mcp: mcp, headers: {"x-forwarded-proto": "http"}}), (answer) => {
+					assert.strictEqual(answer.body.issuer, "https://api.connect.example/soajs/mcp/auth/default");
+					run(auth.authorize({provision: provision}), makeReq({mcp: mcp, headers: {"x-forwarded-proto": "http"}}), (answer) => {
+						assert.strictEqual(answer.headers["WWW-Authenticate"],
+							'Bearer resource_metadata="https://api.connect.example/.well-known/oauth-protected-resource/soajs/mcp"');
+						done();
+					});
+				});
+			});
+		});
 	});
 });

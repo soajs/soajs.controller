@@ -16,7 +16,8 @@
  * at the endpoints the configuration names.
  *
  * Which endpoints: by the product of the key on the request (auth.byProduct), else by the host the
- * request came in on (auth.byHost), else auth.default.
+ * request came in on (auth.byHost), else auth.default. The addresses the gateway gives out use the
+ * request's host and auth.scheme, else the scheme the request came in with.
  *
  * An MCP client sends the token only, no key. A token restricted to one key (user.restrictedTo.key)
  * brings it: /soajs/mcp without a key uses it, and with a key of the same product the token's key
@@ -61,8 +62,16 @@ function requestHost(req) {
 	return (firstValue(req.headers["x-forwarded-host"]) || req.headers.host || "").toLowerCase();
 }
 
+/**
+ * The scheme is auth.scheme when set, for a proxy that does not pass X-Forwarded-Proto on, else
+ * X-Forwarded-Proto, else the connection's.
+ */
 function requestOrigin(req) {
-	let proto = firstValue(req.headers["x-forwarded-proto"]);
+	let auth = getAuthConfig(req);
+	let proto = (auth && (auth.scheme === "https" || auth.scheme === "http")) ? auth.scheme : null;
+	if (!proto) {
+		proto = firstValue(req.headers["x-forwarded-proto"]);
+	}
 	if (!proto) {
 		proto = (req.socket && req.socket.encrypted) ? "https" : "http";
 	}
