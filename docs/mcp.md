@@ -92,6 +92,9 @@ is yours, named by its endpoints.
   - else `byHost`, by the host the request came in on (`X-Forwarded-Host`, else `Host`);
   - else `default`.
   - An entry needs `authorization_endpoint` and `token_endpoint`; `registration_endpoint` is optional.
+- **`<origin>`** below is the scheme and host the request came in on: `X-Forwarded-Proto` and
+  `X-Forwarded-Host` when set. Behind a proxy that does not pass the scheme on, set
+  `"scheme": "https"` in `auth`; the host still comes from the request.
 - **No token, or an unknown or expired one:** HTTP 401 with
   `WWW-Authenticate: Bearer resource_metadata="<origin>/.well-known/oauth-protected-resource/soajs/mcp"`,
   plus `?key=` when the client's URL had one. If nothing matches the request, the answer is as without
