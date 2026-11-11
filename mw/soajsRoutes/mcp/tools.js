@@ -435,6 +435,18 @@ function callTool(req, configuration, config, entry, args) {
 	if (!headers.access_token && req.query && req.query.access_token) {
 		headers.access_token = req.query.access_token;
 	}
+	//NOTE: the token goes as access_token, never as Authorization: a service that falls back to the
+	//		gateway for an interConnect peer passes access_token on, not a lowercase authorization
+	//		header, and oauth refuses a call that carries both
+	if (!headers.access_token && headers.authorization) {
+		let matches = headers.authorization.match(/^Bearer\s+(\S+)/i);
+		if (matches) {
+			headers.access_token = matches[1];
+		}
+	}
+	if (headers.access_token) {
+		delete headers.authorization;
+	}
 	let clientIP = req.getClientIP ? req.getClientIP() : null;
 	let forwarded = req.headers["x-forwarded-for"];
 	if (clientIP) {
