@@ -411,6 +411,23 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 
 			let entry = {service: "urac", version: "2", tool: coreTools[1]};
 
+			it("a bearer token is passed on as access_token, not as authorization", (done) => {
+				reply = {status: 200, body: {result: true, data: {}}};
+				let req = makeReq({gatewayPort: gatewayPort, headers: {"authorization": "Bearer agentToken"}});
+				tools.callTool(req, configuration, config, entry, {id: "u1", name: "Ann"}).then(() => {
+					assert.strictEqual(received.headers.access_token, "agentToken");
+					assert.ok(!received.headers.authorization);
+					reply = {status: 200, body: {result: true, data: {}}};
+					let req2 = makeReq({gatewayPort: gatewayPort, headers: {"authorization": "Basic xyz"}});
+					return tools.callTool(req2, configuration, config, entry, {id: "u1", name: "Ann"});
+				}).then(() => {
+					// not a bearer token: left as it is
+					assert.strictEqual(received.headers.authorization, "Basic xyz");
+					assert.ok(!received.headers.access_token);
+					done();
+				}).catch(done);
+			});
+
 			it("the api call goes through the gateway port with the caller's credentials", (done) => {
 				reply = {status: 200, body: {result: true, data: {updated: true}}};
 				let req = makeReq({
@@ -423,7 +440,8 @@ describe("Unit test for: mw - soajsRoutes mcp", () => {
 					assert.strictEqual(received.url, "/urac/v2/user/u1");
 					assert.deepStrictEqual(JSON.parse(received.body), {profile: {name: "Ann"}});
 					assert.strictEqual(received.headers.key, "extKey");
-					assert.strictEqual(received.headers.authorization, "Bearer abc");
+					// one token only, as access_token
+					assert.ok(!received.headers.authorization);
 					assert.strictEqual(received.headers.access_token, "tok");
 					assert.strictEqual(received.headers["device-id"], "d1");
 					// the mcp request's own key is not forwarded, a write gets a new one
