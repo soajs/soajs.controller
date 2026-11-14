@@ -52,6 +52,10 @@ describe("starting integration tests", () => {
 		// to test the MCP endpoint /soajs/mcp
 		require("./UC8-mcp/index.js");
 		
+		
+		// to test that services only receive the soajsinjectobj the gateway builds
+		require("./UC9-inject-header/index.js");
+		
 		done();
 	});
 });

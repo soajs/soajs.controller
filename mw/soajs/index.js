@@ -20,6 +20,11 @@ module.exports = (configuration) => {
 	let core = configuration.core;
 	
 	return (req, res, next) => {
+		//NOTE: the gateway only forwards the soajsinjectobj it builds (mw/mt), a header with that name
+		//		that comes with the request is removed before anything reads or forwards the headers
+		if (req.headers) {
+			delete req.headers.soajsinjectobj;
+		}
 		if (!req.soajs) {
 			req.soajs = {};
 		}

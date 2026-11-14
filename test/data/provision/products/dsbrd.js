@@ -42,6 +42,19 @@ let prod = {
 						]
 					}
 				},
+				"echokey": {
+					"1": {
+						"access": false,
+						"get": [
+							{
+								"group": "Echo",
+								"apis": {
+									"/headers": {}
+								}
+							}
+						]
+					}
+				},
 				"httpmethods": {
 					"1": {
 						"access": true,
@@ -219,6 +232,14 @@ let prod = {
 							"version": "2",
 							"get": [
 								"Guest"
+							]
+						}
+					],
+					"echokey": [
+						{
+							"version": "1",
+							"get": [
+								"Echo"
 							]
 						}
 					]
