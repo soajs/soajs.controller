@@ -23,4 +23,14 @@ describe("Unit test for: mw - soajs", function () {
             done();
         });
     });
+
+    it("Removes a soajsinjectobj that comes with the request", function (done) {
+        let mw_use = mw({"log": log, "core": core});
+        let request = {"headers": {"soajsinjectobj": "{\"tenant\":{}}", "key": "k"}};
+        mw_use(request, res, () => {
+            assert.strictEqual(request.headers.soajsinjectobj, undefined);
+            assert.strictEqual(request.headers.key, "k");
+            done();
+        });
+    });
 });

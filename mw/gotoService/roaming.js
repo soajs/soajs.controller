@@ -22,8 +22,13 @@ module.exports = (configuration) => {
 				let clientIp = req.getClientIP();
 				let whitelistips = serviceRoamingConfig.whitelistips;
 				if (whitelistips && Array.isArray(whitelistips) && whitelistips.includes(clientIp)) {
+					//NOTE: only the soajsinjectobj built by mt, there is none for a service without key
+					let headObj = {};
+					if (req.headers.soajsinjectobj) {
+						headObj.soajsinjectobj = req.headers.soajsinjectobj;
+					}
 					let response = {
-						"headObj": {"soajsinjectobj": req.headers.soajsinjectobj},
+						"headObj": headObj,
 						result: true,
 						data: true
 					};

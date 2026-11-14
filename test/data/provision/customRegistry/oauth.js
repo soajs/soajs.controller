@@ -9,7 +9,9 @@ let doc = {
 		"roaming": {
 			"services": {
 				"oauth": {"whitelistips": ["192.144.3.1"]},
-				"payment": {"whitelistips": ["127.0.0.1"]}
+				"payment": {"whitelistips": ["127.0.0.1"]},
+				"echo": {"whitelistips": ["127.0.0.1"]},
+				"echokey": {"whitelistips": ["127.0.0.1"]}
 			}
 		}
 	},
