@@ -14,6 +14,7 @@ const async = require('async');
 const coreLibs = require("soajs.core.libs");
 
 const registryModule = require("./../../modules/registry");
+const haNamespace = require("./../../lib/haNamespace.js");
 
 let param = null;
 let timeout = null;
@@ -127,11 +128,28 @@ let lib = {
 		}
 	},
 
+	/**
+	 * Schedules the next rebuild after the registry's awareness cacheTTL, whatever the outcome of
+	 * this one: a failed one (no infra token, the cluster call failed, which includes the driver's
+	 * answer for an empty list) is retried.
+	 */
+	"scheduleRebuild": function () {
+		let reg = registryModule.get();
+		let cacheTTL = reg && reg.serviceConfig && reg.serviceConfig.awareness ? reg.serviceConfig.awareness.cacheTTL : null;
+		if (cacheTTL) {
+			if (timeout) {
+				clearTimeout(timeout);
+			}
+			param.log.debug("rebuilding cache in: " + cacheTTL);
+			timeout = setTimeout(lib.rebuildAwarenessCache, cacheTTL);
+		}
+	},
+
 	"rebuildAwarenessCache": function () {
 		lib.getInfraToken(regEnvironment, (error, configuration) => {
 			if (error) {
 				param.log.error(error.message);
-				return;
+				return lib.scheduleRebuild();
 			}
 			let myCache = {};
 			let options = null;
@@ -145,7 +163,7 @@ let lib = {
 					} else {
 						param.log.error(error);
 					}
-					return;
+					return lib.scheduleRebuild();
 				}
 				async.each(services, function (oneService, callback) {
 					let version, serviceName;
@@ -180,14 +198,7 @@ let lib = {
 						param.log.debug(JSON.stringify(awarenessCache));
 					}
 
-					let cacheTTL = registryModule.get().serviceConfig.awareness.cacheTTL;
-					if (cacheTTL) {
-						if (timeout) {
-							clearTimeout(timeout);
-						}
-						param.log.debug("rebuilding cache in: " + cacheTTL);
-						timeout = setTimeout(lib.rebuildAwarenessCache, cacheTTL);
-					}
+					lib.scheduleRebuild();
 				});
 			});
 		});
@@ -226,15 +237,7 @@ let ha = {
 			if (process.env.SOAJS_DEPLOY_HA === 'kubernetes') {
 				serviceName += "-v" + param.serviceVersion + "-service";
 			}
-			let info = registryModule.get().deployer.selected.split('.');
-			let deployerConfig = registryModule.get().deployer.container[info[1]][info[2]];
-			let namespace = '';
-			if (deployerConfig && deployerConfig.namespace && deployerConfig.namespace.default) {
-				namespace = '.' + deployerConfig.namespace.default;
-				if (deployerConfig.namespace.perService) {
-					namespace += '-' + env + '-' + param.serviceName + '-v' + param.serviceVersion;
-				}
-			}
+			let namespace = haNamespace(registryModule.get().deployer, '-' + env + '-' + param.serviceName + '-v' + param.serviceVersion);
 			return cb(env + "-" + serviceName + namespace);
 		} else {
 			let hostname = lib.getHostFromCache(serviceName, version);

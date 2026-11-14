@@ -72,6 +72,12 @@ module.exports = (configuration) => {
 			const extraOptions = {
 				"fetchProxReq": (proxyReq) => {
 					req.soajs.controller.redirectedRequest = proxyReq;
+					//NOTE: the timeout option only reports an idle socket, the request is ended here so
+					//		the call answers 135
+					proxyReq.on('timeout', () => {
+						req.soajs.log.error("Proxy request to [" + myUri + "] timed out after " + requestTO + "s without activity");
+						proxyReq.destroy(new Error("Request timed out"));
+					});
 				}
 			};
 

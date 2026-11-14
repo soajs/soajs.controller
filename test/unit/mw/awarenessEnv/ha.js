@@ -8,6 +8,8 @@ const sinon = require('sinon');
 describe("Testing awarenessEnv HA", () => {
 	
 	let provisionStub;
+	let loadStub;
+	let env = (process.env.SOAJS_ENV || "dev").toLowerCase();
 	
 	let ha;
 	let registryModule;
@@ -35,6 +37,19 @@ describe("Testing awarenessEnv HA", () => {
 			};
 		});
 		
+		loadStub = sinon.stub(registryModule, 'loadByEnv').callsFake((input, cb) => {
+			if (input.envCode === "nowhere") {
+				return cb(new Error("no registry"));
+			}
+			return cb(null, {
+				deployer: {
+					type: "container",
+					selected: "container.kubernetes",
+					container: {kubernetes: {namespace: input.envCode + "-ns"}}
+				}
+			});
+		});
+		
 		done();
 	});
 	
@@ -42,7 +57,31 @@ describe("Testing awarenessEnv HA", () => {
 		if (provisionStub) {
 			provisionStub.restore();
 		}
+		if (loadStub) {
+			loadStub.restore();
+		}
 		done();
+	});
+	
+	it("this environment: the older deployer's namespace", (done) => {
+		ha.getControllerEnvHost(env, (host) => {
+			assert.strictEqual(host, env + "-controller.test");
+			done();
+		});
+	});
+	
+	it("another environment: the namespace of its own deployer", (done) => {
+		ha.getControllerEnvHost("stg", (host) => {
+			assert.strictEqual(host, "stg-controller.stg-ns");
+			done();
+		});
+	});
+	
+	it("another environment without a registry: no host", (done) => {
+		ha.getControllerEnvHost("1", "nowhere", (host) => {
+			assert.strictEqual(host, null);
+			done();
+		});
 	});
 	
 	it("test getControllerEnvHost args case 2 ", (done) => {

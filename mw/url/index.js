@@ -70,9 +70,10 @@ module.exports = (configuration) => {
 			return req.soajs.controllerResponse(core.error.getError(130));
 		}
 
-		let key = req.headers.key || req.query.key;
-		if (!req.headers.key) {
-			req.headers.key = key;
+		//NOTE: the key header is set from the query only when there is a key: an undefined header
+		//		value is refused when the request is passed on
+		if (!req.headers.key && req.query.key) {
+			req.headers.key = req.query.key;
 		}
 		if (!req.query.access_token) {
 			if (req.headers.access_token) {

@@ -252,38 +252,12 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 		});
 
 		let getAwarenessInfo = (terminate, cb) => {
-			let tmp = registryModule.get();
-			if (tmp && (tmp.services || tmp.daemons)) {
-				let awarenessStatData = {
-					"ts": Date.now(),
-					"data": soajsUtils.cloneObj({ "services": tmp.services, "daemons": tmp.daemons })
-				};
-				if (terminate) {
-					for (let serviceName in awarenessStatData.data.services) {
-						if (Object.hasOwnProperty.call(awarenessStatData.data.services, serviceName)) {
-							if (serviceName === registry.services.controller.name) {
-								for (let serviceIP in awarenessStatData.data.services.controller.awarenessStats) {
-									if (Object.hasOwnProperty.call(awarenessStatData.data.services.controller.awarenessStats, serviceIP)) {
-										if (serviceIP === _self.serviceIp) {
-											awarenessStatData.data.services.controller.awarenessStats[serviceIP].healthy = false;
-											awarenessStatData.data.services.controller.awarenessStats[serviceIP].lastCheck = Date.now();
-										}
-									}
-								}
-							} else {
-								delete awarenessStatData.data.services[serviceName];
-							}
-						}
-					}
-					delete awarenessStatData.data.daemons;
-				}
-				registryModule.addUpdateEnvControllers({
-					"ip": _self.serviceIp,
-					"ts": awarenessStatData.ts,
-					"data": awarenessStatData.data,
-					"env": regEnvironment
-				}, cb);
+			let doc = Controller.controllersDoc(registryModule.get(), registry.services.controller.name, service.ip, terminate);
+			if (!doc) {
+				return cb();
 			}
+			doc.env = regEnvironment;
+			registryModule.addUpdateEnvControllers(doc, cb);
 		};
 
 		server.listen(registry.services.controller.port, (err) => {
@@ -362,6 +336,44 @@ Controller.prototype.stop = function (registry, log, service, server, serverMain
 			}
 		});
 	});
+};
+
+/**
+ * The gateway's controllers document: its IP, the time, and the awareness of the services and
+ * daemons. When the gateway stops, only its own entry is kept, with its host marked unhealthy.
+ *
+ * @param reg the registry
+ * @param controllerName the gateway's service name
+ * @param serviceIp the IP the gateway registered under
+ * @param terminate the gateway is stopping
+ * @returns {{ip, ts, data}|null} null without services or daemons
+ */
+Controller.controllersDoc = (reg, controllerName, serviceIp, terminate) => {
+	if (!reg || (!reg.services && !reg.daemons)) {
+		return null;
+	}
+	let doc = {
+		"ip": serviceIp,
+		"ts": Date.now(),
+		"data": soajsUtils.cloneObj({"services": reg.services, "daemons": reg.daemons})
+	};
+	if (terminate) {
+		for (let serviceName in doc.data.services) {
+			if (Object.hasOwnProperty.call(doc.data.services, serviceName)) {
+				if (serviceName === controllerName) {
+					let stats = doc.data.services[serviceName].awarenessStats || {};
+					if (stats[serviceIp]) {
+						stats[serviceIp].healthy = false;
+						stats[serviceIp].lastCheck = Date.now();
+					}
+				} else {
+					delete doc.data.services[serviceName];
+				}
+			}
+		}
+		delete doc.data.daemons;
+	}
+	return doc;
 };
 
 module.exports = Controller;
