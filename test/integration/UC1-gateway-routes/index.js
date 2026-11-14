@@ -152,6 +152,44 @@ describe("Integration for Usecase 1", function () {
 			done();
 		});
 	});
+	it("fail - no tenant has the tCode, error 139, and the next request is served", function (done) {
+		let options = {
+			uri: 'http://127.0.0.1:' + localConfig.servicePort + '/soajs/proxy',
+			headers: {
+				'Content-Type': 'application/json',
+				key: extKey
+			},
+			"qs": {
+				"proxyRoute": encodeURIComponent("/urac/getUser"),
+				"__env": "stg",
+				"tCode": "NOSUCHTENANT",
+				access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+			}
+		};
+		requester('get', options, (error, body) => {
+			assert.ifError(error);
+			assert.ok(body);
+			assert.strictEqual(body.result, false);
+			assert.deepStrictEqual(body.errors.codes, [139]);
+			let next = {
+				uri: 'http://127.0.0.1:' + localConfig.servicePort + '/soajs/proxy',
+				headers: {
+					'Content-Type': 'application/json',
+					key: extKey
+				},
+				"qs": {
+					"proxyRoute": encodeURIComponent("http://127.0.0.1:4002/CheckPhoneNumber"),
+					access_token: "cfb209a91b23896820f510aadbf1f4284b512123"
+				}
+			};
+			requester('get', next, (error, body) => {
+				assert.ifError(error);
+				assert.ok(body);
+				assert.strictEqual(body.data.type, "endpoint");
+				done();
+			});
+		});
+	});
 	it("Proxy - valid full URI", function (done) {
 		let options = {
 			uri: 'http://127.0.0.1:' + localConfig.servicePort + '/soajs/proxy',
