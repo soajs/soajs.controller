@@ -100,8 +100,8 @@ module.exports = (configuration) => {
 		else {
 			//get remote env registry
 			registryModule.loadByEnv({ "envCode": remoteENV }, function (err, reg) {
-				if (err) {
-					req.soajs.log.error(err.message);
+				if (err || !reg) {
+					req.soajs.log.error(err ? err.message : "No registry found for environment: " + remoteENV);
 					return req.soajs.controllerResponse(core.error.getError(207));
 				} else {
 					let config = req.soajs.registry.services.controller;
@@ -129,11 +129,18 @@ module.exports = (configuration) => {
 	 */
 	let findExtKeyForEnvironment = (tenant, env) => {
 		let key = null;
+		if (!tenant || !Array.isArray(tenant.applications)) {
+			return key;
+		}
 		tenant.applications.forEach(function (oneApplication) {
-
+			if (!oneApplication || !Array.isArray(oneApplication.keys)) {
+				return;
+			}
 			//loop in tenant keys
 			oneApplication.keys.forEach(function (oneKey) {
-
+				if (!oneKey || !Array.isArray(oneKey.extKeys)) {
+					return;
+				}
 				//loop in tenant ext keys
 				oneKey.extKeys.forEach(function (oneExtKey) {
 					//get the ext key for the request environment who also has dashboardAccess true
@@ -204,8 +211,14 @@ module.exports = (configuration) => {
 			proxyRequestToRemoteEnv(req, res, next, remoteENV, tExtKey, requestedRoute);
 		} else if (tCode && remoteENV) {
 			getOriginalTenantRecord(tCode, function (error, originalTenant) {
-				if (error) {
-					return req.soajs.controllerResponse(core.error.getError(139)); //todo: make sure we have set the correct error code number
+				//NOTE: no tenant has the code: the lookup gives no error and no record
+				if (error || !originalTenant) {
+					if (error) {
+						req.soajs.log.error(error.message);
+					} else {
+						req.soajs.log.error("No tenant found for code: " + tCode);
+					}
+					return req.soajs.controllerResponse(core.error.getError(139));
 				}
 
 				//get extKey for remote environment for this tenant
