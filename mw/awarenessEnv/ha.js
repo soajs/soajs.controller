@@ -9,6 +9,7 @@
  */
 
 const registryModule = require("./../../modules/registry");
+const haNamespace = require("./../../lib/haNamespace.js");
 
 let param = null;
 
@@ -46,17 +47,24 @@ let ha = {
 			serviceName += "-v" + param.serviceVersion + "-service";
 		}
 		
-		let info = registryModule.get().deployer.selected.split('.');
-		let deployerConfig = registryModule.get().deployer.container[info[1]][info[2]];
-		let namespace = '';
-		if (deployerConfig && deployerConfig.namespace && deployerConfig.namespace.default) {
-			namespace = '.' + deployerConfig.namespace.default;
-			if (deployerConfig.namespace.perService) {
-				namespace += '-' + env + '-' + serviceName + '-v' + param.serviceVersion;
-			}
+		//NOTE: the gateway of another environment runs in that environment's namespace, read from
+		//		its registry; without one there is no host
+		let hostFor = (registry) => {
+			let namespace = haNamespace(registry ? registry.deployer : null, '-' + env + '-' + serviceName + '-v' + param.serviceVersion);
+			return cb(env + "-" + serviceName + namespace);
+		};
+		if (String(env).toLowerCase() === regEnvironment) {
+			return hostFor(registryModule.get());
 		}
-		
-		return cb(env + "-" + serviceName + namespace);
+		registryModule.loadByEnv({"envCode": env}, (error, registry) => {
+			if (error || !registry) {
+				if (param.log) {
+					param.log.error("awarenessEnv: no registry for environment [" + env + "]" + (error ? ": " + error.message : ""));
+				}
+				return cb(null);
+			}
+			return hostFor(registry);
+		});
 	}
 };
 

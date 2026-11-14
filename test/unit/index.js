@@ -8,6 +8,7 @@ describe("Starting Gateway Unit test", () => {
     after((done) => {
 
         require("./lib/apiPathParam2apiRegExp.js");
+        require("./lib/haNamespace.js");
         require("./lib/http.js");
         require("./lib/ip.js");
         require("./lib/logOnce.js");
@@ -15,6 +16,8 @@ describe("Starting Gateway Unit test", () => {
         require("./lib/param.js");
         require("./lib/parseURL.js");
 
+        require("./mw/awareness/custom.js");
+        require("./mw/awareness/ha.js");
         require("./mw/awarenessEnv/custom.js");
         require("./mw/awarenessEnv/ha.js");
         require("./mw/cors/index.js");
@@ -23,6 +26,7 @@ describe("Starting Gateway Unit test", () => {
 
         require("./mw/gotoService/lib/isRequestAuthorized.js");
         require("./mw/gotoService/lib/extractBuildParameters.js");
+        require("./mw/gotoService/proxyRequest.js");
 
         require("./mw/key/index.js");
         require("./mw/keyACL/index.js");
@@ -40,6 +44,7 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/soajsRoutes/mcp.js");
         require("./mw/soajsRoutes/mcpAuth.js");
         require("./mw/traffic/index.js");
+        require("./mw/url/index.js");
         require("./mw/idempotency/index.js");
         require("./mw/idempotency/memory.js");
         require("./mw/idempotency/mongo.js");
@@ -50,6 +55,7 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/lastSeen/index.js");
 
         require("./utilities/utils.js");
+        require("./server/controller.js");
 
         done();
     });

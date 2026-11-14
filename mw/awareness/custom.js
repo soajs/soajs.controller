@@ -37,6 +37,8 @@ let awareness_healthCheck = function (core, log) {
 				if (!serviceAwarenessObj[s].healthy) {
 					serviceAwarenessObj[s].healthy = {};
 				}
+				//NOTE: the registry was reloaded, a host that left it is no longer healthy
+				pruneHealthy(serviceAwarenessObj[s].healthy, registry.services[s].hosts);
 				if (registry.services[s].hosts) {//} && registry.services[s].hosts.length > 0) {
 					for (let h_ver in registry.services[s].hosts) {
 						if (Object.hasOwnProperty.call(registry.services[s].hosts, h_ver) && h_ver !== "latest") {
@@ -73,6 +75,8 @@ let awareness_healthCheck = function (core, log) {
 				if (!serviceAwarenessObj[s].healthy) {
 					serviceAwarenessObj[s].healthy = {};
 				}
+				//NOTE: the registry was reloaded, a host that left it is no longer healthy
+				pruneHealthy(serviceAwarenessObj[s].healthy, registry.daemons[s].hosts);
 				if (registry.daemons[s].hosts) {//} && registry.daemons[s].hosts.length > 0) {
 					for (let h_ver in registry.daemons[s].hosts) {
 						if (Object.hasOwnProperty.call(registry.daemons[s].hosts, h_ver) && h_ver !== "latest") {
@@ -200,6 +204,49 @@ let awareness_healthCheck = function (core, log) {
 	}, registry.serviceConfig.awareness.healthCheckInterval);
 };
 
+/**
+ * The next healthy host of a version, round-robin from index: at most one pass over the hosts,
+ * then no host.
+ *
+ * @param hosts the version's hosts in the registry
+ * @param healthy the hosts the health check found healthy
+ * @param index where the previous call stopped
+ * @returns {{host: string|null, index: number}} the host, and where the next call starts
+ */
+function nextHealthyHost(hosts, healthy, index) {
+	if (!Array.isArray(hosts) || hosts.length === 0 || !Array.isArray(healthy)) {
+		return {"host": null, "index": 0};
+	}
+	if (!index || index >= hosts.length) {
+		index = 0;
+	}
+	for (let tries = 0; tries < hosts.length; tries++) {
+		let host = hosts[index];
+		index = (index + 1) % hosts.length;
+		if (healthy.indexOf(host) !== -1) {
+			return {"host": host, "index": index};
+		}
+	}
+	return {"host": null, "index": index};
+}
+
+/**
+ * Keeps, per version, only the healthy hosts the registry still lists.
+ *
+ * @param healthy {version: [host]}
+ * @param hosts the registry's hosts {latest, version: [host]}
+ */
+function pruneHealthy(healthy, hosts) {
+	if (!healthy) {
+		return;
+	}
+	let listedIn = (v) => (hosts && Array.isArray(hosts[v])) ? hosts[v] : [];
+	Object.keys(healthy).forEach((v) => {
+		let listed = listedIn(v);
+		healthy[v] = healthy[v].filter((host) => listed.indexOf(host) !== -1);
+	});
+}
+
 let roundRobin = function (s, v, env, cb) {
 	if (!cb && typeof env === "function") {
 		cb = env;
@@ -219,17 +266,9 @@ let roundRobin = function (s, v, env, cb) {
 				if (!serviceAwarenessObj[s].indexes) {
 					serviceAwarenessObj[s].indexes = {};
 				}
-				if (!serviceAwarenessObj[s].indexes[v] || serviceAwarenessObj[s].indexes[v] >= registry.services[s].hosts[v].length) {
-					serviceAwarenessObj[s].indexes[v] = 0;
-				}
-				let host = registry.services[s].hosts[v][serviceAwarenessObj[s].indexes[v]];
-				if (serviceAwarenessObj[s].healthy[v].indexOf(host) !== -1) {
-					serviceAwarenessObj[s].indexes[v] += 1;
-					return cb(host);
-				} else {
-					serviceAwarenessObj[s].indexes[v] += 1;
-					return roundRobin(s, v, cb);
-				}
+				let picked = nextHealthyHost(registry.services[s].hosts[v], serviceAwarenessObj[s].healthy[v], serviceAwarenessObj[s].indexes[v]);
+				serviceAwarenessObj[s].indexes[v] = picked.index;
+				return cb(picked.host);
 			} else {
 				return cb(null);
 			}
@@ -260,5 +299,7 @@ function getLatestVersion(name, cb) {
 module.exports = {
 	"init": init,
 	"getServiceHost": roundRobin,
-	"getLatestVersion": getLatestVersion
+	"getLatestVersion": getLatestVersion,
+	"nextHealthyHost": nextHealthyHost,
+	"pruneHealthy": pruneHealthy
 };
