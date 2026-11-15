@@ -56,6 +56,10 @@ describe("starting integration tests", () => {
 		// to test that services only receive the soajsinjectobj the gateway builds
 		require("./UC9-inject-header/index.js");
 		
+		
+		// to test the graceful stop of a gateway process (last: it starts its own gateway on the same ports)
+		require("./UC10-shutdown/index.js");
+		
 		done();
 	});
 });

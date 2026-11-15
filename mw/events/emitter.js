@@ -59,10 +59,16 @@ function init(log, registry) {
 		clearInterval(state.timer);
 	}
 	state = newState(log, registry);
-	//NOTE: on SIGTERM the events still queued are written; SIGINT is handled by the controller
+	//NOTE: on the graceful stop (lib/shutdown.js) the events still queued are written
 	if (!signalHooked) {
 		signalHooked = true;
-		process.once('SIGTERM', () => flush(() => {}));
+		require('../../lib/shutdown.js').register("call events", (signal, done) => flush(() => {
+			if (state && state.timer) {
+				clearInterval(state.timer);
+				state.timer = null;
+			}
+			return done();
+		}));
 	}
 }
 

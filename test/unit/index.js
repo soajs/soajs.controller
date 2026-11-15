@@ -15,6 +15,7 @@ describe("Starting Gateway Unit test", () => {
         require("./lib/membership.js");
         require("./lib/param.js");
         require("./lib/parseURL.js");
+        require("./lib/shutdown.js");
 
         require("./mw/awareness/custom.js");
         require("./mw/awareness/ha.js");

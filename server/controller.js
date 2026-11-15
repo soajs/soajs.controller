@@ -34,6 +34,7 @@ const awarenessEnv_mw = require("../mw/awarenessEnv/index");
 const url_mw = require("../mw/url/index");
 const key_mw = require("../mw/key/index");
 const events_mw = require("../mw/events/index");
+const shutdown = require("../lib/shutdown.js");
 const mcpAuth_mw = require("../mw/soajsRoutes/mcp/auth");
 const keyACL_mw = require("../mw/keyACL/index");
 const gotoService_mw = require("../mw/gotoService/index");
@@ -270,6 +271,11 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 			registryModule.addUpdateEnvControllers(doc, cb);
 		};
 
+		//NOTE: one graceful stop for SIGTERM and SIGINT (lib/shutdown.js)
+		shutdown.install(log);
+		shutdown.addServer(server);
+		shutdown.addServer(serverMaintenance);
+
 		server.listen(registry.services.controller.port, (err) => {
 			if (err) {
 				log.error(err.message);
@@ -295,16 +301,19 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 								});
 							}, registry.serviceConfig.awareness.healthCheckInterval);
 
-							//update the database with the awareness Response generated.
-							//controller has been terminated.
-							process.on('SIGINT', () => {
-								events_mw.emitter.flush(() => getAwarenessInfo(true, (error) => {
+							//NOTE: stopped by an interrupt, the controllers document marks the gateway down
+							//		(the graceful stop runs it after the servers stopped)
+							shutdown.register("controllers document", (signal, done) => {
+								if (signal !== "SIGINT") {
+									return done();
+								}
+								getAwarenessInfo(true, (error) => {
 									if (error) {
 										log.error(error.message);
 									}
 									log.warn("Service Terminated via interrupt signal.");
-									process.exit();
-								}));
+									return done();
+								});
 							});
 						} else {
 							log.error("Unable to register host IP [" + service.ip + "] for service [" + _self.soajs.param.init.serviceName + "@" + _self.soajs.param.init.serviceVersion + "]");
@@ -339,6 +348,8 @@ Controller.prototype.stop = function (registry, log, service, server, serverMain
 	log.info('stopping Server on port:', registry.services.controller.port);
 	log.info('stopping MaintenanceServer on port:', maintenancePort);
 
+	shutdown.removeServer(server);
+	shutdown.removeServer(serverMaintenance);
 	server.close((err) => {
 		serverMaintenance.close(() => {
 			if (callback) {
