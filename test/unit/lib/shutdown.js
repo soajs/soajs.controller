@@ -75,6 +75,27 @@ describe("Testing lib shutdown, the graceful stop", () => {
 		});
 	});
 
+	it("real signals: a second SIGTERM or a SIGINT while stopping is ignored, the listeners stay", (done) => {
+		let runs = 0;
+		shutdown.register("slow", (signal, next) => {
+			runs++;
+			setTimeout(next, 50);
+		});
+		shutdown.install();
+		let terms = process.listenerCount('SIGTERM');
+		let ints = process.listenerCount('SIGINT');
+		process.emit('SIGTERM', 'SIGTERM');
+		process.emit('SIGTERM', 'SIGTERM');
+		process.emit('SIGINT', 'SIGINT');
+		assert.strictEqual(process.listenerCount('SIGTERM'), terms);
+		assert.strictEqual(process.listenerCount('SIGINT'), ints);
+		setTimeout(() => {
+			assert.strictEqual(runs, 1);
+			assert.deepStrictEqual(exits, [0]);
+			done();
+		}, 150);
+	});
+
 	it("exits after the timeout when something hangs", function (done) {
 		this.timeout(5000);
 		process.env.SOAJS_SERVER_SHUTDOWN_TIMEOUT = "1";

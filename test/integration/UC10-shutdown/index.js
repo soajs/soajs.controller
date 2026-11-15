@@ -53,6 +53,55 @@ function ready(deadline) {
 	});
 }
 
+// a /soajs/proxy request waiting on a slow service gets its answer although the gateway is sent
+// SIGTERM (signals times) while it waits; then the gateway exits 0
+function inFlight(signals) {
+	let received = null;
+	let gotRequest = new Promise((r) => {
+		received = r;
+	});
+	// a service that answers 1.5s after it got the request
+	let slow = http.createServer((req, res) => {
+		received();
+		setTimeout(() => {
+			res.writeHead(200, {"Content-Type": "application/json"});
+			res.end(JSON.stringify({"result": true, "data": {"slow": true}}));
+		}, 1500);
+	});
+	let child = null;
+	return new Promise((r) => slow.listen(0, "127.0.0.1", r)).then(() => {
+		child = startGateway();
+		return ready(Date.now() + 30000);
+	}).then(() => {
+		let route = encodeURIComponent("http://127.0.0.1:" + slow.address().port + "/slow");
+		let answer = get("http://127.0.0.1:4000/soajs/proxy?proxyRoute=" + route + "&access_token=" + TOKEN, {"key": EXT_KEY});
+		// a call that fails before reaching the service ends the test instead of waiting
+		return Promise.race([gotRequest, answer.then((res) => {
+			throw new Error("answered before reaching the service: " + res.status + " " + res.body);
+		})]).then(() => {
+			let sent = Date.now();
+			child.kill('SIGTERM');
+			// a further SIGTERM while the gateway is stopping changes nothing
+			if (signals > 1) {
+				setTimeout(() => child.kill('SIGTERM'), 300);
+			}
+			return Promise.all([answer, child.exited]).then((results) => {
+				let res = results[0];
+				let exit = results[1];
+				assert.strictEqual(res.status, 200, res.body);
+				assert.deepStrictEqual(JSON.parse(res.body).data, {"slow": true});
+				assert.strictEqual(exit.code, 0, JSON.stringify(exit));
+				assert.ok(exit.at - sent < TIMEOUT_S * 1000, "exited after " + (exit.at - sent) + "ms");
+			});
+		});
+	}).finally(() => {
+		slow.close();
+		if (child && child.exitCode === null) {
+			child.kill('SIGKILL');
+		}
+	});
+}
+
 describe("Integration for Usecase 10: the graceful stop", function () {
 	this.timeout(60000);
 
@@ -76,46 +125,11 @@ describe("Integration for Usecase 10: the graceful stop", function () {
 		});
 	});
 
+	it("a second SIGTERM while stopping does not cut the request in flight", () => {
+		return inFlight(2);
+	});
+
 	it("a request in flight is answered before the gateway exits 0", () => {
-		let received = null;
-		let gotRequest = new Promise((r) => {
-			received = r;
-		});
-		// a service that answers 1.5s after it got the request
-		let slow = http.createServer((req, res) => {
-			received();
-			setTimeout(() => {
-				res.writeHead(200, {"Content-Type": "application/json"});
-				res.end(JSON.stringify({"result": true, "data": {"slow": true}}));
-			}, 1500);
-		});
-		let child = null;
-		return new Promise((r) => slow.listen(0, "127.0.0.1", r)).then(() => {
-			child = startGateway();
-			return ready(Date.now() + 30000);
-		}).then(() => {
-			let route = encodeURIComponent("http://127.0.0.1:" + slow.address().port + "/slow");
-			let answer = get("http://127.0.0.1:4000/soajs/proxy?proxyRoute=" + route + "&access_token=" + TOKEN, {"key": EXT_KEY});
-			// a call that fails before reaching the service ends the test instead of waiting
-			return Promise.race([gotRequest, answer.then((res) => {
-				throw new Error("answered before reaching the service: " + res.status + " " + res.body);
-			})]).then(() => {
-				let sent = Date.now();
-				child.kill('SIGTERM');
-				return Promise.all([answer, child.exited]).then((results) => {
-					let res = results[0];
-					let exit = results[1];
-					assert.strictEqual(res.status, 200, res.body);
-					assert.deepStrictEqual(JSON.parse(res.body).data, {"slow": true});
-					assert.strictEqual(exit.code, 0, JSON.stringify(exit));
-					assert.ok(exit.at - sent < TIMEOUT_S * 1000, "exited after " + (exit.at - sent) + "ms");
-				});
-			});
-		}).finally(() => {
-			slow.close();
-			if (child && child.exitCode === null) {
-				child.kill('SIGKILL');
-			}
-		});
+		return inFlight(1);
 	});
 });
