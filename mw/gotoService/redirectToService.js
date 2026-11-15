@@ -117,16 +117,17 @@ function bufferMonitorItem(req, doc, monitor) {
 	}
 }
 
-// Graceful shutdown - flush remaining buffer
-process.on('SIGTERM', () => {
+// Graceful stop (lib/shutdown.js): the monitor buffer is dropped and its timer cleared
+require('../../lib/shutdown.js').register("monitor buffer", (signal, done) => {
 	if (monitorBuffer.length > 0 && !monitorFlushInProgress) {
 		// Best-effort cleanup
 		monitorBuffer = [];
-		if (monitorFlushTimer) {
-			clearTimeout(monitorFlushTimer);
-			monitorFlushTimer = null;
-		}
 	}
+	if (monitorFlushTimer) {
+		clearTimeout(monitorFlushTimer);
+		monitorFlushTimer = null;
+	}
+	return done();
 });
 
 module.exports = (configuration) => {

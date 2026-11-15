@@ -129,13 +129,10 @@ let model = {
     }
 };
 
-// Performance: Register shutdown handlers
-if (typeof process !== 'undefined') {
-    const shutdownHandler = () => {
-        model.shutdown();
-    };
-    process.once('SIGTERM', shutdownHandler);
-    process.once('SIGINT', shutdownHandler);
-}
+//NOTE: stopped by the gateway's graceful stop (lib/shutdown.js), which alone handles the signals
+require('../../../lib/shutdown.js').register("traffic memory model", (signal, done) => {
+    model.shutdown();
+    return done();
+});
 
 module.exports = model;
