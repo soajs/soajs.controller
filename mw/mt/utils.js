@@ -351,6 +351,9 @@ let utils = {
 				}
 				obj.finalAcl = lib.apiPathParam2apiRegExp(obj.finalAcl);
 			}
+			//NOTE: the call events record the route of the ACL in effect, the user's
+			obj.req.soajs.controller.serviceParams.uracAclApplied = true;
+			obj.req.soajs.controller.serviceParams.uracFinalAcl = obj.finalAcl || null;
 		}
 		return cb(null, obj);
 	},

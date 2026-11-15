@@ -104,6 +104,9 @@ module.exports = (configuration) => {
 						req.soajs.controller.serviceParams[param] = parameters[param];
 					}
 				}
+				if (proxy) {
+					req.soajs.controller.serviceParams.proxy = true;
+				}
 
 				let set_gotoservice = () => {
 

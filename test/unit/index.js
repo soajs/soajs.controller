@@ -22,6 +22,8 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/awarenessEnv/ha.js");
         require("./mw/cors/index.js");
         require("./mw/enhancer/index.js");
+        require("./mw/events/index.js");
+        require("./mw/events/emitter.js");
         require("./mw/favicon/index.js");
 
         require("./mw/gotoService/lib/isRequestAuthorized.js");

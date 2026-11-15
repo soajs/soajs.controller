@@ -127,6 +127,7 @@ function mimicGatewayApi(req, configuration, api) {
 	req.soajs.controller.serviceParams.path = api.v;
 	req.soajs.controller.serviceParams.version = configuration.serviceVersion;
 	req.soajs.controller.serviceParams.extKeyRequired = true;
+	req.soajs.controller.serviceParams.gatewayApi = true;
 }
 
 module.exports = {

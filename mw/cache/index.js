@@ -159,6 +159,9 @@ module.exports = function (configuration) {
 				const cached = await model[modelType].get(key);
 
 				if (cached && cached.response) {
+					if (req.soajs.callEvent) {
+						req.soajs.callEvent.cache = "HIT";
+					}
 					res.setHeader('X-Cache', 'HIT');
 					res.setHeader('X-Cache-Age', Math.floor((Date.now() - cached.cachedAt) / 1000));
 					res.writeHead(cached.response.statusCode, cached.response.headers);
