@@ -163,6 +163,9 @@ module.exports = function (configuration) {
 					}
 
 					if (existing.status === 'completed' && existing.response) {
+						if (req.soajs.callEvent) {
+							req.soajs.callEvent.idempotency = "replay";
+						}
 						res.writeHead(existing.response.statusCode, existing.response.headers);
 						res.end(existing.response.body);
 						return;

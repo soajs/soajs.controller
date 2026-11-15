@@ -114,6 +114,9 @@ module.exports = (configuration) => {
 					if (!entry) {
 						return rpcError(id, ERROR.invalidParams, "Unknown tool: " + params.name);
 					}
+					if (req.soajs.callEvent) {
+						req.soajs.callEvent.mcpTool = params.name;
+					}
 					return tools.callTool(req, configuration, config, entry, params.arguments)
 						.then((result) => rpcResult(id, result));
 				});

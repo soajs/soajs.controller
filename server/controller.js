@@ -33,6 +33,7 @@ const awareness_mw = require('../mw/awareness/index');
 const awarenessEnv_mw = require("../mw/awarenessEnv/index");
 const url_mw = require("../mw/url/index");
 const key_mw = require("../mw/key/index");
+const events_mw = require("../mw/events/index");
 const mcpAuth_mw = require("../mw/soajsRoutes/mcp/auth");
 const keyACL_mw = require("../mw/keyACL/index");
 const gotoService_mw = require("../mw/gotoService/index");
@@ -147,6 +148,15 @@ Controller.prototype.init = function (callback) {
 
 					//NOTE: before the key mw, a token restricted to one key brings the key of /soajs/mcp
 					app.use(mcpAuth_mw.authorize({ "provision": provision }));
+
+					// one call event per request from the key step on, written off the request path
+					app.use(events_mw({
+						"log": log,
+						"registry": () => registryModule.get(),
+						"regEnvironment": regEnvironment,
+						"serviceName": _self.soajs.param.init.serviceName,
+						"serviceVersion": _self.soajs.param.init.serviceVersion
+					}));
 
 					app.use(key_mw({ "provision": provision, "regEnvironment": regEnvironment }));
 
@@ -288,13 +298,13 @@ Controller.prototype.start = function (registry, log, service, server, serverMai
 							//update the database with the awareness Response generated.
 							//controller has been terminated.
 							process.on('SIGINT', () => {
-								getAwarenessInfo(true, (error) => {
+								events_mw.emitter.flush(() => getAwarenessInfo(true, (error) => {
 									if (error) {
 										log.error(error.message);
 									}
 									log.warn("Service Terminated via interrupt signal.");
 									process.exit();
-								});
+								}));
 							});
 						} else {
 							log.error("Unable to register host IP [" + service.ip + "] for service [" + _self.soajs.param.init.serviceName + "@" + _self.soajs.param.init.serviceVersion + "]");
