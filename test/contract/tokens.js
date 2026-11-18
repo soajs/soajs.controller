@@ -30,14 +30,21 @@ function docs() {
 }
 
 function insert(cb) {
-	const {MongoClient} = require("mongodb");
-	const client = new MongoClient("mongodb://127.0.0.1:27017");
-	client.connect().then(async () => {
-		const coll = client.db("core_provision").collection("oauth_token");
-		for (const d of docs()) {
-			await coll.replaceOne({"token": d.token}, d, {"upsert": true});
+	const Mongo = require("soajs.core.modules").mongo;
+	const profile = JSON.parse(JSON.stringify(require("../data/soajs_profile.js")));
+	// the import changes the shared profile's name; the tokens live in core_provision
+	profile.name = "core_provision";
+	const mongo = new Mongo(profile);
+	let pending = docs();
+	const next = (error) => {
+		if (error || pending.length === 0) {
+			mongo.closeDb();
+			return cb(error);
 		}
-	}).then(() => client.close().then(() => cb()), (e) => client.close().then(() => cb(e)));
+		const d = pending.shift();
+		mongo.updateOne("oauth_token", {"token": d.token}, {"$set": d}, {"upsert": true}, (error) => next(error));
+	};
+	next();
 }
 
 module.exports = {insert};

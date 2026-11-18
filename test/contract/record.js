@@ -6,7 +6,8 @@
  * MongoDB (127.0.0.1:27017, dropped and imported). It was run on oauth2-server 2.4.1 before the
  * gateway moved to soajs.oauth2; the contract test compares with it.
  *
- *   node test/contract/record.js
+ *   node test/contract/record.js           records
+ *   node test/contract/record.js --check   compares with the recording (exit 1 on a difference)
  */
 
 // as the Gruntfile's integration run (env:mochaTest)
@@ -56,6 +57,19 @@ imported.runPath(root + "/test/data/soajs_profile.js", root + "/test/data/provis
 					throw error;
 				}
 				const file = path.join(__dirname, "authorise-contract.json");
+				if (process.argv.includes("--check")) {
+					// compare with the recording: status, headers and body, byte for byte
+					const recorded = JSON.parse(fs.readFileSync(file).toString());
+					let diffs = 0;
+					for (const name of Object.keys(recorded)) {
+						if (JSON.stringify(recorded[name]) !== JSON.stringify(results[name])) {
+							diffs++;
+							console.log("CONTRACT DIFF " + name + "\n  recorded " + JSON.stringify(recorded[name]) + "\n  now      " + JSON.stringify(results[name]));
+						}
+					}
+					console.log("CONTRACT " + Object.keys(recorded).length + " answers, " + diffs + " different");
+					process.exit(diffs ? 1 : 0);
+				}
 				fs.writeFileSync(file, JSON.stringify(results, null, "\t") + "\n");
 				console.log("recorded " + Object.keys(results).length + " answers in " + file);
 				process.exit(0);
