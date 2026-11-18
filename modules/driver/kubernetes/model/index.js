@@ -8,6 +8,8 @@
 
 'use strict';
 
+/* jshint esversion: 11 */
+
 const _service = require("./service.js");
 const _node = require("./node.js");
 
