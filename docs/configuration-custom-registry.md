@@ -40,9 +40,7 @@ registry.custom
 │           └── renewReqMonitorOff  # Disable timeout renewal
 ├── oauth
 │   └── value
-│       ├── roaming                 # Cross-environment access
-│       ├── pinWrapper              # PIN-based login endpoint
-│       └── pinWhitelist            # PIN login API whitelist
+│       └── roaming                 # Cross-environment access
 └── urac
     └── value
         └── tenantAccessResolvers   # APIs that grant access to a tenant
@@ -410,70 +408,7 @@ Enables cross-environment access for specific services with IP-based whitelistin
 
 ---
 
-## 11. PIN Login Wrapper
-
-**Path:** `registry.custom.oauth.value.pinWrapper`
-
-**Middleware:** `mw/mt/utils.js`
-
-Defines a custom PIN-based login endpoint that bypasses standard OAuth flow.
-
-```javascript
-{
-  "pinWrapper": {
-    "servicename": "auth-service",           // Service providing PIN login
-    "apiname": "/pin/login"                  // API endpoint for PIN login
-  }
-}
-```
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `servicename` | string | - | Service name providing PIN authentication |
-| `apiname` | string | - | API endpoint path for PIN login |
-
----
-
-## 12. PIN Login API Whitelist
-
-**Path:** `registry.custom.oauth.value.pinWhitelist`
-
-**Middleware:** `mw/mt/utils.js`
-
-Whitelists specific APIs that can be accessed when a user is PIN-locked (during PIN login flow).
-
-```javascript
-{
-  "pinWhitelist": {
-    "auth-service": {
-      "get": {
-        "apis": ["/pin/verify", "/pin/status"],
-        "regex": ["/api/v[0-9]+/pin/.*"]
-      },
-      "post": {
-        "apis": ["/pin/login", "/pin/reset"],
-        "regex": []
-      }
-    },
-    "user-service": {
-      "get": {
-        "apis": ["/user/minimal"],
-        "regex": []
-      }
-    }
-  }
-}
-```
-
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `[service]` | object | - | Service-specific PIN whitelist |
-| `[service].[method].apis` | string[] | `[]` | Exact API paths to whitelist |
-| `[service].[method].regex` | string[] | `[]` | Regex patterns for matching APIs |
-
----
-
-## 13. OAuth Device ID Check
+## 11. OAuth Device ID Check
 
 **Path:** `registry.custom.gateway.value.oauth.deviceIdCheck`
 
@@ -504,7 +439,7 @@ is read by the oauth middleware itself.
 
 ---
 
-## 14. Membership
+## 12. Membership
 
 **Path:** `registry.custom.gateway.value.membership`
 
@@ -584,7 +519,7 @@ loaded from urac per request and the membership is current.
 
 ---
 
-## 15. Tenant Access Resolver
+## 13. Tenant Access Resolver
 
 **Path:** `registry.custom.urac.value.tenantAccessResolvers`
 
@@ -763,7 +698,7 @@ Anything but a well formed access answer is no access, and the urac driver decid
 
 ---
 
-## 16. MCP Endpoint
+## 14. MCP Endpoint
 
 `registry.custom.gateway.value.mcp` turns on `POST /soajs/mcp`: AI agents see the APIs their
 caller may use as tools, and a tool call is processed as the API call it stands for.
@@ -879,18 +814,6 @@ See [MCP Endpoint](mcp.md).
           "whitelistips": ["192.144.3.1"]
         }
       }
-    },
-    "pinWrapper": {
-      "servicename": "auth",
-      "apiname": "/pin/login"
-    },
-    "pinWhitelist": {
-      "auth": {
-        "post": {
-          "apis": ["/pin/login", "/pin/verify"],
-          "regex": []
-        }
-      }
     }
   }
 }
@@ -925,7 +848,7 @@ Custom registry configurations are processed in this order:
 | 3 | gotoService/roaming | `oauth.value.roaming` |
 | 4 | gotoService/preRedirect | `gotoService.renewReqMonitorOff` |
 | 5 | gotoService/redirectToService | `gotoService.monitor` |
-| 6 | mt (security checks) | `mt.whitelist`, `oauth.value.pinWrapper`, `oauth.value.pinWhitelist` |
+| 6 | mt (security checks) | `mt.whitelist` |
 | 6a | oauth (called from mt) | `oauth.deviceIdCheck` |
 | 6b | mt (uracCheck) | `urac.value.tenantAccessResolvers` |
 | 6c | mt (inject object) | `membership` |

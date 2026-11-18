@@ -219,7 +219,7 @@ The MT middleware handles multi-tenant security checks, URAC integration, and pr
 
 ### 5. oauthCheck
 
-**Purpose:** Validates OAuth access tokens for private APIs and handles PIN-locked sessions.
+**Purpose:** Validates OAuth access tokens for private APIs.
 
 **Location:** `mw/mt/utils.js:463`
 
@@ -234,44 +234,6 @@ The MT middleware handles multi-tenant security checks, URAC integration, and pr
 | Service restricted, API public | `access: true`, `apis[path].access: false` | Public |
 | Restricted permission, API public | `apisPermission: "restricted"`, `apis[path].access: false` | Public |
 | Any access restriction | `access: true` or `apis[path].access: true` | Private |
-
-**PIN Login Support:**
-
-PIN login is a two-factor authentication mechanism where users must enter a PIN after OAuth login.
-
-**Configuration:** `registry.custom.oauth.value`
-
-```javascript
-{
-  "oauth": {
-    "value": {
-      "pinWrapper": {
-        "servicename": "custom-service",
-        "apiname": "/verify-pin"
-      },
-      "pinWhitelist": {
-        "servicename": {
-          "get": {
-            "apis": ["/public-api"],
-            "regex": ["/user/:id/profile"]
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-**PIN Flow:**
-1. User logs in with OAuth → receives token with `pinLocked: true`
-2. Most APIs blocked (error 145) until PIN verified
-3. PIN whitelist allows specific APIs before verification
-4. After PIN verification, `pinLogin: true` set, full access granted
-
-**Error Codes:**
-| Code | Description |
-|------|-------------|
-| 145 | PIN verification required |
 
 ---
 
@@ -299,7 +261,7 @@ For a call under a tenant that is not the user's home tenant, and that the token
 comes from the token with that tenant and the groups of the answer, and urac is not read. No
 access, an error or a timeout falls back to the urac driver as before.
 
-See [Custom Registry, Tenant Access Resolver](../configuration-custom-registry.md#15-tenant-access-resolver)
+See [Custom Registry, Tenant Access Resolver](../configuration-custom-registry.md#13-tenant-access-resolver)
 for the API to build, the registry entry and the tenant profile.
 To add one step by step, see the [Tenant Access Resolver Guide](../tenant-access-resolver.md).
 
@@ -459,7 +421,7 @@ Validates that user account hasn't changed since token was issued.
          │
          ▼
 ┌─────────────────┐
-│  oauthCheck     │──▶ Error 145 if PIN required
+│  oauthCheck     │──▶ OAuth errors (400/401, 147, 156)
 └────────┬────────┘    (skipped if skipOAUTH or public API)
          │
          ▼

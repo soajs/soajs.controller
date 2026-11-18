@@ -242,8 +242,7 @@ Default OAuth service configuration:
   "oauthService": {
     "name": "oauth",
     "tokenApi": "/token",
-    "authorizationApi": "/authorization",
-    "pinApi": "/pin"
+    "authorizationApi": "/authorization"
   }
 }
 ```
