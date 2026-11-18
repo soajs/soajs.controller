@@ -147,33 +147,6 @@ if (process.env.SOAJS_SENSITIVE_ENVS) {
 	}
 }
 
-const { pathToRegexp } = require("path-to-regexp");
-
-// Performance: Cache compiled RegExp objects for route matching
-const regexpCache = new Map();
-const MAX_REGEXP_CACHE_SIZE = 500; // Prevent unbounded growth
-
-function constructRegExp(route) {
-	// Check cache first
-	if (regexpCache.has(route)) {
-		return regexpCache.get(route);
-	}
-
-	// Compile the route pattern
-	let out = pathToRegexp(route, { sensitive: true });
-	let regexp = out.regexp || out;
-
-	// Implement simple LRU by clearing cache when it gets too large
-	if (regexpCache.size >= MAX_REGEXP_CACHE_SIZE) {
-		// Clear oldest 25% of entries
-		const keysToDelete = Array.from(regexpCache.keys()).slice(0, Math.floor(MAX_REGEXP_CACHE_SIZE * 0.25));
-		keysToDelete.forEach(key => regexpCache.delete(key));
-	}
-
-	regexpCache.set(route, regexp);
-	return regexp;
-}
-
 /**
  * Contains functions to calculate and retrieve the ACL based on SOAJS layers
  *
@@ -563,78 +536,8 @@ let utils = {
 				return obj.soajs.oauth(obj.req, obj.res, function (error) {
 					if (error) {
 						return cb(error, obj);
-					} else {
-
-						let pin_allowedAPI_check = () => {
-							// Skip is this is pin login route on oauth
-							// Skip if route on controller
-							// Skip if pinWrapper route aka custom pin login
-							// Skip if in pinWhitelist
-							if (obj.soajs.oauthService && (obj.req.soajs.controller.serviceParams.name === obj.soajs.oauthService.name) && (obj.req.soajs.controller.serviceParams.path === obj.soajs.oauthService.pinApi)) {
-								return cb(null, obj);
-							} else if (obj.req.soajs.controller.serviceParams.name === obj.gatewayServiceName) {
-								return cb(null, obj);
-							} else if (obj.req.soajs.registry &&
-								obj.req.soajs.registry.custom &&
-								obj.req.soajs.registry.custom.oauth &&
-								obj.req.soajs.registry.custom.oauth.value &&
-								obj.req.soajs.registry.custom.oauth.value.pinWrapper &&
-								(obj.req.soajs.registry.custom.oauth.value.pinWrapper.servicename === obj.req.soajs.controller.serviceParams.name) &&
-								(obj.req.soajs.registry.custom.oauth.value.pinWrapper.apiname === obj.req.soajs.controller.serviceParams.path)
-							) {
-								return cb(null, obj);
-							} else {
-								//TODO add pin whitelist to be fetch from the registry
-								//obj.req.soajs.registry.custom.oauth.value.whitelist "servicename": {"method": ["api1, api2", ...], ...}, version ???
-								if (obj.req.soajs.registry &&
-									obj.req.soajs.registry.custom &&
-									obj.req.soajs.registry.custom.oauth &&
-									obj.req.soajs.registry.custom.oauth.value &&
-									obj.req.soajs.registry.custom.oauth.value.pinWhitelist &&
-									obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name]) {
-
-									let method = obj.req.method.toLocaleLowerCase();
-									let whitelist = obj.req.soajs.registry.custom.oauth.value.pinWhitelist[obj.req.soajs.controller.serviceParams.name];
-
-									obj.req.soajs.log.debug("pinWhitelist detected for service [" + obj.req.soajs.controller.serviceParams.name + "]");
-									if (whitelist[method]) {
-										if (whitelist[method].apis && Array.isArray(whitelist[method].apis)) {
-											if (whitelist[method].apis.includes(obj.req.soajs.controller.serviceParams.path)) {
-												return cb(null, obj);
-											}
-										}
-										if (whitelist[method].regex && Array.isArray(whitelist[method].regex)) {
-											for (let i = 0; i < whitelist[method].regex.length; i++) {
-												let regexp_out = constructRegExp(whitelist[method].regex[i]);
-												if (obj.req.soajs.controller.serviceParams.path.match(regexp_out)) {
-													return cb(null, obj);
-												}
-											}
-										}
-									}
-									obj.req.soajs.log.debug("pinWhitelist not found for method [" + method + "] and path [" + obj.req.soajs.controller.serviceParams.path + "]");
-
-								}
-								return cb(145, obj);
-							}
-						};
-
-						if (obj.req.oauth && obj.req.oauth.bearerToken && obj.req.oauth.bearerToken.user && (obj.req.oauth.bearerToken.user.loginMode === 'urac') && obj.req.oauth.bearerToken.user.pinLocked) {
-							return pin_allowedAPI_check();
-						} else {
-							let product = null;
-							if (obj.req.soajs.tenant && obj.req.soajs.tenant.application) {
-								product = obj.req.soajs.tenant.application.product;
-							}
-							if (product && obj.req.oauth.bearerToken.user.loginMode === 'urac' && obj.req.soajs.tenantOauth.pin && obj.req.soajs.tenantOauth.pin[product] && obj.req.soajs.tenantOauth.pin[product].enabled) {
-								if (obj.req.oauth.bearerToken.user.pinLogin) {
-									return cb(null, obj);
-								}
-								return pin_allowedAPI_check();
-							}
-							return cb(null, obj);
-						}
 					}
+					return cb(null, obj);
 				});
 			};
 

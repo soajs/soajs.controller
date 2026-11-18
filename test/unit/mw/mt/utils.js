@@ -541,4 +541,52 @@ describe("Unit test for: mw - mt utils", () => {
 			done();
 		});
 	});
+
+	// PIN login is removed: the tenant's oauth.pin and the token's pinLocked/pinLogin are ignored
+	it("test oauthCheck - a PIN-locked token on a tenant with PIN enabled passes", function (done) {
+		let oauthCalled = false;
+		let obj = {
+			"soajs": {
+				"oauth": (req, res, next) => {
+					oauthCalled = true;
+					req.oauth = {"bearerToken": {"user": {"loginMode": "urac", "pinLocked": true}}};
+					return next();
+				},
+				"oauthService": {"name": "oauth"}
+			},
+			"gatewayServiceName": "controller",
+			"finalAcl": {"access": true},
+			"req": {
+				"method": "GET",
+				"query": {},
+				"soajs": {
+					"controller": {"serviceParams": {"name": "urac", "path": "/user"}},
+					"tenant": {"id": "t1", "application": {"product": "DSBRD"}},
+					"tenantOauth": {"pin": {"DSBRD": {"enabled": true}}},
+					"registry": {"custom": {}},
+					"log": {"debug": () => {}}
+				}
+			},
+			"res": {}
+		};
+		utils.oauthCheck(obj, (error, out) => {
+			assert.ok(oauthCalled);
+			assert.ifError(error);
+			assert.strictEqual(out, obj);
+			done();
+		});
+	});
+
+	it("test oauthCheck - an OAuth error is passed on", function (done) {
+		let obj = {
+			"soajs": {"oauth": (req, res, next) => next(401)},
+			"finalAcl": {"access": true},
+			"req": {"method": "GET", "query": {}, "soajs": {"controller": {"serviceParams": {"name": "urac", "path": "/user"}}, "log": {"debug": () => {}}}},
+			"res": {}
+		};
+		utils.oauthCheck(obj, (error) => {
+			assert.strictEqual(error, 401);
+			done();
+		});
+	});
 });

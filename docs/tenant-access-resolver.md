@@ -3,7 +3,7 @@
 A step by step guide to give a group of users, a department of your app for example, access
 to a tenant without inviting them one by one.
 
-Every detail lives in [Custom Registry, Tenant Access Resolver](configuration-custom-registry.md#15-tenant-access-resolver),
+Every detail lives in [Custom Registry, Tenant Access Resolver](configuration-custom-registry.md#13-tenant-access-resolver),
 this guide only walks through it in order.
 
 ## Before you start
@@ -75,7 +75,7 @@ see while your service is down, and how invitations and the resolver combine.
 
 | Topic | Where |
 |-------|-------|
-| Full reference | [Custom Registry, Tenant Access Resolver](configuration-custom-registry.md#15-tenant-access-resolver) |
+| Full reference | [Custom Registry, Tenant Access Resolver](configuration-custom-registry.md#13-tenant-access-resolver) |
 | Where it runs in the pipeline | [MT middleware, uracCheck](middleware/mt.md#6-uraccheck) |
 | Code | `mw/mt/urac.js`, `mw/mt/tenantAccess.js` |
 | Example test | `test/integration/UC5-tenant-access/index.js`, a mock resolver |
