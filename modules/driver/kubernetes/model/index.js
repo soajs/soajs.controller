@@ -8,28 +8,51 @@
 
 'use strict';
 
-const {KubeConfig, Client} = require('kubernetes-client');
-const Request = require('kubernetes-client/backends/request');
-const swagger = require('./swagger/swagger.json');
-
 const _service = require("./service.js");
 const _node = require("./node.js");
 
-const cluster = {
-	name: 'my-server',
-	server: 'http://server.com',
-};
+// @kubernetes/client-node is loaded on the first connect: only gateways using the Kubernetes
+// driver need it.
+let k8s = null;
 
-const user = {
-	name: 'my-user',
-	password: 'some-password',
-};
+function client() {
+	if (!k8s) {
+		k8s = require('@kubernetes/client-node');
+	}
+	return k8s;
+}
 
-const context = {
-	name: 'my-context',
-	user: user.name,
-	cluster: cluster.name,
-};
+const NAME = "soajs";
+
+/**
+ * The cluster and user of a connection, from the deployer's configuration:
+ * - with config.ca (requestOptions and authProvider, as written by soajs.infra): the cluster at
+ *   requestOptions.baseUrl with its CA, and requestOptions.auth when given, else the token;
+ * - otherwise: the cluster at config.url with the token, without verifying its certificate.
+ */
+function clusterAndUser(config) {
+	let cluster = {"name": NAME, "server": config.url, "skipTLSVerify": true};
+	let user = {"name": NAME, "token": config.token};
+	if (config.ca) {
+		const ro = config.ca.requestOptions || {};
+		cluster = {"name": NAME, "server": ro.baseUrl, "skipTLSVerify": ro.strictSSL === false || ro.rejectUnauthorized === false};
+		if (ro.ca) {
+			cluster.caData = Buffer.from(ro.ca).toString("base64");
+		}
+		if (ro.auth && ro.auth.bearer) {
+			user = {"name": NAME, "token": ro.auth.bearer};
+		} else if (ro.auth && (ro.auth.user || ro.auth.username)) {
+			user = {"name": NAME, "username": ro.auth.user || ro.auth.username, "password": ro.auth.pass || ro.auth.password};
+		}
+		if (ro.cert) {
+			user.certData = Buffer.from(ro.cert).toString("base64");
+		}
+		if (ro.key) {
+			user.keyData = Buffer.from(ro.key).toString("base64");
+		}
+	}
+	return {cluster, user};
+}
 
 let driver = {
 	"connect": (config, cb) => {
@@ -40,37 +63,23 @@ let driver = {
 			return cb(new Error('Connect error: No valid url found for the kubernetes cluster'));
 		}
 		try {
-			let backend = null;
-			if (config.ca) {
-				let kubeconfig = new KubeConfig();
-				kubeconfig.loadFromOptions({
-					clusters: [cluster],
-					users: [user],
-					contexts: [context],
-					currentContext: context.name,
-				});
-				backend = new Request({kubeconfig});
-				backend.requestOptions = config.ca.requestOptions;
-				backend.authProvider = config.ca.authProvider;
-				if (!backend.requestOptions.auth) {
-					backend.requestOptions.auth = {
-						"bearer": config.token
-					};
-				}
-			} else {
-				backend = new Request({
-					"url": config.url,
-					"auth": {
-						"bearer": config.token
-					},
-					"insecureSkipTlsVerify": true
-				});
+			const k = client();
+			const {cluster, user} = clusterAndUser(config);
+			if (!cluster.server) {
+				return cb(new Error('Connect error: No valid url found for the kubernetes cluster'));
 			}
-			let client = new Client({
-				"backend": backend,
-				"spec": swagger
+			const kubeconfig = new k.KubeConfig();
+			kubeconfig.loadFromOptions({
+				"clusters": [cluster],
+				"users": [user],
+				"contexts": [{"name": NAME, "cluster": NAME, "user": NAME}],
+				"currentContext": NAME
 			});
-			return cb(null, client);
+			return cb(null, {
+				"kubeconfig": kubeconfig,
+				"server": cluster.server.replace(/\/+$/, ""),
+				"http": new k.IsomorphicFetchHttpLibrary()
+			});
 		} catch (e) {
 			return cb(e);
 		}

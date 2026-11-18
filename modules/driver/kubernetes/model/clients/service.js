@@ -8,27 +8,20 @@
 
 'use strict';
 
+const request = require("./request.js");
 
 const services = {
 	/**
-	 * service Wrapper
+	 * The namespace's services (opts.qs: labelSelector and the other list parameters), or one
+	 * service by opts.name.
 	 */
 	get(deployer, opts, cb) {
-		async function main() {
-			if (opts.name) {
-				return await deployer.api.v1.namespaces(opts.namespace).services(opts.name).get({qs: opts.qs});
-			} else {
-				return await deployer.api.v1.namespaces(opts.namespace).services.get({qs: opts.qs});
-			}
+		let path = "/api/v1/namespaces/" + encodeURIComponent(opts.namespace) + "/services";
+		if (opts.name) {
+			path += "/" + encodeURIComponent(opts.name);
 		}
-		
-		main().then((result) => {
-			return cb(null, result.body);
-		}).catch((err) => {
-			return cb(err);
-		});
+		request.get(deployer, path, opts.qs, cb);
 	}
-	
 };
 
 module.exports = services;

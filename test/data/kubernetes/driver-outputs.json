@@ -1,0 +1,1358 @@
+{
+	"token all": {
+		"result": [
+			{
+				"metadata": {
+					"name": "dev-urac-v3-service",
+					"namespace": "soajs",
+					"uid": "1c1d9c50-1111-4b7e-9a3c-000000000001",
+					"resourceVersion": "100",
+					"creationTimestamp": "2026-01-02T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3",
+						"soajs.env.code": "dev"
+					},
+					"annotations": {
+						"note": "a/b"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"name": "service-port",
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001
+						},
+						{
+							"name": "maintenance-port",
+							"protocol": "TCP",
+							"port": 5001,
+							"targetPort": "maintenance"
+						}
+					],
+					"selector": {
+						"soajs.service.label": "dev-urac-v3"
+					},
+					"clusterIP": "10.0.0.11",
+					"clusterIPs": [
+						"10.0.0.11"
+					],
+					"type": "ClusterIP",
+					"sessionAffinity": "None",
+					"ipFamilies": [
+						"IPv4"
+					],
+					"ipFamilyPolicy": "SingleStack",
+					"internalTrafficPolicy": "Cluster"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-urac-v3x1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-03T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3x1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001,
+							"nodePort": 30001
+						}
+					],
+					"clusterIP": "10.0.0.12",
+					"type": "NodePort"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-oauth-v1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-04T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "oauth",
+						"soajs.service.version": "1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4002,
+							"targetPort": 4002
+						}
+					],
+					"clusterIP": "10.0.0.13",
+					"type": "LoadBalancer"
+				},
+				"status": {
+					"loadBalancer": {
+						"ingress": [
+							{
+								"ip": "203.0.113.7",
+								"ipMode": "VIP"
+							}
+						]
+					}
+				}
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token all with filter": {
+		"result": [
+			{
+				"metadata": {
+					"name": "dev-urac-v3-service",
+					"namespace": "soajs",
+					"uid": "1c1d9c50-1111-4b7e-9a3c-000000000001",
+					"resourceVersion": "100",
+					"creationTimestamp": "2026-01-02T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3",
+						"soajs.env.code": "dev"
+					},
+					"annotations": {
+						"note": "a/b"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"name": "service-port",
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001
+						},
+						{
+							"name": "maintenance-port",
+							"protocol": "TCP",
+							"port": 5001,
+							"targetPort": "maintenance"
+						}
+					],
+					"selector": {
+						"soajs.service.label": "dev-urac-v3"
+					},
+					"clusterIP": "10.0.0.11",
+					"clusterIPs": [
+						"10.0.0.11"
+					],
+					"type": "ClusterIP",
+					"sessionAffinity": "None",
+					"ipFamilies": [
+						"IPv4"
+					],
+					"ipFamilyPolicy": "SingleStack",
+					"internalTrafficPolicy": "Cluster"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-urac-v3x1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-03T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3x1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001,
+							"nodePort": 30001
+						}
+					],
+					"clusterIP": "10.0.0.12",
+					"type": "NodePort"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-oauth-v1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-04T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "oauth",
+						"soajs.service.version": "1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4002,
+							"targetPort": 4002
+						}
+					],
+					"clusterIP": "10.0.0.13",
+					"type": "LoadBalancer"
+				},
+				"status": {
+					"loadBalancer": {
+						"ingress": [
+							{
+								"ip": "203.0.113.7",
+								"ipMode": "VIP"
+							}
+						]
+					}
+				}
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"limit": "50",
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token latest version": {
+		"result": "3.1",
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.service.name=urac"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token latest version unknown": {
+		"error": {
+			"code": 501,
+			"msg": "Item not found!"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.service.name=nope"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token host": {
+		"result": "10.0.0.11",
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-urac-v3-service",
+				"query": {},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token host not found": {
+		"error": {
+			"code": 702,
+			"msg": "Driver error: services \"dev-ghost-v1-service\" not found"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-ghost-v1-service",
+				"query": {},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token nodes": {
+		"result": [
+			{
+				"capacity": {
+					"cpu": "4",
+					"memory": "16374024Ki",
+					"pods": "110"
+				},
+				"addresses": [
+					{
+						"type": "InternalIP",
+						"address": "192.168.1.10"
+					},
+					{
+						"type": "Hostname",
+						"address": "node-a"
+					}
+				]
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/nodes",
+				"query": {},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token all forbidden": {
+		"error": {
+			"code": 702,
+			"msg": "Driver error: services is forbidden: User \"system:serviceaccount:soajs:default\" cannot list resource \"services\" in API group \"\" in the namespace \"soajs\""
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"token all empty": {
+		"error": {
+			"code": 501,
+			"msg": "Item not found!"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"ca all": {
+		"result": [
+			{
+				"metadata": {
+					"name": "dev-urac-v3-service",
+					"namespace": "soajs",
+					"uid": "1c1d9c50-1111-4b7e-9a3c-000000000001",
+					"resourceVersion": "100",
+					"creationTimestamp": "2026-01-02T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3",
+						"soajs.env.code": "dev"
+					},
+					"annotations": {
+						"note": "a/b"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"name": "service-port",
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001
+						},
+						{
+							"name": "maintenance-port",
+							"protocol": "TCP",
+							"port": 5001,
+							"targetPort": "maintenance"
+						}
+					],
+					"selector": {
+						"soajs.service.label": "dev-urac-v3"
+					},
+					"clusterIP": "10.0.0.11",
+					"clusterIPs": [
+						"10.0.0.11"
+					],
+					"type": "ClusterIP",
+					"sessionAffinity": "None",
+					"ipFamilies": [
+						"IPv4"
+					],
+					"ipFamilyPolicy": "SingleStack",
+					"internalTrafficPolicy": "Cluster"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-urac-v3x1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-03T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3x1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001,
+							"nodePort": 30001
+						}
+					],
+					"clusterIP": "10.0.0.12",
+					"type": "NodePort"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-oauth-v1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-04T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "oauth",
+						"soajs.service.version": "1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4002,
+							"targetPort": 4002
+						}
+					],
+					"clusterIP": "10.0.0.13",
+					"type": "LoadBalancer"
+				},
+				"status": {
+					"loadBalancer": {
+						"ingress": [
+							{
+								"ip": "203.0.113.7",
+								"ipMode": "VIP"
+							}
+						]
+					}
+				}
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca all with filter": {
+		"result": [
+			{
+				"metadata": {
+					"name": "dev-urac-v3-service",
+					"namespace": "soajs",
+					"uid": "1c1d9c50-1111-4b7e-9a3c-000000000001",
+					"resourceVersion": "100",
+					"creationTimestamp": "2026-01-02T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3",
+						"soajs.env.code": "dev"
+					},
+					"annotations": {
+						"note": "a/b"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"name": "service-port",
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001
+						},
+						{
+							"name": "maintenance-port",
+							"protocol": "TCP",
+							"port": 5001,
+							"targetPort": "maintenance"
+						}
+					],
+					"selector": {
+						"soajs.service.label": "dev-urac-v3"
+					},
+					"clusterIP": "10.0.0.11",
+					"clusterIPs": [
+						"10.0.0.11"
+					],
+					"type": "ClusterIP",
+					"sessionAffinity": "None",
+					"ipFamilies": [
+						"IPv4"
+					],
+					"ipFamilyPolicy": "SingleStack",
+					"internalTrafficPolicy": "Cluster"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-urac-v3x1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-03T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3x1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001,
+							"nodePort": 30001
+						}
+					],
+					"clusterIP": "10.0.0.12",
+					"type": "NodePort"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-oauth-v1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-04T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "oauth",
+						"soajs.service.version": "1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4002,
+							"targetPort": 4002
+						}
+					],
+					"clusterIP": "10.0.0.13",
+					"type": "LoadBalancer"
+				},
+				"status": {
+					"loadBalancer": {
+						"ingress": [
+							{
+								"ip": "203.0.113.7",
+								"ipMode": "VIP"
+							}
+						]
+					}
+				}
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"limit": "50",
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca latest version": {
+		"result": "3.1",
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.service.name=urac"
+				},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca latest version unknown": {
+		"error": {
+			"code": 501,
+			"msg": "Item not found!"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.service.name=nope"
+				},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca host": {
+		"result": "10.0.0.11",
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-urac-v3-service",
+				"query": {},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca host not found": {
+		"error": {
+			"code": 702,
+			"msg": "Driver error: services \"dev-ghost-v1-service\" not found"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-ghost-v1-service",
+				"query": {},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca nodes": {
+		"result": [
+			{
+				"capacity": {
+					"cpu": "4",
+					"memory": "16374024Ki",
+					"pods": "110"
+				},
+				"addresses": [
+					{
+						"type": "InternalIP",
+						"address": "192.168.1.10"
+					},
+					{
+						"type": "Hostname",
+						"address": "node-a"
+					}
+				]
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/nodes",
+				"query": {},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca all forbidden": {
+		"error": {
+			"code": 702,
+			"msg": "Driver error: services is forbidden: User \"system:serviceaccount:soajs:default\" cannot list resource \"services\" in API group \"\" in the namespace \"soajs\""
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca all empty": {
+		"error": {
+			"code": 501,
+			"msg": "Item not found!"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer test-token-2"
+			}
+		]
+	},
+	"ca-own-auth all": {
+		"result": [
+			{
+				"metadata": {
+					"name": "dev-urac-v3-service",
+					"namespace": "soajs",
+					"uid": "1c1d9c50-1111-4b7e-9a3c-000000000001",
+					"resourceVersion": "100",
+					"creationTimestamp": "2026-01-02T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3",
+						"soajs.env.code": "dev"
+					},
+					"annotations": {
+						"note": "a/b"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"name": "service-port",
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001
+						},
+						{
+							"name": "maintenance-port",
+							"protocol": "TCP",
+							"port": 5001,
+							"targetPort": "maintenance"
+						}
+					],
+					"selector": {
+						"soajs.service.label": "dev-urac-v3"
+					},
+					"clusterIP": "10.0.0.11",
+					"clusterIPs": [
+						"10.0.0.11"
+					],
+					"type": "ClusterIP",
+					"sessionAffinity": "None",
+					"ipFamilies": [
+						"IPv4"
+					],
+					"ipFamilyPolicy": "SingleStack",
+					"internalTrafficPolicy": "Cluster"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-urac-v3x1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-03T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3x1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001,
+							"nodePort": 30001
+						}
+					],
+					"clusterIP": "10.0.0.12",
+					"type": "NodePort"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-oauth-v1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-04T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "oauth",
+						"soajs.service.version": "1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4002,
+							"targetPort": 4002
+						}
+					],
+					"clusterIP": "10.0.0.13",
+					"type": "LoadBalancer"
+				},
+				"status": {
+					"loadBalancer": {
+						"ingress": [
+							{
+								"ip": "203.0.113.7",
+								"ipMode": "VIP"
+							}
+						]
+					}
+				}
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth all with filter": {
+		"result": [
+			{
+				"metadata": {
+					"name": "dev-urac-v3-service",
+					"namespace": "soajs",
+					"uid": "1c1d9c50-1111-4b7e-9a3c-000000000001",
+					"resourceVersion": "100",
+					"creationTimestamp": "2026-01-02T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3",
+						"soajs.env.code": "dev"
+					},
+					"annotations": {
+						"note": "a/b"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"name": "service-port",
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001
+						},
+						{
+							"name": "maintenance-port",
+							"protocol": "TCP",
+							"port": 5001,
+							"targetPort": "maintenance"
+						}
+					],
+					"selector": {
+						"soajs.service.label": "dev-urac-v3"
+					},
+					"clusterIP": "10.0.0.11",
+					"clusterIPs": [
+						"10.0.0.11"
+					],
+					"type": "ClusterIP",
+					"sessionAffinity": "None",
+					"ipFamilies": [
+						"IPv4"
+					],
+					"ipFamilyPolicy": "SingleStack",
+					"internalTrafficPolicy": "Cluster"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-urac-v3x1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-03T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "urac",
+						"soajs.service.version": "3x1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4001,
+							"targetPort": 4001,
+							"nodePort": 30001
+						}
+					],
+					"clusterIP": "10.0.0.12",
+					"type": "NodePort"
+				},
+				"status": {
+					"loadBalancer": {}
+				}
+			},
+			{
+				"metadata": {
+					"name": "dev-oauth-v1-service",
+					"namespace": "soajs",
+					"creationTimestamp": "2026-01-04T03:04:05Z",
+					"labels": {
+						"soajs.content": "true",
+						"soajs.service.name": "oauth",
+						"soajs.service.version": "1",
+						"soajs.env.code": "dev"
+					}
+				},
+				"spec": {
+					"ports": [
+						{
+							"protocol": "TCP",
+							"port": 4002,
+							"targetPort": 4002
+						}
+					],
+					"clusterIP": "10.0.0.13",
+					"type": "LoadBalancer"
+				},
+				"status": {
+					"loadBalancer": {
+						"ingress": [
+							{
+								"ip": "203.0.113.7",
+								"ipMode": "VIP"
+							}
+						]
+					}
+				}
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"limit": "50",
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth latest version": {
+		"result": "3.1",
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.service.name=urac"
+				},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth latest version unknown": {
+		"error": {
+			"code": 501,
+			"msg": "Item not found!"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.service.name=nope"
+				},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth host": {
+		"result": "10.0.0.11",
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-urac-v3-service",
+				"query": {},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth host not found": {
+		"error": {
+			"code": 702,
+			"msg": "Driver error: services \"dev-ghost-v1-service\" not found"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-ghost-v1-service",
+				"query": {},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth nodes": {
+		"result": [
+			{
+				"capacity": {
+					"cpu": "4",
+					"memory": "16374024Ki",
+					"pods": "110"
+				},
+				"addresses": [
+					{
+						"type": "InternalIP",
+						"address": "192.168.1.10"
+					},
+					{
+						"type": "Hostname",
+						"address": "node-a"
+					}
+				]
+			}
+		],
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/nodes",
+				"query": {},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth all forbidden": {
+		"error": {
+			"code": 702,
+			"msg": "Driver error: services is forbidden: User \"system:serviceaccount:soajs:default\" cannot list resource \"services\" in API group \"\" in the namespace \"soajs\""
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"ca-own-auth all empty": {
+		"error": {
+			"code": 501,
+			"msg": "Item not found!"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.content=true"
+				},
+				"authorization": "Bearer own-bearer"
+			}
+		]
+	},
+	"driver services": {
+		"result": {
+			"kind": "ServiceList",
+			"apiVersion": "v1",
+			"metadata": {
+				"resourceVersion": "12345"
+			},
+			"items": [
+				{
+					"metadata": {
+						"name": "dev-urac-v3-service",
+						"namespace": "soajs",
+						"uid": "1c1d9c50-1111-4b7e-9a3c-000000000001",
+						"resourceVersion": "100",
+						"creationTimestamp": "2026-01-02T03:04:05Z",
+						"labels": {
+							"soajs.content": "true",
+							"soajs.service.name": "urac",
+							"soajs.service.version": "3",
+							"soajs.env.code": "dev"
+						},
+						"annotations": {
+							"note": "a/b"
+						}
+					},
+					"spec": {
+						"ports": [
+							{
+								"name": "service-port",
+								"protocol": "TCP",
+								"port": 4001,
+								"targetPort": 4001
+							},
+							{
+								"name": "maintenance-port",
+								"protocol": "TCP",
+								"port": 5001,
+								"targetPort": "maintenance"
+							}
+						],
+						"selector": {
+							"soajs.service.label": "dev-urac-v3"
+						},
+						"clusterIP": "10.0.0.11",
+						"clusterIPs": [
+							"10.0.0.11"
+						],
+						"type": "ClusterIP",
+						"sessionAffinity": "None",
+						"ipFamilies": [
+							"IPv4"
+						],
+						"ipFamilyPolicy": "SingleStack",
+						"internalTrafficPolicy": "Cluster"
+					},
+					"status": {
+						"loadBalancer": {}
+					}
+				},
+				{
+					"metadata": {
+						"name": "dev-urac-v3x1-service",
+						"namespace": "soajs",
+						"creationTimestamp": "2026-01-03T03:04:05Z",
+						"labels": {
+							"soajs.content": "true",
+							"soajs.service.name": "urac",
+							"soajs.service.version": "3x1",
+							"soajs.env.code": "dev"
+						}
+					},
+					"spec": {
+						"ports": [
+							{
+								"protocol": "TCP",
+								"port": 4001,
+								"targetPort": 4001,
+								"nodePort": 30001
+							}
+						],
+						"clusterIP": "10.0.0.12",
+						"type": "NodePort"
+					},
+					"status": {
+						"loadBalancer": {}
+					}
+				}
+			]
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services",
+				"query": {
+					"labelSelector": "soajs.service.name=urac"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"driver one service": {
+		"result": {
+			"kind": "Service",
+			"apiVersion": "v1",
+			"metadata": {
+				"name": "dev-oauth-v1-service",
+				"namespace": "soajs",
+				"creationTimestamp": "2026-01-04T03:04:05Z",
+				"labels": {
+					"soajs.content": "true",
+					"soajs.service.name": "oauth",
+					"soajs.service.version": "1",
+					"soajs.env.code": "dev"
+				}
+			},
+			"spec": {
+				"ports": [
+					{
+						"protocol": "TCP",
+						"port": 4002,
+						"targetPort": 4002
+					}
+				],
+				"clusterIP": "10.0.0.13",
+				"type": "LoadBalancer"
+			},
+			"status": {
+				"loadBalancer": {
+					"ingress": [
+						{
+							"ip": "203.0.113.7",
+							"ipMode": "VIP"
+						}
+					]
+				}
+			}
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-oauth-v1-service",
+				"query": {},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"driver service ips load balancer": {
+		"result": {
+			"ip": "10.0.0.13",
+			"ports": [
+				{
+					"protocol": "TCP",
+					"port": 4002,
+					"targetPort": 4002
+				}
+			],
+			"extIp": "203.0.113.7"
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/namespaces/soajs/services/dev-oauth-v1-service",
+				"query": {},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"driver nodes": {
+		"result": {
+			"kind": "NodeList",
+			"apiVersion": "v1",
+			"metadata": {
+				"resourceVersion": "999"
+			},
+			"items": [
+				{
+					"metadata": {
+						"name": "node-a",
+						"creationTimestamp": "2026-01-01T00:00:00Z",
+						"labels": {
+							"kubernetes.io/hostname": "node-a"
+						}
+					},
+					"spec": {
+						"podCIDR": "10.244.0.0/24"
+					},
+					"status": {
+						"capacity": {
+							"cpu": "4",
+							"memory": "16374024Ki",
+							"pods": "110"
+						},
+						"addresses": [
+							{
+								"type": "InternalIP",
+								"address": "192.168.1.10"
+							},
+							{
+								"type": "Hostname",
+								"address": "node-a"
+							}
+						],
+						"conditions": [
+							{
+								"type": "Ready",
+								"status": "True",
+								"lastHeartbeatTime": "2026-11-18T10:00:00Z",
+								"lastTransitionTime": "2026-01-01T00:00:00Z",
+								"reason": "KubeletReady",
+								"message": "kubelet is posting ready status"
+							}
+						]
+					}
+				}
+			]
+		},
+		"requests": [
+			{
+				"method": "GET",
+				"path": "/api/v1/nodes",
+				"query": {
+					"labelSelector": "kubernetes.io/hostname=node-a"
+				},
+				"authorization": "Bearer test-token-1"
+			}
+		]
+	},
+	"driver no token": {
+		"error": {
+			"message": "Connect error: No valid access token found for the kubernetes cluster"
+		},
+		"requests": []
+	},
+	"driver no url": {
+		"error": {
+			"message": "Connect error: No valid url found for the kubernetes cluster"
+		},
+		"requests": []
+	},
+	"configuration missing": {
+		"error": {
+			"code": 702,
+			"msg": "Driver error: Configuration requires namespace, token, and url"
+		},
+		"requests": []
+	}
+}

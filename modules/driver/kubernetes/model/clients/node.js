@@ -8,25 +8,19 @@
 
 'use strict';
 
+const request = require("./request.js");
 
 const node = {
 	/**
-	 * Node Wrapper
+	 * The cluster's nodes (opts.qs: labelSelector and the other list parameters), or one node by
+	 * opts.name.
 	 */
 	get(deployer, opts, cb) {
-		async function main() {
-			if (opts.name) {
-				return await deployer.api.v1.nodes(opts.name).get({qs: opts.qs});
-			} else {
-				return await deployer.api.v1.nodes.get({qs: opts.qs});
-			}
+		let path = "/api/v1/nodes";
+		if (opts.name) {
+			path += "/" + encodeURIComponent(opts.name);
 		}
-		
-		main().then((result) => {
-			return cb(null, result.body);
-		}).catch((err) => {
-			return cb(err);
-		});
+		request.get(deployer, path, opts.qs, cb);
 	}
 };
 

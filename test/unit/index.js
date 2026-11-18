@@ -57,6 +57,8 @@ describe("Starting Gateway Unit test", () => {
         require("./mw/cache/invalidate.js");
         require("./mw/lastSeen/index.js");
 
+        require("./modules/driver/kubernetes.js");
+
         require("./utilities/utils.js");
         require("./server/controller.js");
 
