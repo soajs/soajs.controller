@@ -1,0 +1,272 @@
+{
+	"no token": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"The access token was not found\"}]}}"
+	},
+	"header bearer": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "118",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"76-hNJhcCfrFyu3cRs681guf5XKVlU\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"GET\"}}"
+	},
+	"header bearer lowercase": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"Malformed auth header\"}]}}"
+	},
+	"header bearer inside": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "118",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"76-hNJhcCfrFyu3cRs681guf5XKVlU\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"GET\"}}"
+	},
+	"header bearer twice": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "118",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"76-hNJhcCfrFyu3cRs681guf5XKVlU\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"GET\"}}"
+	},
+	"header token scheme": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"Malformed auth header\"}]}}"
+	},
+	"header bearer empty": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"Malformed auth header\"}]}}"
+	},
+	"query": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "172",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"ac-ZS3NLrXX9fo0XngFqdpcpIK9DYs\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123\",\"method\":\"GET\"}}"
+	},
+	"query empty": {
+		"status": 401,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided is invalid.\"}]}}"
+	},
+	"header and query": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"Only one method may be used to authenticate at a time (Auth header,  GET or POST).\"}]}}"
+	},
+	"body form post": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"The access token was not found\"}]}}"
+	},
+	"body json post": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"The access token was not found\"}]}}"
+	},
+	"body form get": {
+		"status": 400,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[400],\"details\":[{\"code\":400,\"message\":\"The access token was not found\"}]}}"
+	},
+	"body and header": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "119",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"77-NmR/CQ/LrOTVT27FsdZpMiU5aHU\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"POST\"}}"
+	},
+	"body and query": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "173",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"ad-3SG5Ch1bRQ1ttYFRNpy1MwmRK5I\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123\",\"method\":\"POST\"}}"
+	},
+	"invalid token": {
+		"status": 401,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided is invalid.\"}]}}"
+	},
+	"invalid token query": {
+		"status": 401,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided is invalid.\"}]}}"
+	},
+	"refresh token as access token": {
+		"status": 401,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided is invalid.\"}]}}"
+	},
+	"expired token": {
+		"status": 401,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided has expired.\"}]}}"
+	},
+	"token expires null": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "118",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"76-hNJhcCfrFyu3cRs681guf5XKVlU\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"GET\"}}"
+	},
+	"token expires string": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "118",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"76-hNJhcCfrFyu3cRs681guf5XKVlU\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"GET\"}}"
+	},
+	"token without expires": {
+		"status": 401,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-type": "application/json"
+		},
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided has expired.\"}]}}"
+	},
+	"put with header": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "118",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"76-OLkTTZYSP6Arx5oGOazClG6YXH8\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"PUT\"}}"
+	},
+	"delete with query": {
+		"status": 200,
+		"headers": {
+			"access-control-allow-credentials": "true",
+			"access-control-allow-origin": "*",
+			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
+			"content-length": "175",
+			"content-type": "application/json; charset=utf-8",
+			"etag": "W/\"af-z+M2CszIIzmUWB2cTN6EPLEmqcI\"",
+			"x-powered-by": "Express"
+		},
+		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute?access_token=cfb209a91b23896820f510aadbf1f4284b512123\",\"method\":\"DELETE\"}}"
+	}
+}
