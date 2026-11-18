@@ -11,15 +11,26 @@
 const _service = require("./service.js");
 const _node = require("./node.js");
 
-// @kubernetes/client-node is loaded on the first connect: only gateways using the Kubernetes
-// driver need it.
-let k8s = null;
+// @kubernetes/client-node is an ES module that needs Node.js 22.19 or later. It is imported on the
+// first connect, so only gateways using the Kubernetes driver load it, and with import(), so it
+// never loads inside another module's evaluation.
+const MIN_NODE = [22, 19];
+const UNSUPPORTED = "Kubernetes driver needs Node.js " + MIN_NODE.join(".") + " or later";
+let loading = null;
 
-function client() {
-	if (!k8s) {
-		k8s = require('@kubernetes/client-node');
+function supported(version) {
+	const [major, minor] = String(version).split(".").map(Number);
+	return major > MIN_NODE[0] || (major === MIN_NODE[0] && minor >= MIN_NODE[1]);
+}
+
+function load() {
+	if (!loading) {
+		loading = import('@kubernetes/client-node').catch((e) => {
+			loading = null;
+			throw e;
+		});
 	}
-	return k8s;
+	return loading;
 }
 
 const NAME = "soajs";
@@ -62,12 +73,14 @@ let driver = {
 		if (!config.url) {
 			return cb(new Error('Connect error: No valid url found for the kubernetes cluster'));
 		}
-		try {
-			const k = client();
-			const {cluster, user} = clusterAndUser(config);
-			if (!cluster.server) {
-				return cb(new Error('Connect error: No valid url found for the kubernetes cluster'));
-			}
+		if (!supported(process.versions.node)) {
+			return cb(new Error(UNSUPPORTED));
+		}
+		const {cluster, user} = clusterAndUser(config);
+		if (!cluster.server) {
+			return cb(new Error('Connect error: No valid url found for the kubernetes cluster'));
+		}
+		load().then((k) => {
 			const kubeconfig = new k.KubeConfig();
 			kubeconfig.loadFromOptions({
 				"clusters": [cluster],
@@ -75,15 +88,22 @@ let driver = {
 				"contexts": [{"name": NAME, "cluster": NAME, "user": NAME}],
 				"currentContext": NAME
 			});
-			return cb(null, {
+			return {
+				"k8s": k,
 				"kubeconfig": kubeconfig,
 				"server": cluster.server.replace(/\/+$/, ""),
 				"http": new k.IsomorphicFetchHttpLibrary()
-			});
-		} catch (e) {
-			return cb(e);
-		}
+			};
+		}).then((client) => {
+			// out of the promise chain: an exception in cb is not turned into a rejection
+			process.nextTick(() => cb(null, client));
+		}, (e) => {
+			process.nextTick(() => cb(e));
+		});
 	},
+	
+	// for the tests
+	"supported": supported,
 	
 	"get": {
 		"all": {

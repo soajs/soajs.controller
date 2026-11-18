@@ -15,7 +15,8 @@
  * Status message and the HTTP status as statusCode and code.
  */
 function get(deployer, path, qs, cb) {
-	const k8s = require('@kubernetes/client-node');
+	// the module connect imported
+	const k8s = deployer.k8s;
 	async function main() {
 		const url = new URL(deployer.server + path);
 		if (qs) {
