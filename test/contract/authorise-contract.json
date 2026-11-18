@@ -208,30 +208,24 @@
 		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided has expired.\"}]}}"
 	},
 	"token expires null": {
-		"status": 200,
+		"status": 401,
 		"headers": {
 			"access-control-allow-credentials": "true",
 			"access-control-allow-origin": "*",
 			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
-			"content-length": "118",
-			"content-type": "application/json; charset=utf-8",
-			"etag": "W/\"76-hNJhcCfrFyu3cRs681guf5XKVlU\"",
-			"x-powered-by": "Express"
+			"content-type": "application/json"
 		},
-		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"GET\"}}"
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided has expired.\"}]}}"
 	},
 	"token expires string": {
-		"status": 200,
+		"status": 401,
 		"headers": {
 			"access-control-allow-credentials": "true",
 			"access-control-allow-origin": "*",
 			"access-control-expose-headers": "key,soajsauth,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization",
-			"content-length": "118",
-			"content-type": "application/json; charset=utf-8",
-			"etag": "W/\"76-hNJhcCfrFyu3cRs681guf5XKVlU\"",
-			"x-powered-by": "Express"
+			"content-type": "application/json"
 		},
-		"body": "{\"result\":true,\"data\":{\"firstname\":\"antoine\",\"lastname\":\"hage\",\"type\":\"mock service\",\"url\":\"/myroute\",\"method\":\"GET\"}}"
+		"body": "{\"result\":false,\"errors\":{\"codes\":[401],\"details\":[{\"code\":401,\"message\":\"The access token provided has expired.\"}]}}"
 	},
 	"token without expires": {
 		"status": 401,

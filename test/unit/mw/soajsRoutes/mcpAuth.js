@@ -14,7 +14,11 @@ const TOKENS = {
 	"agentToken": {user: {restrictedTo: {tenant: "t1", key: "agentKey"}}, expires: new Date(Date.now() + 60000)},
 	"listToken": {user: {restrictedTo: {tenant: "t1", key: ["agentKey"]}}, expires: new Date(Date.now() + 60000)},
 	"userToken": {user: {}, expires: new Date(Date.now() + 60000)},
-	"oldToken": {user: {restrictedTo: {key: "agentKey"}}, expires: new Date(Date.now() - 1000)}
+	"oldToken": {user: {restrictedTo: {key: "agentKey"}}, expires: new Date(Date.now() - 1000)},
+	// expires that cannot be read: the token has expired (soajs.oauth2)
+	"nullExpires": {user: {restrictedTo: {key: "agentKey"}}, expires: null},
+	"stringExpires": {user: {restrictedTo: {key: "agentKey"}}, expires: "2099-01-01T00:00:00.000Z"},
+	"noExpires": {user: {restrictedTo: {key: "agentKey"}}}
 };
 
 const provision = {
@@ -218,6 +222,21 @@ describe("Unit test for: mw - soajsRoutes mcp auth", () => {
 					done();
 				});
 			});
+		});
+
+		it("a token whose expires is null, a string or missing: invalid_token, as an expired one", (done) => {
+			let names = ["nullExpires", "stringExpires", "noExpires"];
+			let one = () => {
+				if (!names.length) {
+					return done();
+				}
+				run(mw, makeReq({headers: {access_token: names.shift()}}), (answer) => {
+					assert.strictEqual(answer.status, 401);
+					assert.strictEqual(answer.body.error, "invalid_token");
+					one();
+				});
+			};
+			one();
 		});
 
 		it("the token store fails: next, the oauth mw decides", (done) => {
