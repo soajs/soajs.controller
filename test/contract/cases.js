@@ -37,7 +37,7 @@ const cases = [
 	{"name": "invalid token", "method": "GET", "path": PATH, "headers": {"key": KEY, "authorization": "Bearer 0000000000000000000000000000000000000000"}},
 	{"name": "invalid token query", "method": "GET", "path": PATH + "?access_token=nope123", "headers": {"key": KEY}},
 	{"name": "refresh token as access token", "method": "GET", "path": PATH, "headers": {"key": KEY, "authorization": "Bearer " + REFRESH}},
-	{"name": "expired token", "method": "GET", "path": PATH, "headers": {"key": KEY, "authorization": "Bearer " + EXPIRED}},
+	{"name": "expired token", "before": EXPIRED, "method": "GET", "path": PATH, "headers": {"key": KEY, "authorization": "Bearer " + EXPIRED}},
 	{"name": "token expires null", "method": "GET", "path": PATH, "headers": {"key": KEY, "authorization": "Bearer " + NEVER_EXPIRES}},
 	{"name": "token expires string", "method": "GET", "path": PATH, "headers": {"key": KEY, "authorization": "Bearer " + STRING_EXPIRES}},
 	{"name": "token without expires", "method": "GET", "path": PATH, "headers": {"key": KEY, "authorization": "Bearer " + NO_EXPIRES}},

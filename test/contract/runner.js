@@ -63,11 +63,24 @@ function run(cases, cb) {
 	const state = {};
 	const results = {};
 	let i = 0;
+	cases.forEach((c) => delete c.beforeDone);
 	const next = () => {
 		if (i >= cases.length) {
 			return cb(null, results);
 		}
 		const c = cases[i++];
+		if (c.before && !c.beforeDone) {
+			// a token the case needs, written just before it: MongoDB's TTL index removes an expired
+			// token within a minute, so it cannot be written with the others
+			c.beforeDone = true;
+			i--;
+			return require("./tokens.js").before(c.before, (error) => {
+				if (error) {
+					return cb(error);
+				}
+				next();
+			});
+		}
 		send(c, state, (error, out) => {
 			if (error) {
 				return cb(error);
