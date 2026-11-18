@@ -26,7 +26,8 @@ module.exports = (configuration) => {
 	configuration.soajs.oauthService.pinApi = configuration.soajs.oauthService.pinApi || "/pin";
 	
 	
-	let oauthserver = require('oauth2-server');
+	// node-oauth2-server 2.4.1, ported to soajs.core.modules (soajs.oauth2): the same answers
+	let oauthserver = require('soajs.core.modules').oauth2;
 	let oauthObj = oauthserver({
 		model: configuration.model,
 		grants: configuration.serviceConfig.oauth.grants,

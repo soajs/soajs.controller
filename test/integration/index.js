@@ -16,6 +16,20 @@ describe("starting integration tests", () => {
 		});
 	});
 	
+	// the OAuth contract: the answers recorded on oauth2-server 2.4.1 (test/contract), in a process
+	// of its own, before the use cases start their gateways
+	it("keeps the OAuth contract (authorise)", function (done) {
+		this.timeout(120000);
+		const child = require("child_process").spawn(process.execPath, [__dirname + "/../contract/record.js", "--check"], {"env": process.env});
+		let out = "";
+		child.stdout.on("data", (d) => out += d);
+		child.stderr.on("data", () => {});
+		child.on("exit", (code) => {
+			const lines = out.split("\n").filter((l) => l.startsWith("CONTRACT"));
+			console.log(lines.join("\n"));
+			done(code === 0 ? undefined : new Error("the OAuth contract changed:\n" + lines.join("\n")));
+		});
+	});
 	it("loading tests", (done) => {
 		
 		require("./server/controller.js");

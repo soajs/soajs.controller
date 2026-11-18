@@ -26,6 +26,7 @@
 
 const get = (p, o) => p.reduce((xs, x) => (xs && xs[x]) ? xs[x] : null, o);
 
+const expired = require("soajs.core.modules").oauth2.expired;
 const MCP_PATH = "/soajs/mcp";
 const ISSUER_PATH = MCP_PATH + "/auth/";
 const PRM_PATH = "/.well-known/oauth-protected-resource";
@@ -300,7 +301,8 @@ function authorize(configuration) {
 				req.soajs.log.error("MCP: unable to read the access token: " + err.message);
 				return next();
 			}
-			if (!record || (record.expires && new Date(record.expires).getTime() < Date.now())) {
+			// as authorise: expires must be a valid Date (soajs.oauth2), else the token has expired
+			if (!record || expired(record.expires)) {
 				return askToAuthorize(true);
 			}
 			let restrictedKey = tokenKey(record);
